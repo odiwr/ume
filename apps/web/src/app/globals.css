@@ -1,0 +1,111 @@
+@import 'tailwindcss';
+
+/*
+  Ume design tokens — dark by default (it lives next to Discord), with the brand
+  pink as the single accent. Sage / beige come from the headphone artwork.
+*/
+@theme {
+  --color-bg: #0a0a0a;
+  --color-surface: #141414;
+  --color-surface-2: #1c1c1c;
+  --color-surface-3: #242424;
+  --color-border: #262626;
+  --color-border-strong: #333333;
+  --color-fg: #f2f2f2;
+  --color-fg-muted: #a3a3a3;
+  --color-fg-subtle: #737373;
+  --color-pink: #e464b0;
+  --color-pink-strong: #d94a9f;
+  --color-pink-soft: #f4a3d2;
+  --color-sage: #b5c1b4;
+  --color-beige: #d6cabf;
+  --color-gray: #b3b3b3;
+  --color-success: #5ad07b;
+  --color-warning: #f2b84b;
+  --color-danger: #f0556b;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: var(--font-space-grotesk), var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.25rem;
+  --shadow-glow: 0 0 0 1px rgb(228 100 176 / 0.35), 0 12px 48px -12px rgb(228 100 176 / 0.45);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-pink);
+  color: var(--color-bg);
+}
+
+.font-display {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+/* Subtle dotted grid used on marketing sections */
+.bg-grid {
+  background-image: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+/* Pink -> transparent radial glow */
+.bg-glow {
+  background: radial-gradient(60% 50% at 50% 0%, rgb(228 100 176 / 0.22), transparent 70%);
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-pink);
+  outline-offset: 2px;
+}
+
+@keyframes ume-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+.animate-float {
+  animation: ume-float 5s ease-in-out infinite;
+}
+
+@keyframes ume-eq {
+  0%,
+  100% {
+    transform: scaleY(0.3);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+.animate-eq > span {
+  display: inline-block;
+  width: 3px;
+  border-radius: 2px;
+  background: currentColor;
+  transform-origin: bottom;
+  animation: ume-eq 1s ease-in-out infinite;
+}
+.animate-eq > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.animate-eq > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+.animate-eq > span:nth-child(4) {
+  animation-delay: 0.45s;
+}

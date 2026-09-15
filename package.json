@@ -1,0 +1,28 @@
+{
+  "name": "ume",
+  "private": true,
+  "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo run dev",
+    "dev:web": "pnpm --filter @ume/web dev",
+    "dev:bot": "pnpm --filter @ume/bot dev",
+    "dev:worker": "pnpm --filter @ume/worker dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "db:generate": "pnpm --filter @ume/db generate",
+    "db:migrate": "pnpm --filter @ume/db migrate",
+    "db:push": "pnpm --filter @ume/db push",
+    "db:studio": "pnpm --filter @ume/db studio",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,yaml,yml,css}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.6.0",
+    "turbo": "^2.10.13",
+    "typescript": "^5.9.3"
+  }
+}

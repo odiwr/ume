@@ -1,0 +1,36 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# Supply-chain cool-down in minutes. pnpm 12 defaults to 1440 (24h), which blocks
+# same-day releases (AWS SDK publishes daily). Raise it once the dependency set settles.
+minimumReleaseAge: 1
+
+# pnpm blocks dependency postinstall scripts unless allow-listed.
+allowBuilds:
+  "@discordjs/opus": true
+  "@snazzah/davey": true
+  sodium-native: true
+  sharp: true
+  esbuild: true
+  ffmpeg-static: true
+  youtube-dl-exec: true
+  "@tailwindcss/oxide": true
+  unrs-resolver: true
+
+minimumReleaseAgeExclude:
+  - '@better-auth/core@1.7.5'
+  - '@better-auth/drizzle-adapter@1.7.5'
+  - better-auth@1.7.5
+  - pg-boss@12.32.0
+
+onlyBuiltDependencies:
+  - "@discordjs/opus"
+  - "@snazzah/davey"
+  - sodium-native
+  - sharp
+  - esbuild
+  - ffmpeg-static
+  - youtube-dl-exec
+  - "@tailwindcss/oxide"
+  - unrs-resolver
