@@ -99,5 +99,6 @@ export function formatBytes(bytes: number): string {
     v /= 1024
     i++
   }
-  return `${v.toFixed(v >= 100 ? 0 : v >= 10 ? 1 : 2)} ${units[i]}`
+  const fixed = v.toFixed(v >= 100 ? 0 : v >= 10 ? 1 : 2).replace(/\.0+$/, '').replace(/(\.\d*[1-9])0+$/, '$1')
+  return `${fixed} ${units[i]}`
 }

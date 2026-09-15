@@ -49,9 +49,16 @@ export function userAvatarUrl(userId: string, avatar: string | null, size = 128)
 /** Bot install URL with the permissions Ume needs. */
 export function botInviteUrl(clientId: string, guildId?: string): string {
   // View Channels (1<<10), Send Messages (1<<11), Embed Links (1<<14), Read History (1<<16),
-  // Connect (1<<20), Speak (1<<21), Use Slash Commands (1<<31)
+  // Connect (1<<20), Speak (1<<21), Use Slash Commands (1<<31), Set Voice Channel Status (1<<48)
   const perms =
-    (1n << 10n) | (1n << 11n) | (1n << 14n) | (1n << 16n) | (1n << 20n) | (1n << 21n) | (1n << 31n)
+    (1n << 10n) |
+    (1n << 11n) |
+    (1n << 14n) |
+    (1n << 16n) |
+    (1n << 20n) |
+    (1n << 21n) |
+    (1n << 31n) |
+    (1n << 48n)
   const url = new URL('https://discord.com/oauth2/authorize')
   url.searchParams.set('client_id', clientId)
   url.searchParams.set('scope', 'bot applications.commands')
