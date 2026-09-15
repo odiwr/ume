@@ -25,10 +25,12 @@ export default async function BannedPage() {
         <span className="flex size-12 items-center justify-center rounded-xl bg-danger/15 text-danger">
           <Ban className="size-6" aria-hidden />
         </span>
-        <h1 className="font-display mt-5 text-2xl font-bold tracking-tight sm:text-3xl">This account is suspended</h1>
+        <h1 className="font-display mt-5 text-2xl font-bold tracking-tight sm:text-3xl">
+          This account is suspended
+        </h1>
         <p className="mt-2 text-sm text-fg-muted">
-          Signed in as <span className="text-fg">{session.user.email}</span>. You can still listen in Discord, but the web
-          app is closed to this account.
+          Signed in as <span className="text-fg">{session.user.email}</span>. You can still listen
+          in Discord, but the web app is closed to this account.
         </p>
         {reason ? (
           <div className="mt-5 rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm">
@@ -43,7 +45,12 @@ export default async function BannedPage() {
           </Link>
           . If you think this is a mistake,{' '}
           {support ? (
-            <a href={support} target="_blank" rel="noopener noreferrer" className="text-pink-soft underline underline-offset-4">
+            <a
+              href={support}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-pink-soft underline underline-offset-4"
+            >
               reach us on the support server
             </a>
           ) : (

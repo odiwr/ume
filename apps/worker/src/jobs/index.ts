@@ -19,10 +19,23 @@ export const jobs: JobDefinition[] = [
 ] as JobDefinition[]
 
 /** Cron schedules (UTC). pg-boss stores them in the database; re-scheduling on boot is idempotent. */
-export const schedules: Array<{ name: JobDefinition['name']; cron: string; description: string }> = [
-  { name: inactivitySweep.name, cron: '15 3 * * *', description: 'daily 03:15 UTC — inactivity notices and purges' },
-  { name: reconcileStorage.name, cron: '15 4 * * *', description: 'daily 04:15 UTC — recompute usage, clean stuck uploads' },
-  { name: expireThings.name, cron: '0 * * * *', description: 'hourly — expire memberships and invites' },
-]
+export const schedules: Array<{ name: JobDefinition['name']; cron: string; description: string }> =
+  [
+    {
+      name: inactivitySweep.name,
+      cron: '15 3 * * *',
+      description: 'daily 03:15 UTC — inactivity notices and purges',
+    },
+    {
+      name: reconcileStorage.name,
+      cron: '15 4 * * *',
+      description: 'daily 04:15 UTC — recompute usage, clean stuck uploads',
+    },
+    {
+      name: expireThings.name,
+      cron: '0 * * * *',
+      description: 'hourly — expire memberships and invites',
+    },
+  ]
 
 export { YOUTUBE_TOS_WARNING } from './extract-link'

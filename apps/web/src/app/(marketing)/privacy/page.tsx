@@ -6,7 +6,8 @@ import { LEGAL_EFFECTIVE_DATE } from '@/lib/site/links'
 
 export const metadata: Metadata = {
   title: 'Privacy Policy',
-  description: 'What Ume collects from Discord and your uploads, why, who sees it, how long it is kept, and how to delete it.',
+  description:
+    'What Ume collects from Discord and your uploads, why, who sees it, how long it is kept, and how to delete it.',
   alternates: { canonical: '/privacy' },
 }
 
@@ -43,69 +44,101 @@ export default function PrivacyPage() {
     >
       <LegalSection id="summary" index={1} title="Summary">
         <ul>
-          <li>We identify you through Discord OAuth (or Google). We never ask for or store your Discord password.</li>
-          <li>We store the music you upload, transcoded, and the metadata of links you add.</li>
-          <li>We record who added each track and who did what in a workspace, because members need to see it.</li>
-          <li>We keep operational logs for a short time and legal records for as long as the law expects.</li>
-          <li>Free workspaces idle for {INACTIVITY.purgeAfterDays} days are deleted, with two warnings first.</li>
+          <li>
+            We identify you through Discord OAuth (or Google). We never ask for or store your
+            Discord password.
+          </li>
+          <li>
+            We store the music you upload and the audio fetched from links you add, transcoded,
+            along with the source link.
+          </li>
+          <li>
+            We record who added each track and who did what in a workspace, because members need to
+            see it.
+          </li>
+          <li>
+            We keep operational logs for a short time and legal records for as long as the law
+            expects.
+          </li>
+          <li>
+            Free workspaces idle for {INACTIVITY.purgeAfterDays} days are deleted, with two warnings
+            first.
+          </li>
           <li>You can delete a workspace or your account at any time.</li>
         </ul>
       </LegalSection>
 
       <LegalSection id="collect" index={2} title="What we collect">
         <p>
-          <strong>Account data.</strong> When you sign in with Discord we receive your Discord user ID, username, avatar
-          and email address, and the list of servers you belong to with your permissions in each (the{' '}
-          <code>identify</code>, <code>email</code> and <code>guilds</code> scopes). The server list is used only to show
-          you the servers you can claim and to check that a share link&apos;s &quot;must be a member&quot; rule is met;
-          we do not store the full list. When you sign in with Google we receive your name, email and profile picture.
+          <strong>Account data.</strong> When you sign in with Discord we receive your Discord user
+          ID, username, avatar and email address, and the list of servers you belong to with your
+          permissions in each (the <code>identify</code>, <code>email</code> and <code>guilds</code>{' '}
+          scopes). The server list is used only to show you the servers you can claim and to check
+          that a share link&apos;s &quot;must be a member&quot; rule is met; we do not store the
+          full list. When you sign in with Google we receive your name, email and profile picture.
         </p>
         <p>
-          <strong>Workspace data.</strong> The server&apos;s Discord ID, name and icon; the voice channel Ume lives in;
-          your playlists, tracks and their metadata; role definitions; memberships; Discord role mappings; invites; and the
-          plan the workspace is on.
+          <strong>Workspace data.</strong> The server&apos;s Discord ID, name and icon; the voice
+          channel Ume lives in; your playlists, tracks and their metadata; role definitions;
+          memberships; Discord role mappings; invites; and the plan the workspace is on.
         </p>
         <p>
-          <strong>Audio.</strong> Files you upload are transcoded to Opus and stored in object storage under a key tied to
-          your workspace. The original file is deleted after transcoding. We compute a SHA-256 hash of the transcoded
-          audio to de-duplicate and to enforce takedowns.
+          <strong>Audio.</strong> Files you upload are transcoded to Opus and stored in object
+          storage under a key tied to your workspace. The original file is deleted after
+          transcoding. When you add a song from a link, the audio is fetched from that site,
+          transcoded and stored the same way; we also keep the source site, the site&apos;s
+          identifier for the track, the link itself and the author name the site shows. We compute a
+          SHA-256 hash of the transcoded audio to de-duplicate and to enforce takedowns.
         </p>
         <p>
-          <strong>Activity and audit data.</strong> Events such as someone joining the home channel, commands, playback,
-          uploads and edits, along with which Discord user or web account did them. We use this to decide whether a
-          workspace is active and to show an audit log to workspace admins.
+          <strong>Activity and audit data.</strong> Events such as someone joining the home channel,
+          commands, playback, uploads and edits, along with which Discord user or web account did
+          them. We use this to decide whether a workspace is active and to show an audit log to
+          workspace admins.
         </p>
         <p>
-          <strong>Bot data.</strong> Ume sees voice-state changes (who is in its channel) so it can pause when the room is
-          empty. It does not record audio from voice channels. It reads server messages only if the server enables the
-          Message Content intent, and then only to detect <code>~</code> commands; messages are not stored.
+          <strong>Bot data.</strong> Ume sees voice-state changes (who is in its channel) so it can
+          pause when the room is empty. It does not record audio from voice channels. It reads
+          server messages only if the server enables the Message Content intent, and then only to
+          detect <code>~</code> commands; messages are not stored.
         </p>
         <p>
-          <strong>Billing.</strong> Stripe handles payments. We store your Stripe customer and subscription IDs and the
-          plan status. We never see or store card numbers.
+          <strong>Billing.</strong> Stripe handles payments. We store your Stripe customer and
+          subscription IDs and the plan status. We never see or store card numbers.
         </p>
         <p>
-          <strong>Technical data.</strong> IP address, browser and timing information in server logs, and the IP address
-          attached to DMCA submissions and privileged actions for abuse prevention.
+          <strong>Technical data.</strong> IP address, browser and timing information in server
+          logs, and the IP address attached to DMCA submissions and privileged actions for abuse
+          prevention.
         </p>
         <p>
-          <strong>Notifications.</strong> A record of each email or Discord message we sent you (what, when, to where)
-          so we do not send it twice.
+          <strong>Notifications.</strong> A record of each email or Discord message we sent you
+          (what, when, to where) so we do not send it twice.
         </p>
       </LegalSection>
 
       <LegalSection id="use" index={3} title="How we use it">
         <ul>
-          <li>To run the service: sign you in, play music, enforce roles and quotas, send notices.</li>
+          <li>
+            To run the service: sign you in, play music, enforce roles and quotas, send notices.
+          </li>
           <li>To show members who added what and to give admins an audit trail.</li>
-          <li>To bill paid workspaces and to detect and stop abuse, including copyright infringement.</li>
-          <li>To email you about your workspace: invites, token rotations, inactivity warnings, quota warnings, billing.</li>
-          <li>To debug problems and understand aggregate usage. We do not profile individuals or run advertising.</li>
+          <li>
+            To bill paid workspaces and to detect and stop abuse, including copyright infringement.
+          </li>
+          <li>
+            To email you about your workspace: invites, token rotations, inactivity warnings, quota
+            warnings, billing.
+          </li>
+          <li>
+            To debug problems and understand aggregate usage. We do not profile individuals or run
+            advertising.
+          </li>
         </ul>
         <p>
-          Our legal bases, where the GDPR or UK GDPR applies, are performance of a contract (running the service),
-          legitimate interests (security, abuse prevention, product improvement) and legal obligation (billing and
-          copyright records).
+          Our legal bases, where the GDPR or UK GDPR applies, are performance of a contract (running
+          the service), legitimate interests (security, abuse prevention, product improvement) and
+          legal obligation (billing and copyright records).
         </p>
       </LegalSection>
 
@@ -120,19 +153,21 @@ export default function PrivacyPage() {
           <li>Discord, which receives the messages and voice data the bot sends on your behalf.</li>
         </ul>
         <p>
-          Within a workspace, members can see each other&apos;s display names, avatars, roles and which tracks they
-          added. We disclose data to authorities only when legally required, and we will tell you unless we are
-          prohibited from doing so.
+          Within a workspace, members can see each other&apos;s display names, avatars, roles and
+          which tracks they added. We disclose data to authorities only when legally required, and
+          we will tell you unless we are prohibited from doing so.
         </p>
       </LegalSection>
 
       <LegalSection id="retention" index={5} title="How long we keep it">
         <p>
-          Free workspaces that show no activity for <strong>{INACTIVITY.purgeAfterDays} days</strong> are permanently
-          deleted. We send a notice at <strong>{INACTIVITY.firstNoticeAtDays} days</strong> and a final notice{' '}
-          <strong>{INACTIVITY.finalNoticeHoursBefore} hours</strong> before deletion, by email and through Discord.{' '}
-          <strong>Paid workspaces are exempt</strong> from automatic deletion. A purged workspace leaves a minimal tombstone
-          (workspace ID, server ID, deletion time) for 30 days so support can answer &quot;what happened&quot;.
+          Free workspaces that show no activity for{' '}
+          <strong>{INACTIVITY.purgeAfterDays} days</strong> are permanently deleted. We send a
+          notice at <strong>{INACTIVITY.firstNoticeAtDays} days</strong> and a final notice{' '}
+          <strong>{INACTIVITY.finalNoticeHoursBefore} hours</strong> before deletion, by email and
+          through Discord. <strong>Paid workspaces are exempt</strong> from automatic deletion. A
+          purged workspace leaves only a record that it existed (workspace ID, server ID, deletion
+          time) so support can answer &quot;what happened&quot;.
         </p>
         <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
           <table className="w-full min-w-[540px] text-sm">
@@ -183,58 +218,68 @@ export default function PrivacyPage() {
       <LegalSection id="rights" index={6} title="Your rights and choices">
         <ul>
           <li>
-            <strong>Delete a workspace:</strong> run /purge as the Owner, or use the Danger Zone in Settings.
+            <strong>Delete a workspace:</strong> run /purge as the Owner, or use the Danger Zone in
+            Settings.
           </li>
           <li>
-            <strong>Delete your account:</strong> from your account page, or by contacting us. We remove your account data
-            within 30 days, except records we must keep (see above).
+            <strong>Delete your account:</strong> from your account page, or by contacting us. We
+            remove your account data within 30 days, except records we must keep (see above).
           </li>
           <li>
-            <strong>Access or correct data:</strong> most of it is visible in the app. For a full export, contact us.
+            <strong>Access or correct data:</strong> most of it is visible in the app. For a full
+            export, contact us.
           </li>
           <li>
-            <strong>Revoke Discord access:</strong> remove {BRAND.name} under Authorized Apps in your Discord settings. You
-            will be signed out and cannot sign in again until you re-authorise.
+            <strong>Revoke Discord access:</strong> remove {BRAND.name} under Authorized Apps in
+            your Discord settings. You will be signed out and cannot sign in again until you
+            re-authorise.
           </li>
           <li>
-            <strong>Email:</strong> we send only transactional messages tied to your workspaces; there is no marketing
-            list to unsubscribe from.
+            <strong>Email:</strong> we send only transactional messages tied to your workspaces;
+            there is no marketing list to unsubscribe from.
           </li>
         </ul>
         <p>
-          If you are in the EEA, UK or Switzerland you also have the right to object to or restrict processing, to data
-          portability, and to complain to your supervisory authority.
+          If you are in the EEA, UK or Switzerland you also have the right to object to or restrict
+          processing, to data portability, and to complain to your supervisory authority.
         </p>
       </LegalSection>
 
       <LegalSection id="security" index={7} title="Security">
         <p>
-          All traffic is encrypted in transit. Claim tokens and invite tokens are stored only as SHA-256 hashes and are
-          single-use. Audio uploads go straight from your browser to object storage over short-lived signed URLs; the
-          web server never handles the bytes. Privileged actions are re-authorised server-side on every request and
-          written to the audit log. Discord voice is end-to-end encrypted with DAVE where Discord provides it.
+          All traffic is encrypted in transit. Claim tokens and invite tokens are stored only as
+          SHA-256 hashes and are single-use. Audio uploads go straight from your browser to object
+          storage over short-lived signed URLs; the web server never handles the bytes. Privileged
+          actions are re-authorised server-side on every request and written to the audit log.
+          Discord voice is end-to-end encrypted with DAVE where Discord provides it.
         </p>
-        <p>If we discover a breach affecting your data we will notify affected Owners without undue delay.</p>
+        <p>
+          If we discover a breach affecting your data we will notify affected Owners without undue
+          delay.
+        </p>
       </LegalSection>
 
       <LegalSection id="children" index={8} title="Children">
         <p>
-          {BRAND.name} is not directed at children under 13 (or the higher age your country sets for Discord). We do not
-          knowingly collect data from them; if you think we have, contact us and we will delete it.
+          {BRAND.name} is not directed at children under 13 (or the higher age your country sets for
+          Discord). We do not knowingly collect data from them; if you think we have, contact us and
+          we will delete it.
         </p>
       </LegalSection>
 
       <LegalSection id="changes" index={9} title="Changes">
         <p>
-          We will announce material changes to this policy by email and in the app at least 14 days before they take
-          effect. The effective date at the top always reflects the current version.
+          We will announce material changes to this policy by email and in the app at least 14 days
+          before they take effect. The effective date at the top always reflects the current
+          version.
         </p>
       </LegalSection>
 
       <LegalSection id="contact" index={10} title="Contact">
         <p>
-          Privacy questions and data requests: use the contact address on the <Link href="/dmca">DMCA page</Link> with
-          &quot;Privacy&quot; in the subject, or reach us through the support server linked in the footer.
+          Privacy questions and data requests: use the contact address on the{' '}
+          <Link href="/dmca">DMCA page</Link> with &quot;Privacy&quot; in the subject, or reach us
+          through the support server linked in the footer.
         </p>
       </LegalSection>
     </LegalPage>

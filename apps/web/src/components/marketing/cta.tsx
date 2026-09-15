@@ -21,11 +21,16 @@ export function FinalCta({ inviteHref }: { inviteHref: string }) {
             Give your server a station.
           </h2>
           <p className="relative mx-auto mt-4 max-w-xl text-base text-fg-muted sm:text-lg">
-            Add Ume, claim your server, drop in a playlist. The first gigabyte is free, and nobody has to press play ever
-            again.
+            Add Ume, claim your server, drop in a playlist. The first gigabyte is free, and nobody
+            has to press play ever again.
           </p>
           <div className="relative mt-8 flex flex-col justify-center gap-3 sm:flex-row">
-            <a href={inviteHref} target="_blank" rel="noopener noreferrer" className={buttonClasses('primary', 'lg')}>
+            <a
+              href={inviteHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={buttonClasses('primary', 'lg')}
+            >
               Add Ume to Discord
               <ArrowRight className="size-4" />
             </a>

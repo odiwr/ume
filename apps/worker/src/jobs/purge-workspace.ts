@@ -37,12 +37,18 @@ export const purgeWorkspace = defineJob({
     if (ws.status === 'purged') return void log.info('already purged; no-op')
 
     if (ws.status !== 'purging') {
-      const autoOk = reason === 'inactivity' && (ws.status === 'connected' || ws.status === 'disconnected') && (await getFlag(db, 'auto_purge_enabled'))
+      const autoOk =
+        reason === 'inactivity' &&
+        (ws.status === 'connected' || ws.status === 'disconnected') &&
+        (await getFlag(db, 'auto_purge_enabled'))
       if (!autoOk) {
         log.warn({ status: ws.status }, 'workspace is not in purging state; refusing to purge')
         return
       }
-      await db.update(workspaces).set({ status: 'purging', updatedAt: new Date() }).where(eq(workspaces.id, workspaceId))
+      await db
+        .update(workspaces)
+        .set({ status: 'purging', updatedAt: new Date() })
+        .where(eq(workspaces.id, workspaceId))
     }
 
     // Storage first: if this throws we retry with rows intact and the workspace still "purging".
@@ -88,7 +94,12 @@ export const purgeWorkspace = defineJob({
 
     const emailReason = reason === 'inactivity' ? 'inactivity' : 'owner'
     const tpl = purgedEmail({ to: '', serverName: ws.guildName, reason: emailReason })
-    const why = reason === 'inactivity' ? 'after 60 days without activity' : reason === 'ceo' ? 'by Ume support' : 'at the owner’s request'
+    const why =
+      reason === 'inactivity'
+        ? 'after 60 days without activity'
+        : reason === 'ceo'
+          ? 'by Ume support'
+          : 'at the owner’s request'
     await notifyWorkspaceOwner(db, log, ws, {
       kind: 'purged',
       email: { subject: tpl.subject, html: tpl.html, text: tpl.text },

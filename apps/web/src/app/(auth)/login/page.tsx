@@ -37,14 +37,19 @@ export default async function LoginPage({
   return (
     <div className="w-full max-w-md">
       <div className="rounded-2xl border border-border bg-surface/90 p-6 shadow-2xl backdrop-blur sm:p-8">
-        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">Log in to Ume</h1>
+        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+          Log in to Ume
+        </h1>
         <p className="mt-2 text-sm text-fg-muted">
-          Discord is the identity for everyone who manages music. Google works too, if you were invited by email or run
-          the console.
+          Discord is the identity for everyone who manages music. Google works too, if you were
+          invited by email or run the console.
         </p>
 
         {errorMessage ? (
-          <p className="mt-5 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
+          <p
+            className="mt-5 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger"
+            role="alert"
+          >
             {errorMessage}
           </p>
         ) : null}
@@ -56,8 +61,8 @@ export default async function LoginPage({
         <div className="mt-6 flex items-start gap-2 rounded-xl bg-surface-2 px-3 py-2.5 text-xs text-fg-muted">
           <Info className="mt-0.5 size-3.5 shrink-0 text-pink" aria-hidden />
           <p>
-            We ask Discord for your identity, email and server list so we can show the servers you own or administer.
-            We never post on your behalf.
+            We ask Discord for your identity, email and server list so we can show the servers you
+            own or administer. We never post on your behalf.
           </p>
         </div>
       </div>

@@ -8,7 +8,10 @@
 export class JobError extends Error {
   readonly userMessage: string
   readonly retryable: boolean
-  constructor(message: string, opts: { userMessage?: string; retryable: boolean; cause?: unknown }) {
+  constructor(
+    message: string,
+    opts: { userMessage?: string; retryable: boolean; cause?: unknown },
+  ) {
     super(message, opts.cause !== undefined ? { cause: opts.cause } : undefined)
     this.name = new.target.name
     this.userMessage = opts.userMessage ?? message
@@ -28,7 +31,11 @@ export class PermanentError extends JobError {
 
 export class RetryableError extends JobError {
   constructor(message: string, opts: { userMessage?: string; cause?: unknown } = {}) {
-    super(message, { userMessage: opts.userMessage ?? 'Temporary problem while processing. Retrying.', retryable: true, cause: opts.cause })
+    super(message, {
+      userMessage: opts.userMessage ?? 'Temporary problem while processing. Retrying.',
+      retryable: true,
+      cause: opts.cause,
+    })
   }
 }
 
@@ -50,7 +57,12 @@ const TRANSIENT_CODES = new Set([
 export function isRetryable(err: unknown): boolean {
   if (err instanceof JobError) return err.retryable
   if (err && typeof err === 'object') {
-    const e = err as { code?: unknown; name?: unknown; $retryable?: unknown; $metadata?: { httpStatusCode?: number } }
+    const e = err as {
+      code?: unknown
+      name?: unknown
+      $retryable?: unknown
+      $metadata?: { httpStatusCode?: number }
+    }
     if (typeof e.code === 'string' && TRANSIENT_CODES.has(e.code)) return true
     if (e.$retryable) return true
     const status = e.$metadata?.httpStatusCode

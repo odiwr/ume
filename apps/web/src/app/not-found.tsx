@@ -22,10 +22,12 @@ export default function NotFound() {
             <Disc3 className="size-8 animate-[spin_6s_linear_infinite]" aria-hidden />
           </span>
           <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-pink">404</p>
-          <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">That track is not in any playlist.</h1>
+          <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+            That track is not in any playlist.
+          </h1>
           <p className="mt-3 text-sm text-fg-muted">
-            The page you asked for does not exist, was purged, or the link expired. Share links and invites do expire on
-            purpose.
+            The page you asked for does not exist, was purged, or the link expired. Share links and
+            invites do expire on purpose.
           </p>
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
             <Link href="/" className={buttonClasses('primary', 'md')}>

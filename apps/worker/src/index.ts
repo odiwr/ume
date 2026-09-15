@@ -9,11 +9,33 @@ import { jobs, schedules, YOUTUBE_TOS_WARNING } from './jobs'
 import type { JobContext } from './jobs/types'
 
 const HEARTBEAT_MS = 60_000
+const SHUTDOWN_TIMEOUT_MS = 5 * 60 * 1000
+
+/**
+ * WORKER_QUEUES picks the queues this instance consumes. Empty = all of them. A second
+ * instance on a residential connection typically runs `WORKER_QUEUES=extract-link` only.
+ */
+function selectQueues(log: ReturnType<typeof createLogger>): Set<JobName> {
+  const all = new Set<JobName>(Object.values(JOBS) as JobName[])
+  if (env.workerQueues.length === 0) return all
+  const chosen = new Set<JobName>()
+  for (const q of env.workerQueues) {
+    if (all.has(q as JobName)) chosen.add(q as JobName)
+    else
+      log.warn({ queue: q, known: [...all] }, 'WORKER_QUEUES names an unknown queue; ignoring it')
+  }
+  if (chosen.size === 0) {
+    log.warn('WORKER_QUEUES matched nothing; this instance will consume every queue')
+    return all
+  }
+  return chosen
+}
 
 async function main(): Promise<void> {
   const log = createLogger()
   const dbUrl = directDatabaseUrl()
   const db = getDb(dbUrl)
+  const consumed = selectQueues(log)
 
   let storage: Storage | null = null
   const ctx: JobContext = {
@@ -26,9 +48,23 @@ async function main(): Promise<void> {
   boss.on('error', (err) => log.error({ err: describeError(err) }, 'pg-boss error'))
 
   await boss.start()
-  log.info({ schema: 'pgboss', ffmpeg: env.ffmpegPath, ytdlp: env.ytdlpPath, appUrl: env.appUrl }, 'pg-boss started')
+  log.info(
+    {
+      schema: 'pgboss',
+      queues: [...consumed],
+      extractor: env.extractorProvider,
+      ffmpeg: env.ffmpegPath,
+      ytdlp: env.extractorProvider === 'ytdlp' ? env.ytdlpPath : undefined,
+      cobalt:
+        env.extractorProvider === 'cobalt'
+          ? env.cobaltApiUrl || '(COBALT_API_URL missing)'
+          : undefined,
+      appUrl: env.appUrl,
+    },
+    'pg-boss started',
+  )
 
-  // Queues carry the retry policy; jobs inherit it unless `send` overrides.
+  // Every queue exists with its retry policy, whichever instance boots first. Idempotent.
   for (const name of Object.values(JOBS) as JobName[]) {
     try {
       await boss.createQueue(name, JOB_OPTIONS[name])
@@ -38,7 +74,8 @@ async function main(): Promise<void> {
   }
 
   // Workers: batch size 1 so one job maps to one handler call; concurrency per queue.
-  for (const def of jobs) {
+  const active = jobs.filter((def) => consumed.has(def.name))
+  for (const def of active) {
     await boss.work(
       def.name,
       { batchSize: 1, localConcurrency: def.concurrency, includeMetadata: true },
@@ -49,7 +86,17 @@ async function main(): Promise<void> {
             await def.run(ctx, job as never)
             log.debug({ job: def.name, jobId: job.id, ms: Date.now() - started }, 'job completed')
           } catch (err) {
-            log.error({ job: def.name, jobId: job.id, attempt: job.retryCount, of: job.retryLimit, ms: Date.now() - started, err: describeError(err) }, 'job failed')
+            log.error(
+              {
+                job: def.name,
+                jobId: job.id,
+                attempt: job.retryCount,
+                of: job.retryLimit,
+                ms: Date.now() - started,
+                err: describeError(err),
+              },
+              'job failed',
+            )
             throw err
           }
         }
@@ -58,48 +105,72 @@ async function main(): Promise<void> {
     log.info({ queue: def.name, concurrency: def.concurrency }, 'worker registered')
   }
 
-  // Crons (UTC). Stored in the database; safe to re-run on every boot.
+  // Crons (UTC) only for queues this instance consumes; pg-boss stores them, so re-scheduling is idempotent.
   for (const s of schedules) {
+    if (!consumed.has(s.name)) continue
     await boss.schedule(s.name, s.cron, {}, { ...JOB_OPTIONS[s.name], tz: 'UTC' })
     log.info({ queue: s.name, cron: s.cron }, s.description)
   }
 
-  if (await getFlag(db, 'link_extract').catch(() => false)) log.warn(YOUTUBE_TOS_WARNING)
+  if (await getFlag(db, 'link_extract').catch(() => false)) {
+    log.warn(
+      { provider: env.extractorProvider, consumesExtractLink: consumed.has(JOBS.extractLink) },
+      YOUTUBE_TOS_WARNING,
+    )
+  } else {
+    log.info('link_extract flag is off: links are stored as metadata-only entries')
+  }
+  if (consumed.has(JOBS.extractLink) && env.extractorProvider === 'cobalt' && !env.cobaltApiUrl) {
+    log.error(
+      'EXTRACTOR_PROVIDER=cobalt but COBALT_API_URL is empty; every extract-link job will retry and fail',
+    )
+  }
 
   const heartbeat = setInterval(() => {
     const mem = process.memoryUsage()
-    log.info({ rssMb: Math.round(mem.rss / 1048576), heapMb: Math.round(mem.heapUsed / 1048576), uptimeS: Math.round(process.uptime()) }, 'heartbeat')
+    log.info(
+      {
+        rssMb: Math.round(mem.rss / 1048576),
+        heapMb: Math.round(mem.heapUsed / 1048576),
+        uptimeS: Math.round(process.uptime()),
+        queues: active.length,
+      },
+      'heartbeat',
+    )
   }, HEARTBEAT_MS)
   heartbeat.unref()
 
   let stopping = false
-  const shutdown = async (signal: string) => {
+  const shutdown = async (signal: string, code = 0) => {
     if (stopping) return
     stopping = true
     log.info({ signal }, 'shutting down: waiting for active jobs')
     clearInterval(heartbeat)
     try {
-      await boss.stop({ graceful: true, timeout: 5 * 60 * 1000 })
-      await new Promise<void>((resolve) => {
+      const stopped = new Promise<void>((resolve) => {
         boss.once('stopped', () => resolve())
-        setTimeout(resolve, 5 * 60 * 1000 + 5_000).unref()
+        setTimeout(resolve, SHUTDOWN_TIMEOUT_MS + 5_000).unref()
       })
+      await boss.stop({ graceful: true, timeout: SHUTDOWN_TIMEOUT_MS })
+      await stopped
     } catch (err) {
       log.error({ err: describeError(err) }, 'pg-boss stop failed')
     }
     await closeDb().catch(() => undefined)
     log.info('bye')
-    process.exit(0)
+    process.exit(code)
   }
   process.on('SIGINT', () => void shutdown('SIGINT'))
   process.on('SIGTERM', () => void shutdown('SIGTERM'))
-  process.on('unhandledRejection', (reason) => log.error({ err: describeError(reason) }, 'unhandled rejection'))
+  process.on('unhandledRejection', (reason) =>
+    log.error({ err: describeError(reason) }, 'unhandled rejection'),
+  )
   process.on('uncaughtException', (err) => {
     log.fatal({ err: describeError(err) }, 'uncaught exception')
-    void shutdown('uncaughtException')
+    void shutdown('uncaughtException', 1)
   })
 
-  log.info({ queues: jobs.map((j) => j.name) }, 'ume worker ready')
+  log.info({ queues: active.map((j) => j.name) }, 'ume worker ready')
 }
 
 main().catch((err) => {

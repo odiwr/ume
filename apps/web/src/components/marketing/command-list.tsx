@@ -1,28 +1,33 @@
 import { CAP_LABELS, COMMANDS, COMMAND_PREFIX, capNames, type CommandSpec } from '@ume/shared'
 import { Badge, type BadgeTone } from '@/components/ui/badge'
 
-export const COMMAND_CATEGORIES: Record<CommandSpec['category'], { title: string; blurb: string }> = {
-  setup: {
-    title: 'Setup & safety',
-    blurb: 'Claiming, reconnecting and the three destructive commands. Replies are private; the dangerous ones ask for a code.',
-  },
-  library: {
-    title: 'Library',
-    blurb: 'Add links and browse playlists from Discord. Uploads happen on the web.',
-  },
-  playback: {
-    title: 'Playback',
-    blurb: 'Control what the channel hears. Ume stays connected no matter what you press.',
-  },
-  info: {
-    title: 'Info',
-    blurb: 'Links, status and help.',
-  },
-}
+export const COMMAND_CATEGORIES: Record<CommandSpec['category'], { title: string; blurb: string }> =
+  {
+    setup: {
+      title: 'Setup & safety',
+      blurb:
+        'Claiming, reconnecting and the three destructive commands. Replies are private; the dangerous ones ask for a code.',
+    },
+    library: {
+      title: 'Library',
+      blurb: 'Add links and browse playlists from Discord. Uploads happen on the web.',
+    },
+    playback: {
+      title: 'Playback',
+      blurb: 'Control what the channel hears. Ume stays connected no matter what you press.',
+    },
+    info: {
+      title: 'Info',
+      blurb: 'Links, status and help.',
+    },
+  }
 
 export const CATEGORY_ORDER: CommandSpec['category'][] = ['setup', 'library', 'playback', 'info']
 
-export function commandsByCategory(): { category: CommandSpec['category']; commands: CommandSpec[] }[] {
+export function commandsByCategory(): {
+  category: CommandSpec['category']
+  commands: CommandSpec[]
+}[] {
   return CATEGORY_ORDER.map((category) => ({
     category,
     commands: COMMANDS.filter((c) => c.category === category),
@@ -49,6 +54,18 @@ export function scopeLabel(c: CommandSpec): { text: string; tone: BadgeTone } {
   }
 }
 
+/** How the `~` alias behaves for this command, given the Message Content intent policy. */
+export function intentNote(c: CommandSpec): string {
+  switch (c.scope) {
+    case 'dm':
+      return `Slash form replies privately in the server. The ${COMMAND_PREFIX} form works in a DM with Ume, no intent needed.`
+    case 'guild':
+      return `Server only. The ${COMMAND_PREFIX} form works here only if the server enabled the Message Content intent.`
+    case 'both':
+      return `Works anywhere. In a DM the ${COMMAND_PREFIX} form always works; in a server use the slash form.`
+  }
+}
+
 export function whoCanRun(c: CommandSpec): string {
   if (c.requiresOwner) return 'Server owner or workspace Owner'
   if (c.requiresGuildAdmin) return 'Server owner or Administrator'
@@ -65,9 +82,13 @@ export function CommandRow({ command, compact }: { command: CommandSpec; compact
   return (
     <li className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <code className="rounded-lg bg-surface-3 px-2 py-1 font-mono text-sm text-fg">{slashForm(command)}</code>
+        <code className="rounded-lg bg-surface-3 px-2 py-1 font-mono text-sm text-fg">
+          {slashForm(command)}
+        </code>
         <span className="text-xs text-fg-subtle">or</span>
-        <code className="rounded-lg bg-surface-2 px-2 py-1 font-mono text-sm text-fg-muted">{prefixForm(command)}</code>
+        <code className="rounded-lg bg-surface-2 px-2 py-1 font-mono text-sm text-fg-muted">
+          {prefixForm(command)}
+        </code>
         <Badge tone={scope.tone} className="ml-auto">
           {scope.text}
         </Badge>
@@ -77,6 +98,8 @@ export function CommandRow({ command, compact }: { command: CommandSpec; compact
         <dl className="grid gap-x-6 gap-y-2 text-xs sm:grid-cols-[auto_1fr]">
           <dt className="font-semibold uppercase tracking-wide text-fg-subtle">Who</dt>
           <dd className="text-fg-muted">{whoCanRun(command)}</dd>
+          <dt className="font-semibold uppercase tracking-wide text-fg-subtle">Where</dt>
+          <dd className="text-fg-muted [text-wrap:pretty]">{intentNote(command)}</dd>
           {command.options.length ? (
             <>
               <dt className="font-semibold uppercase tracking-wide text-fg-subtle">Options</dt>

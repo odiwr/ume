@@ -5,7 +5,14 @@ import { RetryableError } from '../lib/errors'
 import { newNotificationId, type NotificationKind } from '../lib/notify'
 import { defineJob } from './types'
 
-const RECORDED_KINDS = new Set<string>(['invite', 'inactivity_30d', 'inactivity_48h', 'purged', 'token_rotated', 'quota_warning'])
+const RECORDED_KINDS = new Set<string>([
+  'invite',
+  'inactivity_30d',
+  'inactivity_48h',
+  'purged',
+  'token_rotated',
+  'quota_warning',
+])
 
 /**
  * send-email {to, subject, html, text, kind, workspaceId?, userId?}

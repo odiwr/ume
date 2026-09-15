@@ -10,7 +10,14 @@ export function createLogger(): Logger {
   return pino({
     level,
     base: { service: 'ume-worker' },
-    ...(pretty ? { transport: { target: 'pino-pretty', options: { colorize: true, translateTime: 'HH:MM:ss' } } } : {}),
+    ...(pretty
+      ? {
+          transport: {
+            target: 'pino-pretty',
+            options: { colorize: true, translateTime: 'HH:MM:ss' },
+          },
+        }
+      : {}),
   })
 }
 

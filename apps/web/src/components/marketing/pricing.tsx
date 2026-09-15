@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import { ArrowRight, Check } from 'lucide-react'
 import { PLANS, formatBytes, type Plan } from '@ume/shared'
-import { Container, Eyebrow, Section, SectionLead, SectionTitle } from '@/components/site/container'
+import { Container, Section, SectionLead, SectionTitle } from '@/components/site/container'
 import { Badge } from '@/components/ui/badge'
 import { buttonClasses } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -14,21 +14,26 @@ export function PlanCard({ plan, cta }: { plan: Plan; cta?: { href: string; labe
     <div
       className={cn(
         'relative flex flex-col rounded-2xl border bg-surface p-6',
-        recommended ? 'border-pink/50 shadow-[0_0_0_1px_rgb(228_100_176/0.25),0_20px_60px_-24px_rgb(228_100_176/0.45)]' : 'border-border',
+        recommended
+          ? 'border-pink/50 shadow-[0_0_0_1px_rgb(228_100_176/0.25),0_20px_60px_-24px_rgb(228_100_176/0.45)]'
+          : 'border-border',
       )}
     >
       {recommended ? (
         <Badge tone="pink" className="absolute -top-3 left-6">
-          Most servers pick this
+          Recommended
         </Badge>
       ) : null}
       <h3 className="font-display text-xl font-semibold">{plan.name}</h3>
       <p className="mt-3 flex items-baseline gap-1">
-        <span className="font-display text-4xl font-bold tracking-tight">${plan.priceUsdMonthly}</span>
+        <span className="font-display text-4xl font-bold tracking-tight">
+          ${plan.priceUsdMonthly}
+        </span>
         <span className="text-sm text-fg-subtle">/ month per server</span>
       </p>
       <p className="mt-2 text-sm text-fg-muted">
-        {formatBytes(plan.storageBytes)} · about {plan.hoursOfMusic.toLocaleString('en-US')} hours of music
+        {formatBytes(plan.storageBytes)} · about {plan.hoursOfMusic.toLocaleString('en-US')} hours
+        of music
       </p>
       <ul className="mt-6 flex flex-col gap-2.5 text-sm">
         {plan.highlights.map((h) => (
@@ -66,11 +71,12 @@ export function PricingTeaser() {
       <Container>
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
-            <Eyebrow>Pricing</Eyebrow>
-            <SectionTitle>Flat tiers. Pay for storage, not for seats.</SectionTitle>
-            <SectionLead>
-              One plan per server, unlimited members and playlists on every tier. Every upload is normalized to Opus, so a
-              gigabyte is always about {PLANS[0]!.hoursOfMusic} hours.
+            <SectionTitle className="[text-wrap:balance]">
+              Flat tiers. Pay for storage, not for seats.
+            </SectionTitle>
+            <SectionLead className="[text-wrap:pretty]">
+              One plan per server, unlimited members and playlists on every tier. Every track is
+              normalized to Opus, so a gigabyte is always about {PLANS[0]!.hoursOfMusic} hours.
             </SectionLead>
           </div>
           <Link href="/pricing" className={buttonClasses('ghost', 'md', 'self-start md:self-auto')}>

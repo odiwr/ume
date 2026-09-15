@@ -25,26 +25,48 @@ export const reconcileStorage = defineJob({
       where: ne(workspaces.status, 'purged'),
       columns: { id: true },
     })
-    const counts = { workspaces: list.length, playlists: 0, stalePendingDeleted: 0, staleProcessingFailed: 0, errors: 0 }
+    const counts = {
+      workspaces: list.length,
+      playlists: 0,
+      stalePendingDeleted: 0,
+      staleProcessingFailed: 0,
+      errors: 0,
+    }
 
     for (const { id: workspaceId } of list) {
       try {
         // Uploads that never got a job (or whose job was lost) — drop them and free the original.
         const stalePending = await db.query.tracks.findMany({
-          where: and(eq(tracks.workspaceId, workspaceId), eq(tracks.status, 'pending'), lt(tracks.updatedAt, new Date(now - PENDING_MAX_AGE_MS))),
+          where: and(
+            eq(tracks.workspaceId, workspaceId),
+            eq(tracks.status, 'pending'),
+            lt(tracks.updatedAt, new Date(now - PENDING_MAX_AGE_MS)),
+          ),
         })
         for (const t of stalePending) {
-          await deleteTrackObjects(storage, log, workspaceId, t.id, { outputs: true, original: t.originalStorageKey })
-          await db.delete(tracks).where(and(eq(tracks.id, t.id), eq(tracks.workspaceId, workspaceId)))
+          await deleteTrackObjects(storage, log, workspaceId, t.id, {
+            outputs: true,
+            original: t.originalStorageKey,
+          })
+          await db
+            .delete(tracks)
+            .where(and(eq(tracks.id, t.id), eq(tracks.workspaceId, workspaceId)))
           counts.stalePendingDeleted++
         }
 
         // Jobs that died mid-transcode — mark failed so the user can retry.
         const staleProcessing = await db.query.tracks.findMany({
-          where: and(eq(tracks.workspaceId, workspaceId), eq(tracks.status, 'processing'), lt(tracks.updatedAt, new Date(now - PROCESSING_MAX_AGE_MS))),
+          where: and(
+            eq(tracks.workspaceId, workspaceId),
+            eq(tracks.status, 'processing'),
+            lt(tracks.updatedAt, new Date(now - PROCESSING_MAX_AGE_MS)),
+          ),
         })
         for (const t of staleProcessing) {
-          await deleteTrackObjects(storage, log, workspaceId, t.id, { outputs: true, original: t.originalStorageKey })
+          await deleteTrackObjects(storage, log, workspaceId, t.id, {
+            outputs: true,
+            original: t.originalStorageKey,
+          })
           await db
             .update(tracks)
             .set({
@@ -61,12 +83,18 @@ export const reconcileStorage = defineJob({
         }
 
         await recomputeWorkspaceUsage(db, workspaceId)
-        const bs = await db.select({ id: playlists.id }).from(playlists).where(eq(playlists.workspaceId, workspaceId))
+        const bs = await db
+          .select({ id: playlists.id })
+          .from(playlists)
+          .where(eq(playlists.workspaceId, workspaceId))
         for (const b of bs) await recountPlaylist(db, b.id)
         counts.playlists += bs.length
       } catch (err) {
         counts.errors++
-        log.error({ workspaceId, err: err instanceof Error ? err.message : String(err) }, 'reconcile failed for workspace')
+        log.error(
+          { workspaceId, err: err instanceof Error ? err.message : String(err) },
+          'reconcile failed for workspace',
+        )
       }
     }
     log.info(counts, 'storage reconciled')

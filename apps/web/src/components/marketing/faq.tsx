@@ -13,7 +13,10 @@ export function FaqList({ items }: { items: FaqItem[] }) {
         <details key={item.q} className="group px-5 py-4 open:bg-surface-2/40 sm:px-6">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-left font-medium [&::-webkit-details-marker]:hidden">
             <span>{item.q}</span>
-            <ChevronDown className="size-4 shrink-0 text-fg-subtle transition-transform group-open:rotate-180" aria-hidden />
+            <ChevronDown
+              className="size-4 shrink-0 text-fg-subtle transition-transform group-open:rotate-180"
+              aria-hidden
+            />
           </summary>
           <div className="mt-3 text-sm leading-relaxed text-fg-muted [&_a]:text-pink-soft [&_a]:underline [&_a]:underline-offset-4 [&_code]:rounded [&_code]:bg-surface-3 [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-fg">
             {item.a}

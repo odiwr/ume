@@ -50,10 +50,21 @@ export function SiteHeader() {
         </nav>
 
         <div className="hidden items-center gap-2 md:flex">
-          <Suspense fallback={<span className={buttonClasses('ghost', 'md', 'pointer-events-none opacity-0')}>Log in</span>}>
+          <Suspense
+            fallback={
+              <span className={buttonClasses('ghost', 'md', 'pointer-events-none opacity-0')}>
+                Log in
+              </span>
+            }
+          >
             <AccountLink />
           </Suspense>
-          <a href={invite} target="_blank" rel="noopener noreferrer" className={buttonClasses('primary', 'md')}>
+          <a
+            href={invite}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={buttonClasses('primary', 'md')}
+          >
             Add to Discord
             <ArrowRight className="size-4" />
           </a>

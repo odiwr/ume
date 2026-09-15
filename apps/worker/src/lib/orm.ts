@@ -33,4 +33,23 @@ function capture(): Operators {
 
 const ops = capture()
 
-export const { and, between, eq, exists, gt, gte, ilike, inArray, isNull, isNotNull, like, lt, lte, ne, not, notInArray, or, sql } = ops
+export const {
+  and,
+  between,
+  eq,
+  exists,
+  gt,
+  gte,
+  ilike,
+  inArray,
+  isNull,
+  isNotNull,
+  like,
+  lt,
+  lte,
+  ne,
+  not,
+  notInArray,
+  or,
+  sql,
+} = ops

@@ -1,18 +1,33 @@
 import Link from 'next/link'
 import { BRAND } from '@ume/shared'
 import { Logo } from '@/components/ui/logo'
-import { FOOTER_LEGAL_LINKS, FOOTER_PRODUCT_LINKS, githubUrl, supportInviteUrl } from '@/lib/site/links'
+import {
+  FOOTER_LEGAL_LINKS,
+  FOOTER_PRODUCT_LINKS,
+  githubUrl,
+  supportInviteUrl,
+} from '@/lib/site/links'
 
 function FooterColumn({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-fg-subtle">{title}</h3>
+      <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-fg-subtle">
+        {title}
+      </h3>
       <ul className="flex flex-col gap-2">{children}</ul>
     </div>
   )
 }
 
-function FooterLink({ href, external, children }: { href: string; external?: boolean; children: React.ReactNode }) {
+function FooterLink({
+  href,
+  external,
+  children,
+}: {
+  href: string
+  external?: boolean
+  children: React.ReactNode
+}) {
   const cls = 'text-sm text-fg-muted transition-colors hover:text-fg'
   if (external) {
     return (
@@ -43,7 +58,9 @@ export function SiteFooter() {
           <div className="max-w-xs">
             <Logo size={28} />
             <p className="mt-4 text-sm text-fg-muted">{BRAND.tagline}</p>
-            <p className="mt-2 text-sm text-fg-subtle">Built for servers that would rather run a radio station than babysit a queue.</p>
+            <p className="mt-2 text-sm text-fg-subtle">
+              Built for servers that would rather run a radio station than babysit a queue.
+            </p>
           </div>
           <FooterColumn title="Product">
             {FOOTER_PRODUCT_LINKS.map((l) => (
@@ -75,7 +92,8 @@ export function SiteFooter() {
         </div>
         <div className="mt-10 flex flex-col gap-2 border-t border-border pt-6 text-xs text-fg-subtle sm:flex-row sm:items-center sm:justify-between">
           <p>
-            &copy; {year} {BRAND.name}. Not affiliated with Discord Inc. or YouTube.
+            &copy; {year} {BRAND.name}. Not affiliated with Discord Inc. or any of the sites you can
+            add links from.
           </p>
           <p>Your music stays in your server. Ume never sells your data.</p>
         </div>

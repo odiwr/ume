@@ -27,9 +27,17 @@ export type DmcaField =
 const checkbox = z.preprocess((v) => v === 'on' || v === 'true' || v === true, z.boolean())
 
 const noticeSchema = z.object({
-  claimantName: z.string().trim().min(2, 'Enter your full name.').max(200, 'Keep it under 200 characters.'),
+  claimantName: z
+    .string()
+    .trim()
+    .min(2, 'Enter your full name.')
+    .max(200, 'Keep it under 200 characters.'),
   claimantEmail: z.string().trim().toLowerCase().email('Enter a valid email address.').max(254),
-  claimantAddress: z.string().trim().min(8, 'Enter a postal address.').max(500, 'Keep it under 500 characters.'),
+  claimantAddress: z
+    .string()
+    .trim()
+    .min(8, 'Enter a postal address.')
+    .max(500, 'Keep it under 500 characters.'),
   workDescription: z
     .string()
     .trim()
@@ -61,9 +69,15 @@ function fieldErrors(error: z.ZodError): Partial<Record<DmcaField, string>> {
   return out
 }
 
-export async function submitDmcaNotice(_prev: DmcaFormState, formData: FormData): Promise<DmcaFormState> {
+export async function submitDmcaNotice(
+  _prev: DmcaFormState,
+  formData: FormData,
+): Promise<DmcaFormState> {
   // Honeypot: bots fill every field. Humans never see this one.
-  if (typeof formData.get('website') === 'string' && (formData.get('website') as string).length > 0) {
+  if (
+    typeof formData.get('website') === 'string' &&
+    (formData.get('website') as string).length > 0
+  ) {
     return { ok: true, reference: `DMCA-${randomUUID().slice(0, 8).toUpperCase()}` }
   }
 
@@ -79,7 +93,11 @@ export async function submitDmcaNotice(_prev: DmcaFormState, formData: FormData)
   })
 
   if (!parsed.success) {
-    return { ok: false, message: 'Please fix the highlighted fields.', errors: fieldErrors(parsed.error) }
+    return {
+      ok: false,
+      message: 'Please fix the highlighted fields.',
+      errors: fieldErrors(parsed.error),
+    }
   }
 
   const data = parsed.data
@@ -121,7 +139,8 @@ export async function submitDmcaNotice(_prev: DmcaFormState, formData: FormData)
     console.error('[dmca] failed to store notice', err)
     return {
       ok: false,
-      message: 'We could not save your notice. Please try again in a minute or email the designated agent directly.',
+      message:
+        'We could not save your notice. Please try again in a minute or email the designated agent directly.',
     }
   }
 

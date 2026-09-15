@@ -5,7 +5,7 @@
 
 ARG PNPM_VERSION=12.4.1
 
-# ---------- base: Node 22 + ffmpeg (libopus) + yt-dlp ----------
+# ---------- base: Node 22 + ffmpeg (libopus) + python3 + curl + yt-dlp ----------
 FROM node:22-bookworm-slim AS base
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ffmpeg python3 curl ca-certificates \
@@ -38,8 +38,12 @@ COPY apps/worker/package.json apps/worker/
 RUN pnpm install --frozen-lockfile --prod --filter @ume/worker
 COPY --from=build /app/apps/worker/dist ./apps/worker/dist
 
+# WORKER_QUEUES (empty = all) and EXTRACTOR_PROVIDER (ytdlp | cobalt) are set per deployment.
 ENV FFMPEG_PATH=ffmpeg \
     YTDLP_PATH=/usr/local/bin/yt-dlp \
+    EXTRACTOR_PROVIDER=ytdlp \
     LOG_LEVEL=info
+# yt-dlp updates itself into its own directory only if writable; keep it root-owned and let
+# the image rebuild pick up new releases instead.
 USER node
 CMD ["node", "apps/worker/dist/index.js"]

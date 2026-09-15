@@ -43,12 +43,20 @@ function tail(s: unknown, n = 400): string {
 function toJobError(err: unknown, what: string, userMessage: string): Error {
   const e = err as ExecaLikeError
   if (e.code === 'ENOENT' || e.code === 'EACCES') {
-    return new RetryableError(`${what}: binary not found or not executable (${e.code})`, { cause: err })
+    return new RetryableError(`${what}: binary not found or not executable (${e.code})`, {
+      cause: err,
+    })
   }
   if (e.timedOut) {
-    return new PermanentError(`${userMessage} It took too long to process.`, { detail: `${what} timed out`, cause: err })
+    return new PermanentError(`${userMessage} It took too long to process.`, {
+      detail: `${what} timed out`,
+      cause: err,
+    })
   }
-  return new PermanentError(userMessage, { detail: `${what} exit ${e.exitCode ?? '?'}: ${tail(e.stderr) || e.shortMessage || e.message}`, cause: err })
+  return new PermanentError(userMessage, {
+    detail: `${what} exit ${e.exitCode ?? '?'}: ${tail(e.stderr) || e.shortMessage || e.message}`,
+    cause: err,
+  })
 }
 
 interface FfprobeJson {
@@ -73,10 +81,13 @@ async function probeWithFfprobe(inputPath: string): Promise<ProbeResult> {
   const streams = json.streams ?? []
   const audio = streams.find((s) => s.codec_type === 'audio')
   const video = streams.filter((s) => s.codec_type === 'video')
-  const realVideo = video.some((s) => !(s.disposition?.attached_pic === 1) && !PICTURE_CODECS.has(s.codec_name ?? ''))
+  const realVideo = video.some(
+    (s) => !(s.disposition?.attached_pic === 1) && !PICTURE_CODECS.has(s.codec_name ?? ''),
+  )
   const durationSec = Number(json.format?.duration ?? audio?.duration ?? 0)
   return {
-    durationMs: Number.isFinite(durationSec) && durationSec > 0 ? Math.round(durationSec * 1000) : 0,
+    durationMs:
+      Number.isFinite(durationSec) && durationSec > 0 ? Math.round(durationSec * 1000) : 0,
     hasAudio: !!audio,
     hasVideo: realVideo,
     codec: audio?.codec_name ?? null,
@@ -92,13 +103,19 @@ async function probeWithFfmpeg(inputPath: string): Promise<ProbeResult> {
   })
   const text = String(res.stderr ?? '')
   const m = /Duration:\s*(\d+):(\d+):(\d+(?:\.\d+)?)/.exec(text)
-  const durationMs = m ? Math.round((Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])) * 1000) : 0
+  const durationMs = m
+    ? Math.round((Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])) * 1000)
+    : 0
   const audioLine = /Stream #\d+:\d+.*?:\s*Audio:\s*([\w-]+)/.exec(text)
   const videoLines = [...text.matchAll(/Stream #\d+:\d+.*?:\s*Video:\s*([\w-]+)[^\n]*/g)]
-  const realVideo = videoLines.some((v) => !PICTURE_CODECS.has(v[1] ?? '') && !/attached pic/i.test(v[0]))
+  const realVideo = videoLines.some(
+    (v) => !PICTURE_CODECS.has(v[1] ?? '') && !/attached pic/i.test(v[0]),
+  )
   const input = /Input #0,\s*([^,]+(?:,[^,]+)*?),\s*from/.exec(text)
   if (!audioLine && !m && res.exitCode !== 0 && (res as unknown as ExecaLikeError).code) {
-    throw Object.assign(new Error('ffmpeg failed'), { code: (res as unknown as ExecaLikeError).code })
+    throw Object.assign(new Error('ffmpeg failed'), {
+      code: (res as unknown as ExecaLikeError).code,
+    })
   }
   return {
     durationMs,
@@ -123,7 +140,10 @@ export async function probe(inputPath: string): Promise<ProbeResult> {
       }
     }
     if (err instanceof SyntaxError) {
-      throw new PermanentError('We could not read this file as audio.', { detail: 'ffprobe returned invalid JSON', cause: err })
+      throw new PermanentError('We could not read this file as audio.', {
+        detail: 'ffprobe returned invalid JSON',
+        cause: err,
+      })
     }
     throw toJobError(err, 'ffprobe', 'We could not read this file as audio.')
   }
@@ -172,10 +192,15 @@ export async function transcodeToOpus(inputPath: string, outputPath: string): Pr
   try {
     await execa(env.ffmpegPath, args, baseOpts)
   } catch (err) {
-    throw toJobError(err, 'ffmpeg transcode', 'We could not convert this file. It may be corrupt or not really audio.')
+    throw toJobError(
+      err,
+      'ffmpeg transcode',
+      'We could not convert this file. It may be corrupt or not really audio.',
+    )
   }
   const s = await stat(outputPath).catch(() => null)
-  if (!s || s.size === 0) throw new PermanentError('We could not convert this file.', { detail: 'empty output' })
+  if (!s || s.size === 0)
+    throw new PermanentError('We could not convert this file.', { detail: 'empty output' })
   return s.size
 }
 
@@ -212,7 +237,7 @@ export async function extractCover(inputPath: string, outputJpg: string): Promis
   return s && s.size > 0 ? s.size : null
 }
 
-/** Re-encode an arbitrary image (e.g. a YouTube thumbnail) to a bounded JPEG. */
+/** Re-encode an arbitrary image (e.g. a link thumbnail) to a bounded JPEG. */
 export async function imageToJpeg(inputPath: string, outputJpg: string): Promise<number | null> {
   return extractCover(inputPath, outputJpg)
 }

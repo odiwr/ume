@@ -26,9 +26,36 @@ import { PermanentError, RetryableError } from './errors'
 import { extractCover, imageToJpeg, probe, transcodeToOpus, type ProbeResult } from './ffmpeg'
 
 /** Containers we accept by magic bytes (file-type extension names). */
-const ALLOWED_EXT = new Set(['mp3', 'm4a', 'mp4', 'flac', 'wav', 'ogg', 'opus', 'webm', 'aiff', 'aif', 'oga', 'mpga', 'aac', 'weba'])
+const ALLOWED_EXT = new Set([
+  'mp3',
+  'm4a',
+  'mp4',
+  'flac',
+  'wav',
+  'ogg',
+  'opus',
+  'webm',
+  'aiff',
+  'aif',
+  'oga',
+  'mpga',
+  'aac',
+  'weba',
+])
 /** ffprobe format names accepted when magic-byte detection is inconclusive (raw MPEG frames, etc.). */
-const ALLOWED_FORMATS = ['mp3', 'mov', 'mp4', 'm4a', 'flac', 'wav', 'ogg', 'matroska', 'webm', 'aiff', 'aac']
+const ALLOWED_FORMATS = [
+  'mp3',
+  'mov',
+  'mp4',
+  'm4a',
+  'flac',
+  'wav',
+  'ogg',
+  'matroska',
+  'webm',
+  'aiff',
+  'aac',
+]
 
 export interface SourceMeta {
   title?: string | null
@@ -50,13 +77,15 @@ export interface ProcessContext {
   inputPath: string
   /** Job scratch dir. */
   tmpDir: string
-  /** Metadata known before reading tags (YouTube info); tags fill the rest. */
+  /** Metadata known before reading tags (what the link provider reported); tags fill the rest. */
   meta?: SourceMeta
   /** Skip music-metadata tag parsing (the source is not a user file). */
   skipTags?: boolean
 }
 
-export type ProcessOutcome = { kind: 'ready'; sizeBytes: number; durationMs: number } | { kind: 'deduped'; existingTrackId: string }
+export type ProcessOutcome =
+  | { kind: 'ready'; sizeBytes: number; durationMs: number }
+  | { kind: 'deduped'; existingTrackId: string }
 
 // ---------------------------------------------------------------------------
 // Small building blocks
@@ -69,7 +98,10 @@ export async function downloadToFile(storage: Storage, key: string, dest: string
   } catch (err) {
     const name = (err as { name?: string }).name
     if (name === 'NoSuchKey' || name === 'NotFound') {
-      throw new PermanentError('The uploaded file is missing from storage. Please upload it again.', { detail: `object ${key} not found`, cause: err })
+      throw new PermanentError(
+        'The uploaded file is missing from storage. Please upload it again.',
+        { detail: `object ${key} not found`, cause: err },
+      )
     }
     throw new RetryableError(`storage download failed for ${key}`, { cause: err })
   }
@@ -94,19 +126,26 @@ export async function sha256File(filePath: string): Promise<string> {
 export async function validateAudio(inputPath: string): Promise<ProbeResult> {
   const detected = await fileTypeFromFile(inputPath).catch(() => undefined)
   if (detected && !ALLOWED_EXT.has(detected.ext)) {
-    throw new PermanentError(`Unsupported file type (${detected.ext}). Upload MP3, M4A, FLAC, WAV, OGG, Opus, WebM or AIFF.`)
+    throw new PermanentError(
+      `Unsupported file type (${detected.ext}). Upload MP3, M4A, FLAC, WAV, OGG, Opus, WebM or AIFF.`,
+    )
   }
   const p = await probe(inputPath)
   if (!detected) {
     const fmt = (p.formatName ?? '').toLowerCase()
     if (!ALLOWED_FORMATS.some((f) => fmt.split(',').includes(f))) {
-      throw new PermanentError('Unsupported file type. Upload MP3, M4A, FLAC, WAV, OGG, Opus, WebM or AIFF.', { detail: `format ${p.formatName ?? 'unknown'}` })
+      throw new PermanentError(
+        'Unsupported file type. Upload MP3, M4A, FLAC, WAV, OGG, Opus, WebM or AIFF.',
+        { detail: `format ${p.formatName ?? 'unknown'}` },
+      )
     }
   }
   if (!p.hasAudio) throw new PermanentError('No audio found in this file.')
   if (p.hasVideo) throw new PermanentError('Video files are not supported. Upload the audio only.')
   if (p.durationMs > UPLOAD.maxDurationMs) {
-    throw new PermanentError(`Tracks longer than ${Math.round(UPLOAD.maxDurationMs / 60000)} minutes are not allowed.`)
+    throw new PermanentError(
+      `Tracks longer than ${Math.round(UPLOAD.maxDurationMs / 60000)} minutes are not allowed.`,
+    )
   }
   return p
 }
@@ -136,20 +175,30 @@ export async function readTags(inputPath: string): Promise<ParsedTags> {
 }
 
 /** Quota check that ignores this track's own (reserved) bytes. */
-export async function quotaAllows(db: Db, workspaceId: string, trackId: string, newBytes: number): Promise<{ ok: boolean; used: number; quota: number }> {
+export async function quotaAllows(
+  db: Db,
+  workspaceId: string,
+  trackId: string,
+  newBytes: number,
+): Promise<{ ok: boolean; used: number; quota: number }> {
   const ws = await db.query.workspaces.findFirst({ where: eq(workspaces.id, workspaceId) })
   if (!ws) throw new PermanentError('Workspace no longer exists.')
   const [agg] = await db
     .select({ bytes: sql<number>`coalesce(sum(${tracks.sizeBytes}), 0)::bigint` })
     .from(tracks)
-    .where(and(eq(tracks.workspaceId, workspaceId), ne(tracks.id, trackId), ne(tracks.status, 'failed')))
+    .where(
+      and(eq(tracks.workspaceId, workspaceId), ne(tracks.id, trackId), ne(tracks.status, 'failed')),
+    )
   const used = Number(agg?.bytes ?? 0)
   const quota = effectiveQuotaBytes(ws)
   return { ok: used + newBytes <= quota, used, quota }
 }
 
 export async function playlistIdsForTrack(db: Db, trackId: string): Promise<string[]> {
-  const rows = await db.select({ playlistId: playlistTracks.playlistId }).from(playlistTracks).where(eq(playlistTracks.trackId, trackId))
+  const rows = await db
+    .select({ playlistId: playlistTracks.playlistId })
+    .from(playlistTracks)
+    .where(eq(playlistTracks.trackId, trackId))
   return [...new Set(rows.map((r) => r.playlistId))]
 }
 
@@ -166,13 +215,17 @@ export async function deleteTrackObjects(
   opts: { original?: string | null; outputs?: boolean } = {},
 ): Promise<void> {
   const list: string[] = []
-  if (opts.outputs !== false) list.push(keys.track(workspaceId, trackId), keys.cover(workspaceId, trackId))
+  if (opts.outputs !== false)
+    list.push(keys.track(workspaceId, trackId), keys.cover(workspaceId, trackId))
   if (opts.original) list.push(opts.original)
   if (!list.length) return
   try {
     await storage.deleteObjects(list)
   } catch (err) {
-    log.warn({ trackId, keys: list, err: err instanceof Error ? err.message : String(err) }, 'object cleanup failed (reconcile will retry)')
+    log.warn(
+      { trackId, keys: list, err: err instanceof Error ? err.message : String(err) },
+      'object cleanup failed (reconcile will retry)',
+    )
   }
 }
 
@@ -182,8 +235,12 @@ export async function deleteTrackObjects(
  */
 export async function mergeDuplicate(ctx: ProcessContext, existing: Track): Promise<void> {
   const { db, storage, log, track } = ctx
-  const mine = await db.query.playlistTracks.findMany({ where: eq(playlistTracks.trackId, track.id) })
-  const theirs = await db.query.playlistTracks.findMany({ where: eq(playlistTracks.trackId, existing.id) })
+  const mine = await db.query.playlistTracks.findMany({
+    where: eq(playlistTracks.trackId, track.id),
+  })
+  const theirs = await db.query.playlistTracks.findMany({
+    where: eq(playlistTracks.trackId, existing.id),
+  })
   const already = new Set(theirs.map((b) => b.playlistId))
   const affected = new Set<string>()
   for (const bt of mine) {
@@ -191,19 +248,30 @@ export async function mergeDuplicate(ctx: ProcessContext, existing: Track): Prom
     if (already.has(bt.playlistId)) {
       await db.delete(playlistTracks).where(eq(playlistTracks.id, bt.id))
     } else {
-      await db.update(playlistTracks).set({ trackId: existing.id }).where(eq(playlistTracks.id, bt.id))
+      await db
+        .update(playlistTracks)
+        .set({ trackId: existing.id })
+        .where(eq(playlistTracks.id, bt.id))
       already.add(bt.playlistId)
     }
   }
-  await db.delete(tracks).where(and(eq(tracks.id, track.id), eq(tracks.workspaceId, track.workspaceId)))
-  await deleteTrackObjects(storage, log, track.workspaceId, track.id, { original: track.originalStorageKey, outputs: true })
+  await db
+    .delete(tracks)
+    .where(and(eq(tracks.id, track.id), eq(tracks.workspaceId, track.workspaceId)))
+  await deleteTrackObjects(storage, log, track.workspaceId, track.id, {
+    original: track.originalStorageKey,
+    outputs: true,
+  })
   await recountPlaylists(db, [...affected])
   await recomputeWorkspaceUsage(db, track.workspaceId)
-  log.info({ trackId: track.id, existingTrackId: existing.id, playlists: affected.size }, 'duplicate merged into existing track')
+  log.info(
+    { trackId: track.id, existingTrackId: existing.id, playlists: affected.size },
+    'duplicate merged into existing track',
+  )
 }
 
 // ---------------------------------------------------------------------------
-// The pipeline shared by uploads and YouTube ingestion
+// The pipeline shared by uploads and link extraction
 // ---------------------------------------------------------------------------
 
 export async function processLocalAudio(ctx: ProcessContext): Promise<ProcessOutcome> {
@@ -212,37 +280,66 @@ export async function processLocalAudio(ctx: ProcessContext): Promise<ProcessOut
 
   // 1. Content hash: blocklist + dedupe before spending CPU on it.
   const sha256 = await sha256File(inputPath)
-  const blocked = await db.query.blockedHashes.findFirst({ where: eq(blockedHashes.sha256, sha256) })
-  if (blocked) throw new PermanentError('This content is blocked.', { detail: `sha256 ${sha256} is on the blocklist` })
+  const blocked = await db.query.blockedHashes.findFirst({
+    where: eq(blockedHashes.sha256, sha256),
+  })
+  if (blocked)
+    throw new PermanentError('This content is blocked.', {
+      detail: `sha256 ${sha256} is on the blocklist`,
+    })
 
   const twin = await db.query.tracks.findFirst({
-    where: and(eq(tracks.workspaceId, workspaceId), eq(tracks.sha256, sha256), ne(tracks.id, track.id)),
+    where: and(
+      eq(tracks.workspaceId, workspaceId),
+      eq(tracks.sha256, sha256),
+      ne(tracks.id, track.id),
+    ),
   })
   if (twin) {
     if (twin.status === 'ready') {
       await mergeDuplicate(ctx, twin)
       return { kind: 'deduped', existingTrackId: twin.id }
     }
-    if (twin.status === 'disabled') throw new PermanentError('This content is blocked.', { detail: `duplicate of disabled track ${twin.id}` })
+    if (twin.status === 'disabled')
+      throw new PermanentError('This content is blocked.', {
+        detail: `duplicate of disabled track ${twin.id}`,
+      })
     if (twin.status === 'failed') {
       // A failed twin only holds the unique (workspace, sha256) slot; free it.
-      await db.update(tracks).set({ sha256: null, updatedAt: new Date() }).where(eq(tracks.id, twin.id))
+      await db
+        .update(tracks)
+        .set({ sha256: null, updatedAt: new Date() })
+        .where(eq(tracks.id, twin.id))
     } else {
-      throw new RetryableError(`same content is being processed as ${twin.id}`, { userMessage: 'The same file is already being processed.' })
+      throw new RetryableError(`same content is being processed as ${twin.id}`, {
+        userMessage: 'The same file is already being processed.',
+      })
     }
   }
 
   // 2. Validate the container and streams.
   const probed = await validateAudio(inputPath)
 
-  // 3. Tags (uploads) merged with what the caller already knows (YouTube info).
+  // 3. Tags (uploads) merged with what the caller already knows (link provider metadata).
   const tags = ctx.skipTags ? null : await readTags(inputPath)
-  const title = (ctx.meta?.title ?? tags?.title ?? track.title ?? path.parse(track.originalFilename ?? 'Untitled').name).trim().slice(0, 200) || 'Untitled'
-  const artist = (ctx.meta?.artist ?? tags?.artist ?? track.artist ?? null)?.trim().slice(0, 200) || null
-  const album = (ctx.meta?.album ?? tags?.album ?? track.album ?? null)?.trim().slice(0, 200) || null
+  const title =
+    (
+      ctx.meta?.title ??
+      tags?.title ??
+      track.title ??
+      path.parse(track.originalFilename ?? 'Untitled').name
+    )
+      .trim()
+      .slice(0, 200) || 'Untitled'
+  const artist =
+    (ctx.meta?.artist ?? tags?.artist ?? track.artist ?? null)?.trim().slice(0, 200) || null
+  const album =
+    (ctx.meta?.album ?? tags?.album ?? track.album ?? null)?.trim().slice(0, 200) || null
   const durationMs = probed.durationMs || tags?.durationMs || track.durationMs || 0
   if (durationMs > UPLOAD.maxDurationMs) {
-    throw new PermanentError(`Tracks longer than ${Math.round(UPLOAD.maxDurationMs / 60000)} minutes are not allowed.`)
+    throw new PermanentError(
+      `Tracks longer than ${Math.round(UPLOAD.maxDurationMs / 60000)} minutes are not allowed.`,
+    )
   }
 
   // 4. Transcode.
@@ -264,14 +361,19 @@ export async function processLocalAudio(ctx: ProcessContext): Promise<ProcessOut
 
   // 6. Quota (the plan may have changed since the upload was reserved).
   const q = await quotaAllows(db, workspaceId, track.id, sizeBytes)
-  if (!q.ok) throw new PermanentError('Over storage quota. Free up space or upgrade the plan, then upload again.', { detail: `used ${q.used} + ${sizeBytes} > ${q.quota}` })
+  if (!q.ok)
+    throw new PermanentError(
+      'Over storage quota. Free up space or upgrade the plan, then upload again.',
+      { detail: `used ${q.used} + ${sizeBytes} > ${q.quota}` },
+    )
 
   // 7. Upload outputs.
   const trackKey = keys.track(workspaceId, track.id)
   const coverKey = coverBytes ? keys.cover(workspaceId, track.id) : null
   try {
     await storage.putObject(trackKey, createReadStream(opusPath), UPLOAD.output.mimeType, opusBytes)
-    if (coverKey && coverBytes) await storage.putObject(coverKey, await readFile(coverPath), 'image/jpeg', coverBytes)
+    if (coverKey && coverBytes)
+      await storage.putObject(coverKey, await readFile(coverPath), 'image/jpeg', coverBytes)
   } catch (err) {
     throw new RetryableError('storage upload failed', { cause: err })
   }
@@ -288,7 +390,9 @@ export async function processLocalAudio(ctx: ProcessContext): Promise<ProcessOut
       durationMs,
       storageKey: trackKey,
       coverStorageKey: coverKey,
-      coverUrl: coverKey ? (storage.publicUrl(coverKey) ?? ctx.meta?.coverUrl ?? track.coverUrl ?? null) : (ctx.meta?.coverUrl ?? track.coverUrl ?? null),
+      coverUrl: coverKey
+        ? (storage.publicUrl(coverKey) ?? ctx.meta?.coverUrl ?? track.coverUrl ?? null)
+        : (ctx.meta?.coverUrl ?? track.coverUrl ?? null),
       sizeBytes,
       sha256,
       originalStorageKey: null,
@@ -300,7 +404,14 @@ export async function processLocalAudio(ctx: ProcessContext): Promise<ProcessOut
 
   if (track.originalStorageKey) {
     await storage.deleteObject(track.originalStorageKey).catch((err: unknown) => {
-      log.warn({ trackId: track.id, key: track.originalStorageKey, err: err instanceof Error ? err.message : String(err) }, 'original delete failed (reconcile will retry)')
+      log.warn(
+        {
+          trackId: track.id,
+          key: track.originalStorageKey,
+          err: err instanceof Error ? err.message : String(err),
+        },
+        'original delete failed (reconcile will retry)',
+      )
     })
   }
 
@@ -313,7 +424,10 @@ export async function processLocalAudio(ctx: ProcessContext): Promise<ProcessOut
     metadata: { action: 'track.ready', trackId: track.id, source: track.source },
   })
 
-  log.info({ trackId: track.id, workspaceId, sizeBytes, durationMs, codec: probed.codec }, 'track ready')
+  log.info(
+    { trackId: track.id, workspaceId, sizeBytes, durationMs, codec: probed.codec },
+    'track ready',
+  )
   return { kind: 'ready', sizeBytes, durationMs }
 }
 
@@ -349,18 +463,30 @@ export async function failTrack(
           updatedAt: now,
         })
         .where(and(eq(tracks.id, track.id), eq(tracks.workspaceId, track.workspaceId)))
-      await deleteTrackObjects(storage, log, track.workspaceId, track.id, { outputs: true, original: track.originalStorageKey })
+      await deleteTrackObjects(storage, log, track.workspaceId, track.id, {
+        outputs: true,
+        original: track.originalStorageKey,
+      })
     }
     await recomputeWorkspaceUsage(db, track.workspaceId)
     await recountPlaylists(db, await playlistIdsForTrack(db, track.id))
   } catch (err) {
-    log.error({ trackId: track.id, err: err instanceof Error ? err.message : String(err) }, 'failTrack bookkeeping failed')
+    log.error(
+      { trackId: track.id, err: err instanceof Error ? err.message : String(err) },
+      'failTrack bookkeeping failed',
+    )
   }
 }
 
 /** Load a track scoped to its workspace, or null. */
-export async function loadTrack(db: Db, workspaceId: string, trackId: string): Promise<Track | null> {
-  const t = await db.query.tracks.findFirst({ where: and(eq(tracks.id, trackId), eq(tracks.workspaceId, workspaceId)) })
+export async function loadTrack(
+  db: Db,
+  workspaceId: string,
+  trackId: string,
+): Promise<Track | null> {
+  const t = await db.query.tracks.findFirst({
+    where: and(eq(tracks.id, trackId), eq(tracks.workspaceId, workspaceId)),
+  })
   return t ?? null
 }
 
@@ -368,5 +494,11 @@ export async function setProcessing(db: Db, track: Track): Promise<void> {
   await db
     .update(tracks)
     .set({ status: 'processing', errorMessage: null, updatedAt: new Date() })
-    .where(and(eq(tracks.id, track.id), eq(tracks.workspaceId, track.workspaceId), inArray(tracks.status, ['pending', 'processing'])))
+    .where(
+      and(
+        eq(tracks.id, track.id),
+        eq(tracks.workspaceId, track.workspaceId),
+        inArray(tracks.status, ['pending', 'processing']),
+      ),
+    )
 }

@@ -8,7 +8,8 @@ import { env } from './env'
  */
 const API = 'https://discord.com/api/v10'
 
-export type DiscordSendResult = { ok: true; id: string } | { ok: false; reason: string; code?: number }
+export type DiscordSendResult =
+  { ok: true; id: string } | { ok: false; reason: string; code?: number }
 
 /** Discord JSON error code for "Cannot send messages to this user" (DMs closed / blocked). */
 export const CANNOT_DM = 50007
@@ -18,7 +19,14 @@ interface DiscordError {
   message?: string
 }
 
-async function call(log: Logger, method: string, path: string, body?: unknown): Promise<{ ok: true; json: unknown } | { ok: false; reason: string; code?: number; status?: number }> {
+async function call(
+  log: Logger,
+  method: string,
+  path: string,
+  body?: unknown,
+): Promise<
+  { ok: true; json: unknown } | { ok: false; reason: string; code?: number; status?: number }
+> {
   if (!env.discordBotToken) return { ok: false, reason: 'DISCORD_BOT_TOKEN is not set' }
   try {
     const res = await fetch(`${API}${path}`, {
@@ -59,21 +67,40 @@ async function call(log: Logger, method: string, path: string, body?: unknown): 
 }
 
 /** Opens (or reuses) the DM channel with a user and posts `content`. 50007 is reported as "cannot DM". */
-export async function dmUser(log: Logger, discordUserId: string, content: string): Promise<DiscordSendResult> {
+export async function dmUser(
+  log: Logger,
+  discordUserId: string,
+  content: string,
+): Promise<DiscordSendResult> {
   const ch = await call(log, 'POST', '/users/@me/channels', { recipient_id: discordUserId })
   if (!ch.ok) return { ok: false, reason: ch.reason, code: ch.code }
   const channelId = (ch.json as { id?: string } | null)?.id
   if (!channelId) return { ok: false, reason: 'no DM channel id in response' }
-  const msg = await call(log, 'POST', `/channels/${channelId}/messages`, { content, allowed_mentions: { parse: [] } })
+  const msg = await call(log, 'POST', `/channels/${channelId}/messages`, {
+    content,
+    allowed_mentions: { parse: [] },
+  })
   if (!msg.ok) {
-    if (msg.code === CANNOT_DM) return { ok: false, reason: 'cannot DM this user (DMs closed or bot blocked)', code: CANNOT_DM }
+    if (msg.code === CANNOT_DM)
+      return {
+        ok: false,
+        reason: 'cannot DM this user (DMs closed or bot blocked)',
+        code: CANNOT_DM,
+      }
     return { ok: false, reason: msg.reason, code: msg.code }
   }
   return { ok: true, id: (msg.json as { id?: string } | null)?.id ?? '' }
 }
 
-export async function postToChannel(log: Logger, channelId: string, content: string): Promise<DiscordSendResult> {
-  const msg = await call(log, 'POST', `/channels/${channelId}/messages`, { content, allowed_mentions: { parse: [] } })
+export async function postToChannel(
+  log: Logger,
+  channelId: string,
+  content: string,
+): Promise<DiscordSendResult> {
+  const msg = await call(log, 'POST', `/channels/${channelId}/messages`, {
+    content,
+    allowed_mentions: { parse: [] },
+  })
   if (!msg.ok) return { ok: false, reason: msg.reason, code: msg.code }
   return { ok: true, id: (msg.json as { id?: string } | null)?.id ?? '' }
 }
@@ -88,7 +115,17 @@ export interface GuildInfo {
 export async function getGuild(log: Logger, guildId: string): Promise<GuildInfo | null> {
   const res = await call(log, 'GET', `/guilds/${guildId}`)
   if (!res.ok) return null
-  const g = res.json as { id?: string; name?: string; system_channel_id?: string | null; owner_id?: string | null } | null
+  const g = res.json as {
+    id?: string
+    name?: string
+    system_channel_id?: string | null
+    owner_id?: string | null
+  } | null
   if (!g?.id) return null
-  return { id: g.id, name: g.name ?? '', systemChannelId: g.system_channel_id ?? null, ownerId: g.owner_id ?? null }
+  return {
+    id: g.id,
+    name: g.name ?? '',
+    systemChannelId: g.system_channel_id ?? null,
+    ownerId: g.owner_id ?? null,
+  }
 }

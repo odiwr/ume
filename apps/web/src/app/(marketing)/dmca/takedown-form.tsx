@@ -54,9 +54,13 @@ export function TakedownForm() {
           <div>
             <h3 className="font-display text-lg font-semibold">Notice received</h3>
             <p className="mt-1 text-sm text-fg-muted">
-              Your reference is <code className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-fg">{state.reference}</code>.
-              We review notices within two business days, disable the material if the notice is complete, and email you
-              at the address you provided. Keep the reference for any follow-up.
+              Your reference is{' '}
+              <code className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-fg">
+                {state.reference}
+              </code>
+              . We review notices within two business days, disable the material if the notice is
+              complete, and email you at the address you provided. Keep the reference for any
+              follow-up.
             </p>
           </div>
         </div>
@@ -83,7 +87,12 @@ export function TakedownForm() {
             aria-describedby={errors?.claimantName ? 'claimantName-error' : undefined}
           />
         </Field>
-        <Field name="claimantEmail" label="Email" errors={errors} hint="Where we send our response.">
+        <Field
+          name="claimantEmail"
+          label="Email"
+          errors={errors}
+          hint="Where we send our response."
+        >
           <Input
             id="claimantEmail"
             name="claimantEmail"
@@ -96,7 +105,12 @@ export function TakedownForm() {
         </Field>
       </div>
 
-      <Field name="claimantAddress" label="Postal address" errors={errors} hint="Required by 17 U.S.C. § 512(c)(3)(A)(iv). Shared with the uploader if they counter-notice.">
+      <Field
+        name="claimantAddress"
+        label="Postal address"
+        errors={errors}
+        hint="Required by 17 U.S.C. § 512(c)(3)(A)(iv). Shared with the uploader if they counter-notice."
+      >
         <Textarea
           id="claimantAddress"
           name="claimantAddress"
@@ -142,7 +156,9 @@ export function TakedownForm() {
       </Field>
 
       <fieldset className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-2/50 p-4">
-        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-fg-muted">Statements</legend>
+        <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-fg-muted">
+          Statements
+        </legend>
         <label className="flex items-start gap-3 text-sm leading-relaxed text-fg-muted">
           <input
             type="checkbox"
@@ -152,8 +168,8 @@ export function TakedownForm() {
             aria-describedby={errors?.goodFaith ? 'goodFaith-error' : undefined}
           />
           <span>
-            I have a good-faith belief that use of the material in the manner complained of is not authorised by the
-            copyright owner, its agent, or the law.
+            I have a good-faith belief that use of the material in the manner complained of is not
+            authorised by the copyright owner, its agent, or the law.
           </span>
         </label>
         <FieldError id="goodFaith-error" message={errors?.goodFaith} />
@@ -166,15 +182,21 @@ export function TakedownForm() {
             aria-describedby={errors?.accuracy ? 'accuracy-error' : undefined}
           />
           <span>
-            The information in this notice is accurate, and <strong className="text-fg">under penalty of perjury</strong>{' '}
-            I am the copyright owner or am authorised to act on behalf of the owner of an exclusive right that is
-            allegedly infringed.
+            The information in this notice is accurate, and{' '}
+            <strong className="text-fg">under penalty of perjury</strong> I am the copyright owner
+            or am authorised to act on behalf of the owner of an exclusive right that is allegedly
+            infringed.
           </span>
         </label>
         <FieldError id="accuracy-error" message={errors?.accuracy} />
       </fieldset>
 
-      <Field name="signature" label="Signature" errors={errors} hint="Type your full legal name. It must match the name above.">
+      <Field
+        name="signature"
+        label="Signature"
+        errors={errors}
+        hint="Type your full legal name. It must match the name above."
+      >
         <Input
           id="signature"
           name="signature"
@@ -187,14 +209,18 @@ export function TakedownForm() {
       </Field>
 
       {state.message ? (
-        <p className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
+        <p
+          className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
+          role="alert"
+        >
           {state.message}
         </p>
       ) : null}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-fg-subtle">
-          Your IP address is recorded with the notice. Knowingly false notices carry liability under § 512(f).
+          Your IP address is recorded with the notice. Knowingly false notices carry liability under
+          § 512(f).
         </p>
         <Button type="submit" size="lg" loading={pending} className="sm:shrink-0">
           {pending ? 'Sending' : 'Send takedown notice'}

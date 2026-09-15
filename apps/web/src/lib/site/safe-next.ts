@@ -17,6 +17,7 @@ export function safeNextPath(value: string | string[] | undefined, fallback = '/
   if (/[\s\x00-\x1f]/.test(decoded)) return fallback
   if (decoded.includes('://')) return fallback
   // Never bounce a fresh sign-in back to an auth page.
-  if (decoded === '/login' || decoded.startsWith('/login?') || decoded === '/banned') return fallback
+  if (decoded === '/login' || decoded.startsWith('/login?') || decoded === '/banned')
+    return fallback
   return decoded
 }

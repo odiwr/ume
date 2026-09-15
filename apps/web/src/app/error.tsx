@@ -6,7 +6,13 @@ import { AlertTriangle, RotateCcw } from 'lucide-react'
 import { Button, buttonClasses } from '@/components/ui/button'
 import { Logo } from '@/components/ui/logo'
 
-export default function GlobalError({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
+export default function GlobalError({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string }
+  reset: () => void
+}) {
   React.useEffect(() => {
     console.error(error)
   }, [error])
@@ -22,15 +28,23 @@ export default function GlobalError({ error, reset }: { error: Error & { digest?
           <span className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-warning/10 text-warning">
             <AlertTriangle className="size-8" aria-hidden />
           </span>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-warning">Something skipped</p>
-          <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">Ume hit a bad frame.</h1>
+          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-warning">
+            Something skipped
+          </p>
+          <h1 className="font-display mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
+            Ume hit a bad frame.
+          </h1>
           <p className="mt-3 text-sm text-fg-muted">
-            The page failed to render. Your music and settings are untouched; this is a display problem, not a data one.
-            Try again, and if it keeps happening tell us the reference below.
+            The page failed to render. Your music and settings are untouched; this is a display
+            problem, not a data one. Try again, and if it keeps happening tell us the reference
+            below.
           </p>
           {error.digest ? (
             <p className="mt-3 text-xs text-fg-subtle">
-              Reference <code className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-fg-muted">{error.digest}</code>
+              Reference{' '}
+              <code className="rounded bg-surface-3 px-1.5 py-0.5 font-mono text-fg-muted">
+                {error.digest}
+              </code>
             </p>
           ) : null}
           <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">

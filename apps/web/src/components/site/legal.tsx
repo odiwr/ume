@@ -24,7 +24,9 @@ export function LegalPage({
     <Container className="py-14 sm:py-20">
       <div className="grid gap-10 lg:grid-cols-[220px_1fr]">
         <aside className="lg:sticky lg:top-24 lg:self-start">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-fg-subtle">On this page</p>
+          <p className="mb-3 text-xs font-semibold uppercase tracking-[0.18em] text-fg-subtle">
+            On this page
+          </p>
           <nav aria-label="Sections" className="flex flex-col gap-1">
             {sections.map((s, i) => (
               <a

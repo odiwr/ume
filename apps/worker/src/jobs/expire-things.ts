@@ -14,12 +14,18 @@ export const expireThings = defineJob({
   async run(ctx, job) {
     const log = ctx.log.child({ job: job.name, jobId: job.id })
     const now = new Date()
-    const removed = await ctx.db.delete(memberships).where(lt(memberships.expiresAt, now)).returning({ id: memberships.id })
+    const removed = await ctx.db
+      .delete(memberships)
+      .where(lt(memberships.expiresAt, now))
+      .returning({ id: memberships.id })
     const revoked = await ctx.db
       .update(invites)
       .set({ revokedAt: now })
       .where(and(lt(invites.expiresAt, now), isNull(invites.revokedAt)))
       .returning({ id: invites.id })
-    log.info({ membershipsRemoved: removed.length, invitesRevoked: revoked.length }, 'expiry pass done')
+    log.info(
+      { membershipsRemoved: removed.length, invitesRevoked: revoked.length },
+      'expiry pass done',
+    )
   },
 })

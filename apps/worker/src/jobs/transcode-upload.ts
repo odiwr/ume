@@ -1,7 +1,13 @@
 import path from 'node:path'
 import { JOBS } from '@ume/shared'
 import { describeError, isRetryable, userMessageOf } from '../lib/errors'
-import { downloadToFile, failTrack, loadTrack, processLocalAudio, setProcessing } from '../lib/media'
+import {
+  downloadToFile,
+  failTrack,
+  loadTrack,
+  processLocalAudio,
+  setProcessing,
+} from '../lib/media'
 import { withTempDir } from '../lib/tmp'
 import { defineJob, willRetry } from './types'
 import { eq } from '../lib/orm'
@@ -21,12 +27,16 @@ export const transcodeUpload = defineJob({
 
     const track = await loadTrack(db, workspaceId, trackId)
     if (!track) return void log.warn('track not found; skipping')
-    if (track.source !== 'upload') return void log.warn({ source: track.source }, 'not an upload; skipping')
+    if (track.source !== 'upload')
+      return void log.warn({ source: track.source }, 'not an upload; skipping')
     if (track.status !== 'pending' && track.status !== 'processing') {
       return void log.info({ status: track.status }, 'track is not pending; skipping')
     }
     if (!track.originalStorageKey) {
-      await failTrack(db, ctx.storage(), log, track, { userMessage: 'The uploaded file was not found. Please upload it again.', willRetry: false })
+      await failTrack(db, ctx.storage(), log, track, {
+        userMessage: 'The uploaded file was not found. Please upload it again.',
+        willRetry: false,
+      })
       return
     }
     const workspace = await db.query.workspaces.findFirst({ where: eq(workspaces.id, workspaceId) })
@@ -43,15 +53,28 @@ export const transcodeUpload = defineJob({
         const inputPath = path.join(tmpDir, `source${ext}`)
         const bytes = await downloadToFile(storage, track.originalStorageKey!, inputPath)
         log.info({ bytes }, 'original downloaded')
-        const outcome = await processLocalAudio({ db, storage, log, workspace, track, inputPath, tmpDir })
+        const outcome = await processLocalAudio({
+          db,
+          storage,
+          log,
+          workspace,
+          track,
+          inputPath,
+          tmpDir,
+        })
         log.info(outcome, 'upload processed')
       })
     } catch (err) {
       const retryable = isRetryable(err)
       const retrying = retryable && willRetry(job)
-      log[retryable ? 'warn' : 'info']({ err: describeError(err), retrying }, 'upload processing failed')
+      log[retryable ? 'warn' : 'info'](
+        { err: describeError(err), retrying },
+        'upload processing failed',
+      )
       await failTrack(db, storage, log, track, {
-        userMessage: retrying ? 'Temporary problem while processing. Retrying shortly.' : userMessageOf(err),
+        userMessage: retrying
+          ? 'Temporary problem while processing. Retrying shortly.'
+          : userMessageOf(err),
         willRetry: retrying,
       })
       if (retryable) throw err
