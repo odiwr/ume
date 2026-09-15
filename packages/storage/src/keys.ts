@@ -5,7 +5,7 @@
  *   ws/<workspaceId>/uploads/<trackId>/<safe-filename>   original upload (deleted after transcode)
  *   ws/<workspaceId>/tracks/<trackId>.opus               normalized Opus (what the bot streams)
  *   ws/<workspaceId>/covers/<trackId>.jpg                cover art
- *   ws/<workspaceId>/buckets/<bucketId>.jpg              bucket cover
+ *   ws/<workspaceId>/playlists/<playlistId>.jpg              playlist cover
  */
 export function safeFilename(name: string): string {
   const base = name.split(/[\\/]/).pop() ?? 'file'
@@ -18,5 +18,5 @@ export const keys = {
     `ws/${workspaceId}/uploads/${trackId}/${safeFilename(filename)}`,
   track: (workspaceId: string, trackId: string) => `ws/${workspaceId}/tracks/${trackId}.opus`,
   cover: (workspaceId: string, trackId: string) => `ws/${workspaceId}/covers/${trackId}.jpg`,
-  bucketCover: (workspaceId: string, bucketId: string) => `ws/${workspaceId}/buckets/${bucketId}.jpg`,
+  playlistCover: (workspaceId: string, playlistId: string) => `ws/${workspaceId}/playlists/${playlistId}.jpg`,
 }

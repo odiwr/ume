@@ -5,8 +5,8 @@
 export const JOBS = {
   /** Transcode an uploaded original to normalized Opus, extract metadata, delete the original. */
   transcodeUpload: 'transcode-upload',
-  /** Fetch audio for a linked YouTube track (only when the youtube_ingest flag is on). */
-  ingestYouTube: 'ingest-youtube',
+  /** Extract audio from a media link (YouTube, SoundCloud, …) — gated by the link_extract flag. */
+  extractLink: 'extract-link',
   /** Delete a workspace's storage prefix and rows. */
   purgeWorkspace: 'purge-workspace',
   /** Daily: 30-day / 48-hour inactivity notices and 60-day purges. */
@@ -26,10 +26,12 @@ export interface TranscodeUploadJob {
   workspaceId: string
 }
 
-export interface IngestYouTubeJob {
+export interface ExtractLinkJob {
   trackId: string
   workspaceId: string
-  youtubeId: string
+  sourceSite: string
+  sourceId: string
+  sourceUrl: string
   requestedByUserId?: string | null
   requestedByDiscordId?: string | null
 }
@@ -53,7 +55,7 @@ export interface SendEmailJob {
 
 export interface JobPayloads {
   [JOBS.transcodeUpload]: TranscodeUploadJob
-  [JOBS.ingestYouTube]: IngestYouTubeJob
+  [JOBS.extractLink]: ExtractLinkJob
   [JOBS.purgeWorkspace]: PurgeWorkspaceJob
   [JOBS.inactivitySweep]: Record<string, never>
   [JOBS.reconcileStorage]: Record<string, never>
@@ -64,7 +66,7 @@ export interface JobPayloads {
 /** Retry policy per queue (pg-boss `send` options). */
 export const JOB_OPTIONS: Record<JobName, { retryLimit: number; retryDelay: number; retryBackoff: boolean; expireInSeconds: number }> = {
   [JOBS.transcodeUpload]: { retryLimit: 3, retryDelay: 30, retryBackoff: true, expireInSeconds: 15 * 60 },
-  [JOBS.ingestYouTube]: { retryLimit: 2, retryDelay: 60, retryBackoff: true, expireInSeconds: 15 * 60 },
+  [JOBS.extractLink]: { retryLimit: 2, retryDelay: 60, retryBackoff: true, expireInSeconds: 15 * 60 },
   [JOBS.purgeWorkspace]: { retryLimit: 5, retryDelay: 60, retryBackoff: true, expireInSeconds: 30 * 60 },
   [JOBS.inactivitySweep]: { retryLimit: 1, retryDelay: 300, retryBackoff: false, expireInSeconds: 30 * 60 },
   [JOBS.reconcileStorage]: { retryLimit: 1, retryDelay: 300, retryBackoff: false, expireInSeconds: 60 * 60 },

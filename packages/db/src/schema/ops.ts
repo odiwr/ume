@@ -37,7 +37,7 @@ export const auditLogs = pgTable(
     workspaceId: text('workspace_id').references(() => workspaces.id, { onDelete: 'cascade' }),
     actorUserId: text('actor_user_id').references(() => users.id, { onDelete: 'set null' }),
     actorDiscordId: text('actor_discord_id'),
-    /** e.g. workspace.claim, token.rotate, bucket.create, track.delete, invite.create, purge.confirm, ceo.flag.update */
+    /** e.g. workspace.claim, token.rotate, playlist.create, track.delete, invite.create, purge.confirm, ceo.flag.update */
     action: text('action').notNull(),
     targetType: text('target_type'),
     targetId: text('target_id'),
@@ -53,7 +53,7 @@ export const auditLogs = pgTable(
 
 /** Global kill-switches editable from the CEO console. */
 export const featureFlags = pgTable('feature_flags', {
-  key: text('key').primaryKey(), // youtube_ingest, signups_open, uploads_enabled, maintenance_banner
+  key: text('key').primaryKey(), // link_extract, signups_open, uploads_enabled, auto_purge_enabled, maintenance_banner
   enabled: boolean('enabled').notNull().default(false),
   value: jsonb('value').$type<Record<string, unknown>>().notNull().default({}),
   description: text('description'),

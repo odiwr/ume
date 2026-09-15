@@ -49,7 +49,7 @@ export const PLANS: readonly Plan[] = [
     storageBytes: 1 * GB,
     maxTracks: 300,
     stripePriceEnv: null,
-    extras: ['Unlimited buckets & members', '24/7 bot', 'Removed after 60 idle days'],
+    extras: ['Unlimited playlists & members', '24/7 bot', 'Removed after 60 idle days'],
   }),
   make({
     id: 'plus',

@@ -3,10 +3,10 @@ import type { Db } from '../client'
 import { featureFlags } from '../schema'
 
 export const FLAG_DEFAULTS: Record<string, { enabled: boolean; description: string }> = {
-  youtube_ingest: {
-    enabled: false,
+  link_extract: {
+    enabled: true,
     description:
-      'Allow adding YouTube links (~add / web). OFF by default: downloading YouTube audio violates YouTube ToS and is what got Groovy and Rythm shut down. Turn on only if you accept that risk.',
+      'Link extractor: adding a song from a YouTube / SoundCloud / Bandcamp / Audius link extracts the audio and stores it as Opus. ON by the founder\'s decision. Extracting from YouTube is against YouTube\'s terms (the 2021 Groovy/Rythm shutdowns); mitigations: owners accept a rights attestation, DMCA takedowns disable tracks and block hashes, no "converter" marketing, and the extractor worker can run on a residential connection. Turning this OFF makes links metadata-only.',
   },
   uploads_enabled: { enabled: true, description: 'Allow file uploads.' },
   signups_open: { enabled: true, description: 'Allow new accounts to be created.' },

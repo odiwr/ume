@@ -9,7 +9,7 @@ export const CAP = {
   DELETE_OWN_TRACK: 1 << 2,
   DELETE_ANY_TRACK: 1 << 3,
   EDIT_TRACK_META: 1 << 4,
-  MANAGE_BUCKETS: 1 << 5,
+  MANAGE_PLAYLISTS: 1 << 5,
   CONTROL_PLAYBACK: 1 << 6,
   MANAGE_MEMBERS: 1 << 7,
   MANAGE_INVITES: 1 << 8,
@@ -25,12 +25,12 @@ export type CapabilityName = keyof typeof CAP
 export const ALL_CAPS: number = Object.values(CAP).reduce((a, b) => a | b, 0)
 
 export const CAP_LABELS: Record<CapabilityName, { label: string; description: string }> = {
-  VIEW_LIBRARY: { label: 'View library', description: 'See buckets and tracks.' },
-  ADD_TRACK: { label: 'Add music', description: 'Upload files or add links to buckets.' },
+  VIEW_LIBRARY: { label: 'View library', description: 'See playlists and tracks.' },
+  ADD_TRACK: { label: 'Add music', description: 'Upload files or add links to playlists.' },
   DELETE_OWN_TRACK: { label: 'Remove own additions', description: 'Remove tracks they added.' },
-  DELETE_ANY_TRACK: { label: 'Remove any track', description: 'Remove any track from any bucket.' },
+  DELETE_ANY_TRACK: { label: 'Remove any track', description: 'Remove any track from any playlist.' },
   EDIT_TRACK_META: { label: 'Edit track details', description: 'Fix titles, artists and covers.' },
-  MANAGE_BUCKETS: { label: 'Manage buckets', description: 'Create, rename and delete buckets.' },
+  MANAGE_PLAYLISTS: { label: 'Manage playlists', description: 'Create, rename and delete playlists.' },
   CONTROL_PLAYBACK: { label: 'Control playback', description: 'Play, pause, skip in Discord.' },
   MANAGE_MEMBERS: { label: 'Manage members', description: 'Change roles or remove members.' },
   MANAGE_INVITES: { label: 'Manage invites', description: 'Create and revoke links and email invites.' },
@@ -63,14 +63,14 @@ export const DEFAULT_ROLES: readonly DefaultRole[] = [
   {
     key: 'master',
     name: 'Master',
-    description: 'Can edit every bucket, add and remove music, and manage members and invites.',
+    description: 'Can edit every playlist, add and remove music, and manage members and invites.',
     capabilities:
       CAP.VIEW_LIBRARY |
       CAP.ADD_TRACK |
       CAP.DELETE_OWN_TRACK |
       CAP.DELETE_ANY_TRACK |
       CAP.EDIT_TRACK_META |
-      CAP.MANAGE_BUCKETS |
+      CAP.MANAGE_PLAYLISTS |
       CAP.CONTROL_PLAYBACK |
       CAP.MANAGE_MEMBERS |
       CAP.MANAGE_INVITES |
@@ -81,7 +81,7 @@ export const DEFAULT_ROLES: readonly DefaultRole[] = [
   {
     key: 'servant',
     name: 'Servant',
-    description: 'Can add music to buckets but cannot delete or edit anything.',
+    description: 'Can add music to playlists but cannot delete or edit anything.',
     capabilities: CAP.VIEW_LIBRARY | CAP.ADD_TRACK | CAP.CONTROL_PLAYBACK,
     position: 2,
     color: '#D6CABF',
@@ -122,7 +122,7 @@ export function sanitizeCapsForNonOwner(mask: number): number {
  */
 export const LINK_INVITE_FORBIDDEN_CAPS: number =
   CAP.DELETE_ANY_TRACK |
-  CAP.MANAGE_BUCKETS |
+  CAP.MANAGE_PLAYLISTS |
   CAP.MANAGE_MEMBERS |
   CAP.MANAGE_INVITES |
   CAP.MANAGE_ROLES |

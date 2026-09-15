@@ -53,8 +53,8 @@ export const UPLOAD = {
   acceptedExtensions: ['mp3', 'm4a', 'aac', 'flac', 'wav', 'ogg', 'opus', 'webm', 'aiff', 'aif'],
 } as const
 
-/** Buckets (the user-facing "folders"). Root-only: buckets never nest. */
-export const BUCKET = {
+/** Playlists (the user-facing "folders"). Root-only: playlists never nest. */
+export const PLAYLIST = {
   maxPerWorkspace: 50,
   nameMinLength: 1,
   nameMaxLength: 40,

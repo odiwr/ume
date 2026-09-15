@@ -9,16 +9,16 @@ The core idea is strong and differentiated: **a bot that never leaves its channe
 1. **Identity.** "Verify with your Discord account ID" is spoofable (IDs are public). Every account signs in with Discord OAuth instead, which yields a verified ID for free.
 2. **Accounts.** Accounts are global with a membership per server, not one account per "Ume bot ID". A curator in three servers has one login.
 3. **Commands.** `~` prefix commands in server channels need Discord's privileged Message Content intent. The bot ships **slash commands as the primary interface** and keeps `~` as an alias that always works in DMs and works in servers only while the intent is enabled.
-4. **YouTube.** Ripping YouTube audio breaks YouTube's terms and is exactly what got Groovy and Rythm shut down. It is built, but behind a global switch that is **off by default**; YouTube links still work as metadata-only "linked" entries.
+4. **Links.** Ripping YouTube audio breaks YouTube's terms and is what got Groovy and Rythm shut down. The founder's call (15 Sept 2026) is to ship it anyway, as a general **link extractor** (YouTube, SoundCloud, Bandcamp, Audius, Mixcloud, Vimeo, Internet Archive, direct files) that is **on by default**, wrapped in the mitigations listed under Add.
 
-Everything else (token lifecycle, three destructive commands, buckets, roles, share links, storage tiers, 60-day auto-purge, CEO console) is kept, with guardrails added.
+Everything else (token lifecycle, three destructive commands, playlists, roles, share links, storage tiers, 60-day auto-purge, CEO console) is kept, with guardrails added.
 
 ## Keep
 
 - Bot lives in one voice channel 24/7 and follows when moved (the new channel becomes home).
 - The Ume token flow: `~reload` issues a single-use token; entering it on the web claims or reconnects the server; a token can never be reused.
 - `~reload` rotates and disconnects (workspace stays, read-only, until the new token is entered); `~reset` removes every member except the Owner; `~purge` deletes everything.
-- Buckets are flat (root only). Each bucket shows who added what and when.
+- Playlists are flat (root only). Each playlist shows who added what and when.
 - Roles Master / Servant / Peon by default, plus a non-removable Owner.
 - Share links and email invites with a role and an expiry date.
 - Drag-and-drop uploads with a size limit; monthly storage tiers.
@@ -35,7 +35,7 @@ Everything else (token lifecycle, three destructive commands, buckets, roles, sh
 | All commands use `~` | Guild message content is a privileged intent. Below 10,000 reachable users you can toggle it on; above that Discord reviews it and pushes prefix bots to slash commands. Prefix commands also cannot be hidden from non-admins. | Slash commands everywhere (`/reload`, `/add`, `/play`…), hidden from non-admins with `default_member_permissions`, replies ephemeral. `~` works in DMs always; in servers only when `DISCORD_MESSAGE_CONTENT_INTENT=true`. |
 | "Highest members" = owner or admin roles | Role names differ per server | Owner **or** the Administrator permission bit. Re-checked on every privileged command. |
 | `~reload [server-name]` in DM | DM has no server context; names collide | Run `/reload` inside the server (guild known). In DMs, Ume infers the server from the servers where you are owner/admin; if several, it asks you to pick. |
-| YouTube → mp3 converter as a headline feature | YouTube ToS; C&D precedent; yt-dlp is blocked from datacenter IPs | YouTube links create a **linked** entry (title, artist, thumbnail via oEmbed). Audio extraction only runs when the `youtube_ingest` flag is on in the CEO console, with a warning. Never marketed as a converter. |
+| YouTube → mp3 converter as a headline feature | YouTube ToS; C&D precedent; yt-dlp is blocked from datacenter IPs | "Add a song from a link": a general extractor behind a provider interface (local yt-dlp, or a self-hosted Cobalt API). On by default. Never the word "converter". Owners accept a rights attestation before the first extraction; takedowns disable the track and block its hash everywhere; the extractor worker can run on a residential connection (WORKER_QUEUES=extract-link) so datacenter-IP blocks don't apply; a global `link_extract` switch in the CEO console turns links back into metadata-only entries. |
 | Peon = no permissions | A role that grants nothing is the same as not being a member | Peon = read-only: can browse the library and use playback commands. |
 | Reject large files | Discord voice is Opus; storing originals wastes storage | Every upload is transcoded to 128 kbps Opus with loudness normalization; the original is deleted. Bot streams Opus with **zero transcoding** at play time. |
 | Exponential price scaling | Marginal cost per GB is flat (R2: $0.015/GB, zero egress) | Four flat tiers with decreasing $/GB. Free 1 GB, Plus $4/10 GB, Pro $12/50 GB, Studio $35/250 GB. |
@@ -44,6 +44,7 @@ Everything else (token lifecycle, three destructive commands, buckets, roles, sh
 
 ## Add
 
+- **Link extractor guardrails** (because it ships on by default): the Owner accepts a rights attestation when claiming the server; every extracted file is hashed and takedowns block the hash everywhere; the extractor runs in the worker behind a provider interface (local yt-dlp or a self-hosted Cobalt API) and can live on a residential connection; a global `link_extract` switch turns links back into metadata-only entries; marketing says "add a song from a link", never "converter".
 - **Discord role mapping** (`@DJ → Servant`, `@everyone → Peon`). Most servers never need invites.
 - **Confirmation codes** for `~reset` and `~purge` (`~confirm K7Q2ZP`), and a typed-server-name Danger Zone on the web.
 - **Auto-pause when the channel is empty** (30 s grace); resume when someone joins. Bot stays connected.
@@ -59,7 +60,7 @@ Everything else (token lifecycle, three destructive commands, buckets, roles, sh
 | YouTube audio extraction | **Off** on the hosted product (flag `youtube_ingest`) | ToS violation, C&D precedent, and yt-dlp needs residential IPs / PO tokens in 2026. Linked entries keep the UX. |
 | Message Content intent | **Do not enable**; slash commands only | Avoids the privileged-intent review entirely. Turn it on in the Developer Portal only if you want `~` in servers while small. |
 | Purge grace period | Immediate on explicit `~purge` + confirm; auto-purge already has 30-day/48-hour notices | Matches the brief. A 24-hour undo window is a cheap addition later. |
-| Bucket naming | "Bucket" (the brand word) | Reviewers preferred "Playlist"; keep yours, but use one word everywhere. |
+| Playlist naming | "Playlist" (the brand word) | Reviewers preferred "Playlist"; keep yours, but use one word everywhere. |
 | Free tier and 24/7 | Free workspaces get 24/7 presence but are purged after 60 idle days | Hosting per active instance (~$0.30–1/month) is the real cost, not storage. |
 
 ## Architecture
@@ -81,9 +82,9 @@ Everything else (token lifecycle, three destructive commands, buckets, roles, sh
 | `memberships` | workspace_id + user_id (unique), role_id, source, expires_at |
 | `discord_role_maps` | workspace_id, discord_role_id → role_id |
 | `invites` | kind (link/email), token (unique), email, role_id, max_uses, uses, expires_at, membership_expires_at, require_guild_member, revoked_at |
-| `buckets` | workspace_id + slug (unique), name, track_count |
-| `tracks` | workspace_id, source (upload/youtube), status (pending/processing/ready/failed/disabled), storage_key, sha256, youtube_id, title/artist/album/duration, uploaded_by |
-| `bucket_tracks` | bucket_id + track_id (unique), added_by, added_via, position |
+| `playlists` | workspace_id + slug (unique), name, track_count |
+| `tracks` | workspace_id, source (upload/link), status (pending/processing/ready/failed/disabled), storage_key, sha256, source_site + source_id, title/artist/album/duration, uploaded_by |
+| `playlist_tracks` | playlist_id + track_id (unique), added_by, added_via, position |
 | `activity_events`, `audit_logs`, `notifications`, `feature_flags`, `stripe_events`, `blocked_hashes`, `dmca_notices` | operational |
 
 ## Command set
@@ -94,12 +95,12 @@ Everything else (token lifecycle, three destructive commands, buckets, roles, sh
 | `/reset` · `~reset [server]` | server or DM | server owner / workspace Owner | `~confirm CODE` |
 | `/purge` · `~purge [server]` | server or DM | server owner / workspace Owner | `~confirm CODE` |
 | `/home [channel]` | server | Manage Settings | — |
-| `/add bucket url` | server | Add music | — |
+| `/add playlist link` | server | Add music | — |
 | `/play`, `/pause`, `/resume`, `/skip`, `/stop`, `/queue`, `/np` | server | Control playback / View | — |
-| `/buckets`, `/status`, `/link`, `/help` | server / DM | View | — |
+| `/playlists`, `/status`, `/link`, `/help` | server / DM | View | — |
 
 ## MVP cut
 
-**Ship first (in this repo):** Discord sign-in, OAuth server claim + token claim, roles + role mapping, buckets, uploads with Opus transcode + metadata, YouTube linked entries, 24/7 bot with auto-pause, slash + `~` commands, share links + email invites, Stripe tiers, inactivity sweep, CEO console, marketing site, Terms/Privacy/DMCA pages.
+**Ship first (in this repo):** Discord sign-in, OAuth server claim + token claim, roles + role mapping, playlists, uploads with Opus transcode + metadata, link extractor (on by default), 24/7 bot with auto-pause, slash + `~` commands, share links + email invites, Stripe tiers, inactivity sweep, CEO console, marketing site, Terms/Privacy/DMCA pages.
 
 **Later:** custom roles UI polish, vanity URLs, 24-hour purge undo, second 256 kbps rendition for boosted servers, Discord Premium Apps SKU parity, sharding (needed at ~2,500 servers).

@@ -12,13 +12,13 @@ import { users } from './auth'
 import { workspaces } from './workspaces'
 
 /**
- * Buckets are the user-facing "folders". They are root-only: a bucket never
- * contains another bucket, which keeps every algorithm (shuffle, quota, search) flat.
+ * Playlists are the user-facing "folders". They are root-only: a playlist never
+ * contains another playlist, which keeps every algorithm (shuffle, quota, search) flat.
  */
-export const buckets = pgTable(
-  'buckets',
+export const playlists = pgTable(
+  'playlists',
   {
-    id: text('id').primaryKey(), // bkt_...
+    id: text('id').primaryKey(), // pl_...
     workspaceId: text('workspace_id')
       .notNull()
       .references(() => workspaces.id, { onDelete: 'cascade' }),
@@ -36,20 +36,21 @@ export const buckets = pgTable(
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    uniqueIndex('buckets_workspace_slug_uq').on(t.workspaceId, t.slug),
-    index('buckets_workspace_id_idx').on(t.workspaceId),
+    uniqueIndex('playlists_workspace_slug_uq').on(t.workspaceId, t.slug),
+    index('playlists_workspace_id_idx').on(t.workspaceId),
   ],
 )
 
-export const trackSourceEnum = pgEnum('track_source', ['upload', 'youtube'])
+/** `link` = extracted from a URL (YouTube, SoundCloud, Bandcamp, Audius, …) by the worker. */
+export const trackSourceEnum = pgEnum('track_source', ['upload', 'link'])
 /** `disabled` = taken down (DMCA / abuse); object kept, playback and download blocked. */
 export const trackStatusEnum = pgEnum('track_status', ['pending', 'processing', 'ready', 'failed', 'disabled'])
 export const addedViaEnum = pgEnum('added_via', ['web', 'discord'])
 
 /**
- * A track is a stored audio asset (normalized Opus) or a linked YouTube video.
- * Tracks are deduplicated per workspace by content hash / YouTube id, and can
- * live in many buckets via bucket_tracks.
+ * A track is a stored audio asset (normalized Opus), uploaded or extracted from a link.
+ * Tracks are deduplicated per workspace by content hash / source id, and can
+ * live in many playlists via playlist_tracks.
  */
 export const tracks = pgTable(
   'tracks',
@@ -69,7 +70,7 @@ export const tracks = pgTable(
     coverStorageKey: text('cover_storage_key'),
     coverUrl: text('cover_url'),
 
-    // --- storage (uploads, and cached YouTube audio when ingestion is enabled) ---
+    // --- storage (uploads and extracted links) ---
     /** Key of the normalized Opus file in object storage. */
     storageKey: text('storage_key'),
     /** Key of the original upload; deleted after a successful transcode. */
@@ -82,10 +83,13 @@ export const tracks = pgTable(
     /** SHA-256 of the original upload, for dedupe. */
     sha256: text('sha256'),
 
-    // --- youtube ---
-    youtubeId: text('youtube_id'),
-    youtubeUrl: text('youtube_url'),
-    youtubeChannel: text('youtube_channel'),
+    // --- link sources (see parseMediaLink in @ume/shared) ---
+    /** youtube | soundcloud | bandcamp | audius | mixcloud | vimeo | archive | direct */
+    sourceSite: text('source_site'),
+    /** Site-specific id (YouTube video id, "artist/track" for SoundCloud, …). */
+    sourceId: text('source_id'),
+    sourceUrl: text('source_url'),
+    sourceAuthor: text('source_author'),
 
     // --- provenance ---
     uploadedByUserId: text('uploaded_by_user_id').references(() => users.id, { onDelete: 'set null' }),
@@ -103,18 +107,18 @@ export const tracks = pgTable(
     index('tracks_workspace_id_idx').on(t.workspaceId),
     index('tracks_status_idx').on(t.status),
     uniqueIndex('tracks_workspace_sha256_uq').on(t.workspaceId, t.sha256),
-    uniqueIndex('tracks_workspace_youtube_uq').on(t.workspaceId, t.youtubeId),
+    uniqueIndex('tracks_workspace_source_uq').on(t.workspaceId, t.sourceSite, t.sourceId),
   ],
 )
 
-/** Membership of a track in a bucket, with "added by" for the Spotify-style view. */
-export const bucketTracks = pgTable(
-  'bucket_tracks',
+/** Membership of a track in a playlist, with "added by" for the Spotify-style view. */
+export const playlistTracks = pgTable(
+  'playlist_tracks',
   {
     id: text('id').primaryKey(), // bt_...
-    bucketId: text('bucket_id')
+    playlistId: text('playlist_id')
       .notNull()
-      .references(() => buckets.id, { onDelete: 'cascade' }),
+      .references(() => playlists.id, { onDelete: 'cascade' }),
     trackId: text('track_id')
       .notNull()
       .references(() => tracks.id, { onDelete: 'cascade' }),
@@ -128,14 +132,14 @@ export const bucketTracks = pgTable(
     addedAt: timestamp('added_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    uniqueIndex('bucket_tracks_uq').on(t.bucketId, t.trackId),
-    index('bucket_tracks_track_id_idx').on(t.trackId),
-    index('bucket_tracks_workspace_idx').on(t.workspaceId),
+    uniqueIndex('playlist_tracks_uq').on(t.playlistId, t.trackId),
+    index('playlist_tracks_track_id_idx').on(t.trackId),
+    index('playlist_tracks_workspace_idx').on(t.workspaceId),
   ],
 )
 
-export type Bucket = typeof buckets.$inferSelect
+export type Playlist = typeof playlists.$inferSelect
 export type Track = typeof tracks.$inferSelect
 export type NewTrack = typeof tracks.$inferInsert
-export type BucketTrack = typeof bucketTracks.$inferSelect
+export type PlaylistTrack = typeof playlistTracks.$inferSelect
 export type TrackStatus = (typeof trackStatusEnum.enumValues)[number]

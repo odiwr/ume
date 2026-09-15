@@ -1,6 +1,6 @@
 import { relations } from 'drizzle-orm'
 import { accounts, sessions, users } from './auth'
-import { bucketTracks, buckets, tracks } from './library'
+import { playlistTracks, playlists, tracks } from './library'
 import { activityEvents, auditLogs } from './ops'
 import {
   claimTokens,
@@ -30,7 +30,7 @@ export const workspacesRelations = relations(workspaces, ({ one, many }) => ({
   owner: one(users, { fields: [workspaces.ownerUserId], references: [users.id] }),
   roles: many(roles),
   memberships: many(memberships),
-  buckets: many(buckets),
+  playlists: many(playlists),
   tracks: many(tracks),
   invites: many(invites),
   claimTokens: many(claimTokens),
@@ -66,22 +66,22 @@ export const claimTokensRelations = relations(claimTokens, ({ one }) => ({
   workspace: one(workspaces, { fields: [claimTokens.workspaceId], references: [workspaces.id] }),
 }))
 
-export const bucketsRelations = relations(buckets, ({ one, many }) => ({
-  workspace: one(workspaces, { fields: [buckets.workspaceId], references: [workspaces.id] }),
-  entries: many(bucketTracks),
-  createdBy: one(users, { fields: [buckets.createdByUserId], references: [users.id] }),
+export const playlistsRelations = relations(playlists, ({ one, many }) => ({
+  workspace: one(workspaces, { fields: [playlists.workspaceId], references: [workspaces.id] }),
+  entries: many(playlistTracks),
+  createdBy: one(users, { fields: [playlists.createdByUserId], references: [users.id] }),
 }))
 
 export const tracksRelations = relations(tracks, ({ one, many }) => ({
   workspace: one(workspaces, { fields: [tracks.workspaceId], references: [workspaces.id] }),
-  entries: many(bucketTracks),
+  entries: many(playlistTracks),
   uploadedBy: one(users, { fields: [tracks.uploadedByUserId], references: [users.id] }),
 }))
 
-export const bucketTracksRelations = relations(bucketTracks, ({ one }) => ({
-  bucket: one(buckets, { fields: [bucketTracks.bucketId], references: [buckets.id] }),
-  track: one(tracks, { fields: [bucketTracks.trackId], references: [tracks.id] }),
-  addedBy: one(users, { fields: [bucketTracks.addedByUserId], references: [users.id] }),
+export const playlistTracksRelations = relations(playlistTracks, ({ one }) => ({
+  playlist: one(playlists, { fields: [playlistTracks.playlistId], references: [playlists.id] }),
+  track: one(tracks, { fields: [playlistTracks.trackId], references: [tracks.id] }),
+  addedBy: one(users, { fields: [playlistTracks.addedByUserId], references: [users.id] }),
 }))
 
 export const activityEventsRelations = relations(activityEvents, ({ one }) => ({

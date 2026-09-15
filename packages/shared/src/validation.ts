@@ -1,12 +1,12 @@
 import { z } from 'zod'
-import { BUCKET, INVITE, UPLOAD } from './constants'
-import { parseYouTubeId } from './discord'
+import { PLAYLIST, INVITE, UPLOAD } from './constants'
+import { parseMediaLink } from './links'
 
-export const bucketNameSchema = z
+export const playlistNameSchema = z
   .string()
   .trim()
-  .min(BUCKET.nameMinLength, 'Give the bucket a name.')
-  .max(BUCKET.nameMaxLength, `Keep it under ${BUCKET.nameMaxLength} characters.`)
+  .min(PLAYLIST.nameMinLength, 'Give the playlist a name.')
+  .max(PLAYLIST.nameMaxLength, `Keep it under ${PLAYLIST.nameMaxLength} characters.`)
   .regex(/^[\p{L}\p{N}\p{Emoji} _\-&'!.]+$/u, 'Letters, numbers, spaces and simple punctuation only.')
 
 export function slugify(name: string): string {
@@ -16,13 +16,16 @@ export function slugify(name: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-+|-+$/g, '')
-    .slice(0, 48) || 'bucket'
+    .slice(0, 48) || 'playlist'
 }
 
-export const youtubeUrlSchema = z
+export const mediaLinkSchema = z
   .string()
   .trim()
-  .refine((v) => parseYouTubeId(v) !== null, 'That does not look like a YouTube video link.')
+  .refine(
+    (v) => parseMediaLink(v) !== null,
+    'Paste a link to a single track from YouTube, SoundCloud, Bandcamp, Audius, Mixcloud, Vimeo, the Internet Archive, or a direct audio file.',
+  )
 
 export const emailSchema = z.string().trim().toLowerCase().email()
 
@@ -37,7 +40,7 @@ export const inviteCreateSchema = z.object({
 })
 
 export const uploadRequestSchema = z.object({
-  bucketId: z.string().min(1),
+  playlistId: z.string().min(1),
   filename: z.string().min(1).max(255),
   sizeBytes: z.number().int().positive().max(UPLOAD.maxOriginalBytes),
   mimeType: z.string().min(1),

@@ -2,12 +2,12 @@ import { ulid } from 'ulid'
 
 /**
  * Prefixed ULIDs: sortable, URL-safe, and self-describing in logs.
- *   ws_01J...  workspace      bkt_01J... bucket      trk_01J... track
+ *   ws_01J...  workspace      pl_01J... playlist      trk_01J... track
  *   inv_01J... invite         rol_01J... role        mem_01J... membership
  */
 export const ID_PREFIX = {
   workspace: 'ws',
-  bucket: 'bkt',
+  playlist: 'pl',
   track: 'trk',
   invite: 'inv',
   role: 'rol',
@@ -15,7 +15,7 @@ export const ID_PREFIX = {
   claimToken: 'clt',
   activity: 'act',
   audit: 'aud',
-  bucketTrack: 'bt',
+  playlistTrack: 'pt',
   roleMap: 'rm',
 } as const
 

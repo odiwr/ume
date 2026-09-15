@@ -39,10 +39,10 @@ export function inviteEmail(input: {
 
 export function inactivity30dEmail(input: { to: string; serverName: string; purgeAt: Date; dashboardUrl: string }) {
   const title = `Ume on ${input.serverName} has been quiet for ${INACTIVITY.firstNoticeAtDays} days`
-  const body = `Nobody has joined Ume's channel in "${input.serverName}" for ${INACTIVITY.firstNoticeAtDays} days. If that continues, the workspace (buckets, music, members) will be permanently deleted on ${input.purgeAt.toUTCString()}.\n\nTo keep it, just hop into Ume's voice channel or use any command.\n\n${input.dashboardUrl}`
+  const body = `Nobody has joined Ume's channel in "${input.serverName}" for ${INACTIVITY.firstNoticeAtDays} days. If that continues, the workspace (playlists, music, members) will be permanently deleted on ${input.purgeAt.toUTCString()}.\n\nTo keep it, just hop into Ume's voice channel or use any command.\n\n${input.dashboardUrl}`
   const html = layout(
     title,
-    `<p>Nobody has joined Ume's channel in <strong>${esc(input.serverName)}</strong> for ${INACTIVITY.firstNoticeAtDays} days.</p><p>If that continues, the workspace — buckets, music and members — will be <strong>permanently deleted on ${esc(input.purgeAt.toUTCString())}</strong>.</p><p>To keep it, hop into Ume's voice channel or run any command. That resets the clock.</p>`,
+    `<p>Nobody has joined Ume's channel in <strong>${esc(input.serverName)}</strong> for ${INACTIVITY.firstNoticeAtDays} days.</p><p>If that continues, the workspace — playlists, music and members — will be <strong>permanently deleted on ${esc(input.purgeAt.toUTCString())}</strong>.</p><p>To keep it, hop into Ume's voice channel or run any command. That resets the clock.</p>`,
     { label: 'Open dashboard', url: input.dashboardUrl },
   )
   return { to: input.to, subject: title, html, text: body }
@@ -62,10 +62,10 @@ export function inactivity48hEmail(input: { to: string; serverName: string; purg
 export function purgedEmail(input: { to: string; serverName: string; reason: 'inactivity' | 'owner' }) {
   const title = `Ume workspace for ${input.serverName} was deleted`
   const why = input.reason === 'inactivity' ? `after ${INACTIVITY.purgeAfterDays} days without activity` : 'at the owner’s request'
-  const body = `The Ume workspace for "${input.serverName}" was permanently deleted ${why}. Buckets, music and members are gone. You can set Ume up again any time by DMing the bot ~reload.`
+  const body = `The Ume workspace for "${input.serverName}" was permanently deleted ${why}. Playlists, music and members are gone. You can set Ume up again any time by DMing the bot ~reload.`
   const html = layout(
     title,
-    `<p>The Ume workspace for <strong>${esc(input.serverName)}</strong> was permanently deleted ${esc(why)}. Buckets, music and members are gone.</p><p>You can set Ume up again any time by DMing the bot <code>~reload</code>.</p>`,
+    `<p>The Ume workspace for <strong>${esc(input.serverName)}</strong> was permanently deleted ${esc(why)}. Playlists, music and members are gone.</p><p>You can set Ume up again any time by DMing the bot <code>~reload</code>.</p>`,
   )
   return { to: input.to, subject: title, html, text: body }
 }

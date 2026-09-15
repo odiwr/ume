@@ -80,8 +80,11 @@ export const workspaces = pgTable(
     discordRoleSyncEnabled: boolean('discord_role_sync_enabled').notNull().default(true),
     /** Default Ume role for any signed-in Discord member of the guild (null = no access). */
     defaultRoleId: text('default_role_id'),
-    /** Per-workspace opt-in for YouTube link ingestion (also gated by the global flag). */
-    youtubeEnabled: boolean('youtube_enabled').notNull().default(true),
+    /** Per-workspace switch for the link extractor (also gated by the global link_extract flag). */
+    linkExtractEnabled: boolean('link_extract_enabled').notNull().default(true),
+    /** The Owner accepted the rights attestation before the first extraction. */
+    linkExtractAcceptedAt: timestamp('link_extract_accepted_at', { withTimezone: true }),
+    linkExtractAcceptedByUserId: text('link_extract_accepted_by_user_id').references(() => users.id, { onDelete: 'set null' }),
 
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

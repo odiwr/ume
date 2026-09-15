@@ -1,21 +1,21 @@
 import { and, eq, sql } from 'drizzle-orm'
 import type { Db } from '../client'
-import { bucketTracks, buckets, tracks, workspaces } from '../schema'
+import { playlistTracks, playlists, tracks, workspaces } from '../schema'
 
-/** Recompute denormalized counters for a bucket. */
-export async function recountBucket(db: Db, bucketId: string): Promise<void> {
+/** Recompute denormalized counters for a playlist. */
+export async function recountPlaylist(db: Db, playlistId: string): Promise<void> {
   const [agg] = await db
     .select({
       count: sql<number>`count(*)::int`,
       duration: sql<number>`coalesce(sum(${tracks.durationMs}), 0)::bigint`,
     })
-    .from(bucketTracks)
-    .innerJoin(tracks, eq(tracks.id, bucketTracks.trackId))
-    .where(and(eq(bucketTracks.bucketId, bucketId), eq(tracks.status, 'ready')))
+    .from(playlistTracks)
+    .innerJoin(tracks, eq(tracks.id, playlistTracks.trackId))
+    .where(and(eq(playlistTracks.playlistId, playlistId), eq(tracks.status, 'ready')))
   await db
-    .update(buckets)
+    .update(playlists)
     .set({ trackCount: agg?.count ?? 0, totalDurationMs: Number(agg?.duration ?? 0), updatedAt: new Date() })
-    .where(eq(buckets.id, bucketId))
+    .where(eq(playlists.id, playlistId))
 }
 
 /** Recompute storage usage and track count for a workspace from the tracks table. */
@@ -36,10 +36,10 @@ export async function recomputeWorkspaceUsage(db: Db, workspaceId: string): Prom
   return { bytes, tracks: count }
 }
 
-/** Ready tracks in a bucket, in position order, with who added them. */
-export async function listBucketTracks(db: Db, bucketId: string) {
-  return db.query.bucketTracks.findMany({
-    where: eq(bucketTracks.bucketId, bucketId),
+/** Ready tracks in a playlist, in position order, with who added them. */
+export async function listPlaylistTracks(db: Db, playlistId: string) {
+  return db.query.playlistTracks.findMany({
+    where: eq(playlistTracks.playlistId, playlistId),
     orderBy: (bt, { asc }) => [asc(bt.position), asc(bt.addedAt)],
     with: {
       track: true,
