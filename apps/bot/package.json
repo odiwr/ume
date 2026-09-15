@@ -19,6 +19,7 @@
     "@ume/storage": "workspace:*",
     "discord-api-types": "^0.38.55",
     "discord.js": "^14.27.0",
+    "drizzle-orm": "^0.45.2",
     "opusscript": "^0.1.1",
     "pg-boss": "^12.32.0",
     "pino": "^10.3.1",

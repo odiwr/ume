@@ -10,7 +10,10 @@ type ServerAction = (formData: FormData) => Promise<ActionResult>
 
 const PendingContext = React.createContext(false)
 
-export interface ActionFormProps extends Omit<React.FormHTMLAttributes<HTMLFormElement>, 'action' | 'onSubmit'> {
+export interface ActionFormProps extends Omit<
+  React.FormHTMLAttributes<HTMLFormElement>,
+  'action' | 'onSubmit'
+> {
   action: ServerAction
   /** Ask `window.confirm` with this text before submitting. */
   confirm?: string
@@ -23,7 +26,14 @@ export interface ActionFormProps extends Omit<React.FormHTMLAttributes<HTMLFormE
  * A form that calls a CEO server action and reports the outcome with a toast.
  * Children can read the pending state through <ActionSubmit/>.
  */
-export function ActionForm({ action, confirm, resetOnSuccess, onSuccess, children, ...props }: ActionFormProps) {
+export function ActionForm({
+  action,
+  confirm,
+  resetOnSuccess,
+  onSuccess,
+  children,
+  ...props
+}: ActionFormProps) {
   const [pending, startTransition] = React.useTransition()
   const router = useRouter()
   return (

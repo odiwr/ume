@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq } from '../lib/orm'
 import type { Guild } from 'discord.js'
 import { db, getWorkspaceByGuildId, users, type Workspace } from '../lib/db'
 import { NO_GUILD_MESSAGE, guildPickerRow, inferGuild, isGuildAdminOf } from '../lib/guild-inference'

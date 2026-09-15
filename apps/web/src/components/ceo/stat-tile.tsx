@@ -29,19 +29,53 @@ const toneIcon: Record<NonNullable<StatTileProps['tone']>, string> = {
 }
 
 /** A KPI tile: the number is the message; everything else is quiet. */
-export function StatTile({ label, value, detail, icon, tone = 'default', className }: StatTileProps) {
+export function StatTile({
+  label,
+  value,
+  detail,
+  icon,
+  tone = 'default',
+  className,
+}: StatTileProps) {
   return (
-    <div className={cn('flex items-start justify-between gap-3 rounded-2xl border border-border bg-surface p-4', toneRing[tone], className)}>
+    <div
+      className={cn(
+        'flex items-start justify-between gap-3 rounded-2xl border border-border bg-surface p-4',
+        toneRing[tone],
+        className,
+      )}
+    >
       <div className="min-w-0">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">{label}</p>
-        <p className="mt-1 font-display text-2xl font-semibold tabular-nums leading-tight text-fg">{value}</p>
+        <p className="mt-1 font-display text-2xl font-semibold tabular-nums leading-tight text-fg">
+          {value}
+        </p>
         {detail ? <p className="mt-1 text-xs text-fg-muted">{detail}</p> : null}
       </div>
-      {icon ? <span className={cn('inline-flex size-9 shrink-0 items-center justify-center rounded-xl', toneIcon[tone])}>{icon}</span> : null}
+      {icon ? (
+        <span
+          className={cn(
+            'inline-flex size-9 shrink-0 items-center justify-center rounded-xl',
+            toneIcon[tone],
+          )}
+        >
+          {icon}
+        </span>
+      ) : null}
     </div>
   )
 }
 
-export function StatGrid({ children, className }: { children: React.ReactNode; className?: string }) {
-  return <div className={cn('grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4', className)}>{children}</div>
+export function StatGrid({
+  children,
+  className,
+}: {
+  children: React.ReactNode
+  className?: string
+}) {
+  return (
+    <div className={cn('grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4', className)}>
+      {children}
+    </div>
+  )
 }

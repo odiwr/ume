@@ -22,24 +22,46 @@ export function UserBanControl({
   if (isSelf) return <span className="text-xs text-fg-subtle">you</span>
   if (banned) {
     return (
-      <ActionButton action={unbanUserAction} fields={{ userId }} variant={inline ? 'ghost' : 'secondary'} size="sm" confirm={`Lift the ban on ${email}?`}>
+      <ActionButton
+        action={unbanUserAction}
+        fields={{ userId }}
+        variant={inline ? 'ghost' : 'secondary'}
+        size="sm"
+        confirm={`Lift the ban on ${email}?`}
+      >
         <RotateCcw className="size-3.5" /> Unban
       </ActionButton>
     )
   }
   if (inline) {
     return (
-      <ActionButton action={banUserAction} fields={{ userId, reason: '' }} variant="ghost" size="sm" confirm={`Ban ${email}? They are signed out everywhere and cannot sign in.`}>
+      <ActionButton
+        action={banUserAction}
+        fields={{ userId, reason: '' }}
+        variant="ghost"
+        size="sm"
+        confirm={`Ban ${email}? They are signed out everywhere and cannot sign in.`}
+      >
         <Ban className="size-3.5" /> Ban
       </ActionButton>
     )
   }
   return (
-    <ActionForm action={banUserAction} className="flex flex-col gap-3 sm:flex-row sm:items-end" confirm={`Ban ${email}? They are signed out everywhere and cannot sign in.`}>
+    <ActionForm
+      action={banUserAction}
+      className="flex flex-col gap-3 sm:flex-row sm:items-end"
+      confirm={`Ban ${email}? They are signed out everywhere and cannot sign in.`}
+    >
       <input type="hidden" name="userId" value={userId} />
       <div className="flex-1">
         <Label htmlFor="ban-reason">Reason (internal)</Label>
-        <Input id="ban-reason" name="reason" defaultValue={banReason ?? ''} placeholder="e.g. repeat DMCA infringer, abuse" maxLength={500} />
+        <Input
+          id="ban-reason"
+          name="reason"
+          defaultValue={banReason ?? ''}
+          placeholder="e.g. repeat DMCA infringer, abuse"
+          maxLength={500}
+        />
       </div>
       <ActionSubmit variant="danger">
         <Ban className="size-4" /> Ban user

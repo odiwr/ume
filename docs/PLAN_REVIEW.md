@@ -53,15 +53,15 @@ Everything else (token lifecycle, three destructive commands, playlists, roles, 
 - **Audit log** for every privileged action, visible per workspace and globally in the CEO console.
 - **Discord Team + ToS/Privacy pages** from day one: bot verification at 100 servers requires them.
 
-## Risks you must decide on
+## Decisions the founder made (15 Sept 2026)
 
-| Decision | Recommended default | Why |
+| Decision | Choice | Notes |
 | --- | --- | --- |
-| YouTube audio extraction | **Off** on the hosted product (flag `youtube_ingest`) | ToS violation, C&D precedent, and yt-dlp needs residential IPs / PO tokens in 2026. Linked entries keep the UX. |
-| Message Content intent | **Do not enable**; slash commands only | Avoids the privileged-intent review entirely. Turn it on in the Developer Portal only if you want `~` in servers while small. |
-| Purge grace period | Immediate on explicit `~purge` + confirm; auto-purge already has 30-day/48-hour notices | Matches the brief. A 24-hour undo window is a cheap addition later. |
-| Playlist naming | "Playlist" (the brand word) | Reviewers preferred "Playlist"; keep yours, but use one word everywhere. |
-| Free tier and 24/7 | Free workspaces get 24/7 presence but are purged after 60 idle days | Hosting per active instance (~$0.30–1/month) is the real cost, not storage. |
+| Link extraction (YouTube and others) | **On by default** | Non-negotiable product requirement. The residual legal risk is real and accepted; the guardrails above reduce exposure and keep the DMCA safe harbor intact. The `link_extract` flag stays as a kill switch. |
+| Commands | **Slash commands primary**, `~` as an alias | `~` always works in DMs; in servers only if the Message Content intent is enabled in the Developer Portal. |
+| Naming | **Playlist** | Used everywhere: UI, commands, docs and code. |
+| Purge grace period | Immediate on explicit `~purge` + confirm | Auto-purge already gives 30-day and 48-hour notices. A 24-hour undo window is a cheap addition later. |
+| Free tier and 24/7 | Free workspaces get 24/7 presence, purged after 60 idle days | Hosting per active instance (~$0.30–1/month) is the real cost, not storage. |
 
 ## Architecture
 

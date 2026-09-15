@@ -127,8 +127,12 @@ async function shutdown(signal: string): Promise<void> {
 process.on('SIGTERM', () => void shutdown('SIGTERM'))
 process.on('SIGINT', () => void shutdown('SIGINT'))
 
-client.login(env.botToken).catch((err) => {
-  logger.fatal({ err }, 'login failed — check DISCORD_BOT_TOKEN')
+async function boot(): Promise<void> {
+  const token = env.botToken // throws with a clear message when unset
+  await client.login(token)
+}
+boot().catch((err) => {
+  logger.fatal({ err: err instanceof Error ? err.message : err }, 'login failed — check DISCORD_BOT_TOKEN')
   process.exit(1)
 })
 

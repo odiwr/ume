@@ -14,7 +14,11 @@ export const metadata: Metadata = { title: 'Users' }
 
 type Row = Awaited<ReturnType<typeof listUsers>>['rows'][number]
 
-export default async function CeoUsersPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+export default async function CeoUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const session = await requireCeo()
   const sp = await searchParams
   const q = str(sp.q)
@@ -55,26 +59,69 @@ export default async function CeoUsersPage({ searchParams }: { searchParams: Pro
     {
       key: 'banned',
       header: 'Status',
-      render: (u) => (u.banned ? <Badge tone="danger" title={u.banReason ?? undefined}>banned</Badge> : <Badge tone="success">active</Badge>),
+      render: (u) =>
+        u.banned ? (
+          <Badge tone="danger" title={u.banReason ?? undefined}>
+            banned
+          </Badge>
+        ) : (
+          <Badge tone="success">active</Badge>
+        ),
     },
     { key: 'created', header: 'Joined', render: (u) => <Ago date={u.createdAt} /> },
     {
       key: 'actions',
       header: '',
       align: 'right',
-      render: (u) => <UserBanControl userId={u.id} email={u.email} banned={u.banned} inline isSelf={u.id === session.user.id} />,
+      render: (u) => (
+        <UserBanControl
+          userId={u.id}
+          email={u.email}
+          banned={u.banned}
+          inline
+          isSelf={u.id === session.user.id}
+        />
+      ),
     },
   ]
 
   return (
     <>
-      <PageHeader title="Users" description="Global accounts. One person, one login, a membership per server." />
+      <PageHeader
+        title="Users"
+        description="Global accounts. One person, one login, a membership per server."
+      />
       <div className="flex flex-col gap-3">
-        <SearchForm basePath="/ceo/users" q={q} placeholder="Search email, name, Discord username or id" hidden={{ filter: banned ? 'banned' : undefined }} />
-        <FilterChips basePath="/ceo/users" param="filter" current={banned ? 'banned' : null} extra={{ q }} options={[{ value: null, label: 'All' }, { value: 'banned', label: 'Banned' }]} />
+        <SearchForm
+          basePath="/ceo/users"
+          q={q}
+          placeholder="Search email, name, Discord username or id"
+          hidden={{ filter: banned ? 'banned' : undefined }}
+        />
+        <FilterChips
+          basePath="/ceo/users"
+          param="filter"
+          current={banned ? 'banned' : null}
+          extra={{ q }}
+          options={[
+            { value: null, label: 'All' },
+            { value: 'banned', label: 'Banned' },
+          ]}
+        />
       </div>
-      <DataTable columns={columns} rows={result.rows} rowKey={(u) => u.id} empty="No users match." />
-      <Pagination page={result.page} pageSize={result.pageSize} total={result.total} basePath="/ceo/users" params={{ q, filter: banned ? 'banned' : undefined }} />
+      <DataTable
+        columns={columns}
+        rows={result.rows}
+        rowKey={(u) => u.id}
+        empty="No users match."
+      />
+      <Pagination
+        page={result.page}
+        pageSize={result.pageSize}
+        total={result.total}
+        basePath="/ceo/users"
+        params={{ q, filter: banned ? 'banned' : undefined }}
+      />
     </>
   )
 }

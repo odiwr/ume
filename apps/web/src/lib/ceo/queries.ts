@@ -1,5 +1,20 @@
 import 'server-only'
-import { and, asc, count, desc, eq, ilike, inArray, isNotNull, isNull, like, lt, ne, or, sql } from 'drizzle-orm'
+import {
+  and,
+  asc,
+  count,
+  desc,
+  eq,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  like,
+  lt,
+  ne,
+  or,
+  sql,
+} from 'drizzle-orm'
 import { format, startOfWeek, subWeeks } from 'date-fns'
 import { PLANS, getPlan, type PlanId } from '@ume/shared'
 import {
@@ -26,8 +41,20 @@ import {
 /** A bot is "online" when it reported within three heartbeats (30 s each). */
 export const BOT_ONLINE_WINDOW_MS = 90_000
 
-export const WORKSPACE_STATUSES: readonly WorkspaceStatus[] = ['unclaimed', 'connected', 'disconnected', 'purging', 'purged']
-export const DMCA_STATUSES = ['received', 'actioned', 'counter_noticed', 'restored', 'rejected'] as const
+export const WORKSPACE_STATUSES: readonly WorkspaceStatus[] = [
+  'unclaimed',
+  'connected',
+  'disconnected',
+  'purging',
+  'purged',
+]
+export const DMCA_STATUSES = [
+  'received',
+  'actioned',
+  'counter_noticed',
+  'restored',
+  'rejected',
+] as const
 export type DmcaStatus = (typeof DMCA_STATUSES)[number]
 
 export const DEFAULT_PAGE_SIZE = 25
@@ -55,7 +82,13 @@ export function str(raw: string | string[] | undefined): string {
 // ────────────────────────────────────────────────────────────────────────────
 
 export interface Overview {
-  workspaces: { total: number; connected: number; active7d: number; purging: number; botOnline: number }
+  workspaces: {
+    total: number
+    connected: number
+    active7d: number
+    purging: number
+    botOnline: number
+  }
   users: { total: number; withDiscord: number; banned: number }
   tracks: { ready: number; inFlight: number; failed: number; disabled: number }
   storageUsedBytes: number
@@ -103,7 +136,12 @@ export async function getOverview(): Promise<Overview> {
     db
       .select({ plan: workspaces.plan, n: count() })
       .from(workspaces)
-      .where(and(ne(workspaces.plan, 'free'), inArray(workspaces.stripeSubscriptionStatus, ['active', 'trialing'])))
+      .where(
+        and(
+          ne(workspaces.plan, 'free'),
+          inArray(workspaces.stripeSubscriptionStatus, ['active', 'trialing']),
+        ),
+      )
       .groupBy(workspaces.plan),
     db.execute<{ week: string; count: number }>(
       sql`select to_char(date_trunc('week', created_at), 'YYYY-MM-DD') as week, count(*)::int as count
@@ -156,7 +194,11 @@ export async function getOverview(): Promise<Overview> {
       purging: num(wsAgg?.purging),
       botOnline: num(wsAgg?.botOnline),
     },
-    users: { total: num(userAgg?.total), withDiscord: num(userAgg?.withDiscord), banned: num(userAgg?.banned) },
+    users: {
+      total: num(userAgg?.total),
+      withDiscord: num(userAgg?.withDiscord),
+      banned: num(userAgg?.banned),
+    },
     tracks: {
       ready: num(trackAgg?.ready),
       inFlight: num(trackAgg?.inFlight),
@@ -179,7 +221,11 @@ export async function getJobStates(): Promise<Overview['jobs']> {
       sql`select state::text as state, count(*)::int as count from pgboss.job group by state order by state`,
     )
     const byState = Array.from(rows).map((r) => ({ state: String(r.state), count: num(r.count) }))
-    return { available: true, byState, failed: byState.find((s) => s.state === 'failed')?.count ?? 0 }
+    return {
+      available: true,
+      byState,
+      failed: byState.find((s) => s.state === 'failed')?.count ?? 0,
+    }
   } catch {
     return { available: false, byState: [], failed: 0 }
   }
@@ -249,40 +295,64 @@ export async function getWorkspaceDetail(id: string) {
   })
   if (!ws) return null
   const now = new Date()
-  const [members, playlistRows, audit, activity, notes, roleRows, inviteAgg, trackAgg, dmca] = await Promise.all([
-    db.query.memberships.findMany({
-      where: eq(memberships.workspaceId, id),
-      with: {
-        user: { columns: { id: true, name: true, email: true, discordUsername: true, banned: true } },
-        role: { columns: { id: true, name: true, systemKey: true, color: true, capabilities: true } },
-      },
-      orderBy: [asc(memberships.createdAt)],
-    }),
-    db.query.playlists.findMany({ where: eq(playlists.workspaceId, id), orderBy: [asc(playlists.position), asc(playlists.createdAt)] }),
-    db.query.auditLogs.findMany({
-      where: eq(auditLogs.workspaceId, id),
-      with: { actor: { columns: { id: true, email: true, name: true } } },
-      orderBy: [desc(auditLogs.createdAt)],
-      limit: 25,
-    }),
-    db.query.activityEvents.findMany({ where: eq(activityEvents.workspaceId, id), orderBy: [desc(activityEvents.createdAt)], limit: 25 }),
-    db.query.notifications.findMany({ where: eq(notifications.workspaceId, id), orderBy: [desc(notifications.createdAt)], limit: 25 }),
-    db.query.roles.findMany({ where: eq(roles.workspaceId, id), orderBy: [asc(roles.position)] }),
-    db
-      .select({
-        active: sql<number>`count(*) filter (where ${invites.revokedAt} is null and ${invites.expiresAt} > ${now})::int`,
-        total: count(),
-      })
-      .from(invites)
-      .where(eq(invites.workspaceId, id))
-      .then((r) => r[0]),
-    db
-      .select({ status: tracks.status, n: count(), bytes: sql<string>`coalesce(sum(${tracks.sizeBytes}), 0)::bigint` })
-      .from(tracks)
-      .where(eq(tracks.workspaceId, id))
-      .groupBy(tracks.status),
-    db.query.dmcaNotices.findMany({ where: eq(dmcaNotices.workspaceId, id), orderBy: [desc(dmcaNotices.createdAt)], limit: 10 }),
-  ])
+  const [members, playlistRows, audit, activity, notes, roleRows, inviteAgg, trackAgg, dmca] =
+    await Promise.all([
+      db.query.memberships.findMany({
+        where: eq(memberships.workspaceId, id),
+        with: {
+          user: {
+            columns: { id: true, name: true, email: true, discordUsername: true, banned: true },
+          },
+          role: {
+            columns: { id: true, name: true, systemKey: true, color: true, capabilities: true },
+          },
+        },
+        orderBy: [asc(memberships.createdAt)],
+      }),
+      db.query.playlists.findMany({
+        where: eq(playlists.workspaceId, id),
+        orderBy: [asc(playlists.position), asc(playlists.createdAt)],
+      }),
+      db.query.auditLogs.findMany({
+        where: eq(auditLogs.workspaceId, id),
+        with: { actor: { columns: { id: true, email: true, name: true } } },
+        orderBy: [desc(auditLogs.createdAt)],
+        limit: 25,
+      }),
+      db.query.activityEvents.findMany({
+        where: eq(activityEvents.workspaceId, id),
+        orderBy: [desc(activityEvents.createdAt)],
+        limit: 25,
+      }),
+      db.query.notifications.findMany({
+        where: eq(notifications.workspaceId, id),
+        orderBy: [desc(notifications.createdAt)],
+        limit: 25,
+      }),
+      db.query.roles.findMany({ where: eq(roles.workspaceId, id), orderBy: [asc(roles.position)] }),
+      db
+        .select({
+          active: sql<number>`count(*) filter (where ${invites.revokedAt} is null and ${invites.expiresAt} > ${now})::int`,
+          total: count(),
+        })
+        .from(invites)
+        .where(eq(invites.workspaceId, id))
+        .then((r) => r[0]),
+      db
+        .select({
+          status: tracks.status,
+          n: count(),
+          bytes: sql<string>`coalesce(sum(${tracks.sizeBytes}), 0)::bigint`,
+        })
+        .from(tracks)
+        .where(eq(tracks.workspaceId, id))
+        .groupBy(tracks.status),
+      db.query.dmcaNotices.findMany({
+        where: eq(dmcaNotices.workspaceId, id),
+        orderBy: [desc(dmcaNotices.createdAt)],
+        limit: 10,
+      }),
+    ])
   return {
     ws,
     quotaBytes: effectiveQuotaBytes(ws),
@@ -293,7 +363,11 @@ export async function getWorkspaceDetail(id: string) {
     notifications: notes,
     roles: roleRows,
     invites: { active: num(inviteAgg?.active), total: num(inviteAgg?.total) },
-    tracksByStatus: trackAgg.map((t) => ({ status: t.status, count: num(t.n), bytes: num(t.bytes) })),
+    tracksByStatus: trackAgg.map((t) => ({
+      status: t.status,
+      count: num(t.n),
+      bytes: num(t.bytes),
+    })),
     dmca,
   }
 }
@@ -304,7 +378,12 @@ export type WorkspaceDetail = NonNullable<Awaited<ReturnType<typeof getWorkspace
 // Users
 // ────────────────────────────────────────────────────────────────────────────
 
-export async function listUsers(opts: { q?: string; page?: number; pageSize?: number; banned?: boolean }) {
+export async function listUsers(opts: {
+  q?: string
+  page?: number
+  pageSize?: number
+  banned?: boolean
+}) {
   const page = opts.page ?? 1
   const pageSize = opts.pageSize ?? DEFAULT_PAGE_SIZE
   const q = opts.q?.trim() ?? ''
@@ -342,9 +421,18 @@ export async function listUsers(opts: { q?: string; page?: number; pageSize?: nu
       .orderBy(desc(users.createdAt))
       .limit(pageSize)
       .offset((page - 1) * pageSize),
-    db.select({ total: count() }).from(users).where(where).then((r) => r[0]),
+    db
+      .select({ total: count() })
+      .from(users)
+      .where(where)
+      .then((r) => r[0]),
   ])
-  return { rows: rows.map((r) => ({ ...r, memberships: num(r.memberships), owned: num(r.owned) })), total: num(totalRow?.total), page, pageSize }
+  return {
+    rows: rows.map((r) => ({ ...r, memberships: num(r.memberships), owned: num(r.owned) })),
+    total: num(totalRow?.total),
+    page,
+    pageSize,
+  }
 }
 
 export async function getUserDetail(id: string) {
@@ -354,17 +442,30 @@ export async function getUserDetail(id: string) {
     db.query.memberships.findMany({
       where: eq(memberships.userId, id),
       with: {
-        workspace: { columns: { id: true, umeId: true, guildName: true, status: true, plan: true } },
+        workspace: {
+          columns: { id: true, umeId: true, guildName: true, status: true, plan: true },
+        },
         role: { columns: { id: true, name: true, systemKey: true, color: true } },
       },
       orderBy: [desc(memberships.createdAt)],
     }),
     db.query.workspaces.findMany({
       where: eq(workspaces.ownerUserId, id),
-      columns: { id: true, umeId: true, guildName: true, status: true, plan: true, storageUsedBytes: true, createdAt: true },
+      columns: {
+        id: true,
+        umeId: true,
+        guildName: true,
+        status: true,
+        plan: true,
+        storageUsedBytes: true,
+        createdAt: true,
+      },
       orderBy: [desc(workspaces.createdAt)],
     }),
-    db.query.accounts.findMany({ where: eq(accounts.userId, id), columns: { providerId: true, createdAt: true } }),
+    db.query.accounts.findMany({
+      where: eq(accounts.userId, id),
+      columns: { providerId: true, createdAt: true },
+    }),
     db.query.auditLogs.findMany({
       where: eq(auditLogs.actorUserId, id),
       with: { workspace: { columns: { id: true, guildName: true } } },
@@ -397,7 +498,11 @@ export async function getStorageReport() {
       .orderBy(desc(workspaces.storageUsedBytes))
       .limit(30),
     db
-      .select({ status: tracks.status, n: count(), bytes: sql<string>`coalesce(sum(${tracks.sizeBytes}), 0)::bigint` })
+      .select({
+        status: tracks.status,
+        n: count(),
+        bytes: sql<string>`coalesce(sum(${tracks.sizeBytes}), 0)::bigint`,
+      })
       .from(tracks)
       .groupBy(tracks.status),
     db
@@ -410,16 +515,30 @@ export async function getStorageReport() {
       .from(workspaces)
       .where(ne(workspaces.status, 'purged'))
       .groupBy(workspaces.plan),
-    db.select({ n: count() }).from(blockedHashes).then((r) => r[0]),
+    db
+      .select({ n: count() })
+      .from(blockedHashes)
+      .then((r) => r[0]),
   ])
   const planMap = new Map(byPlan.map((p) => [p.plan, p]))
   return {
-    top: top.map((w) => ({ ...w, storageUsedBytes: num(w.storageUsedBytes), quotaBytes: effectiveQuotaBytes(w) })),
+    top: top.map((w) => ({
+      ...w,
+      storageUsedBytes: num(w.storageUsedBytes),
+      quotaBytes: effectiveQuotaBytes(w),
+    })),
     byStatus: byStatus.map((s) => ({ status: s.status, count: num(s.n), bytes: num(s.bytes) })),
     byPlan: PLANS.map((p) => {
       const row = planMap.get(p.id)
       const n = num(row?.n)
-      return { plan: p.id, name: p.name, workspaces: n, bytes: num(row?.bytes), tracks: num(row?.tracks), quotaBytes: n * p.storageBytes }
+      return {
+        plan: p.id,
+        name: p.name,
+        workspaces: n,
+        bytes: num(row?.bytes),
+        tracks: num(row?.tracks),
+        quotaBytes: n * p.storageBytes,
+      }
     }),
     blockedHashes: num(blocked?.n),
   }
@@ -434,12 +553,21 @@ export async function getRevenueReport() {
     .select({ ws: workspaces, ownerEmail: users.email })
     .from(workspaces)
     .leftJoin(users, eq(users.id, workspaces.ownerUserId))
-    .where(or(ne(workspaces.plan, 'free'), isNotNull(workspaces.stripeSubscriptionId), isNotNull(workspaces.stripeCustomerId)))
+    .where(
+      or(
+        ne(workspaces.plan, 'free'),
+        isNotNull(workspaces.stripeSubscriptionId),
+        isNotNull(workspaces.stripeCustomerId),
+      ),
+    )
     .orderBy(desc(workspaces.planRenewsAt), desc(workspaces.createdAt))
     .limit(200)
   const mrrByPlan = PLANS.filter((p) => p.priceUsdMonthly > 0).map((p) => {
     const active = rows.filter(
-      (r) => r.ws.plan === p.id && (r.ws.stripeSubscriptionStatus === 'active' || r.ws.stripeSubscriptionStatus === 'trialing'),
+      (r) =>
+        r.ws.plan === p.id &&
+        (r.ws.stripeSubscriptionStatus === 'active' ||
+          r.ws.stripeSubscriptionStatus === 'trialing'),
     ).length
     return { plan: p.id, name: p.name, active, mrrUsd: active * p.priceUsdMonthly }
   })
@@ -453,7 +581,10 @@ export async function getRevenueReport() {
 
 export type BotHealth = 'online' | 'stale' | 'offline' | 'not_in_guild'
 
-export function classifyBot(ws: Pick<Workspace, 'botConnected' | 'botLastSeenAt' | 'botInGuild'>, now = Date.now()): BotHealth {
+export function classifyBot(
+  ws: Pick<Workspace, 'botConnected' | 'botLastSeenAt' | 'botInGuild'>,
+  now = Date.now(),
+): BotHealth {
   if (!ws.botInGuild) return 'not_in_guild'
   const seen = ws.botLastSeenAt?.getTime() ?? 0
   if (ws.botConnected && now - seen <= BOT_ONLINE_WINDOW_MS) return 'online'
@@ -485,7 +616,11 @@ export async function getBotHealth(filter?: string) {
   const counts: Record<BotHealth, number> = { online: 0, stale: 0, offline: 0, not_in_guild: 0 }
   for (const r of classified) counts[r.health]++
   const wanted = (['online', 'stale', 'offline', 'not_in_guild'] as const).find((h) => h === filter)
-  return { rows: wanted ? classified.filter((r) => r.health === wanted) : classified, counts, filter: wanted ?? null }
+  return {
+    rows: wanted ? classified.filter((r) => r.health === wanted) : classified,
+    counts,
+    filter: wanted ?? null,
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
@@ -496,14 +631,22 @@ export async function listDmcaNotices(status?: string) {
   const wanted = DMCA_STATUSES.find((s) => s === status)
   const [rows, countRows] = await Promise.all([
     db
-      .select({ notice: dmcaNotices, workspaceName: workspaces.guildName, trackTitle: tracks.title, trackStatus: tracks.status })
+      .select({
+        notice: dmcaNotices,
+        workspaceName: workspaces.guildName,
+        trackTitle: tracks.title,
+        trackStatus: tracks.status,
+      })
       .from(dmcaNotices)
       .leftJoin(workspaces, eq(workspaces.id, dmcaNotices.workspaceId))
       .leftJoin(tracks, eq(tracks.id, dmcaNotices.trackId))
       .where(wanted ? eq(dmcaNotices.status, wanted) : undefined)
       .orderBy(desc(dmcaNotices.createdAt))
       .limit(200),
-    db.select({ status: dmcaNotices.status, n: count() }).from(dmcaNotices).groupBy(dmcaNotices.status),
+    db
+      .select({ status: dmcaNotices.status, n: count() })
+      .from(dmcaNotices)
+      .groupBy(dmcaNotices.status),
   ])
   const counts = Object.fromEntries(DMCA_STATUSES.map((s) => [s, 0])) as Record<DmcaStatus, number>
   for (const c of countRows) counts[c.status] = num(c.n)
@@ -512,14 +655,16 @@ export async function listDmcaNotices(status?: string) {
 
 export async function getDmcaNotice(id: string): Promise<{
   notice: DmcaNotice
-  track: (typeof tracks.$inferSelect) | null
+  track: typeof tracks.$inferSelect | null
   workspace: Pick<Workspace, 'id' | 'umeId' | 'guildName' | 'status'> | null
   hashBlocked: boolean
 } | null> {
   const notice = await db.query.dmcaNotices.findFirst({ where: eq(dmcaNotices.id, id) })
   if (!notice) return null
   const [track, workspace] = await Promise.all([
-    notice.trackId ? db.query.tracks.findFirst({ where: eq(tracks.id, notice.trackId) }) : Promise.resolve(undefined),
+    notice.trackId
+      ? db.query.tracks.findFirst({ where: eq(tracks.id, notice.trackId) })
+      : Promise.resolve(undefined),
     notice.workspaceId
       ? db.query.workspaces.findFirst({
           where: eq(workspaces.id, notice.workspaceId),
@@ -528,7 +673,10 @@ export async function getDmcaNotice(id: string): Promise<{
       : Promise.resolve(undefined),
   ])
   const blocked = track?.sha256
-    ? await db.query.blockedHashes.findFirst({ where: eq(blockedHashes.sha256, track.sha256), columns: { sha256: true } })
+    ? await db.query.blockedHashes.findFirst({
+        where: eq(blockedHashes.sha256, track.sha256),
+        columns: { sha256: true },
+      })
     : null
   return { notice, track: track ?? null, workspace: workspace ?? null, hashBlocked: !!blocked }
 }
@@ -537,34 +685,77 @@ export async function getDmcaNotice(id: string): Promise<{
 // Notifications
 // ────────────────────────────────────────────────────────────────────────────
 
-export async function listNotifications(opts: { page?: number; pageSize?: number; kind?: string; status?: string }) {
+export async function listNotifications(opts: {
+  page?: number
+  pageSize?: number
+  kind?: string
+  status?: string
+}) {
   const page = opts.page ?? 1
   const pageSize = opts.pageSize ?? DEFAULT_PAGE_SIZE
   const kinds = notifications.kind.enumValues
   const kind = kinds.find((k) => k === opts.kind)
-  const status = opts.status && ['sent', 'failed', 'skipped'].includes(opts.status) ? opts.status : undefined
-  const where = and(kind ? eq(notifications.kind, kind) : undefined, status ? eq(notifications.status, status) : undefined)
+  const status =
+    opts.status && ['sent', 'failed', 'skipped'].includes(opts.status) ? opts.status : undefined
+  const where = and(
+    kind ? eq(notifications.kind, kind) : undefined,
+    status ? eq(notifications.status, status) : undefined,
+  )
   const [rows, totalRow] = await Promise.all([
     db
-      .select({ n: notifications, workspaceName: workspaces.guildName, workspaceUmeId: workspaces.umeId })
+      .select({
+        n: notifications,
+        workspaceName: workspaces.guildName,
+        workspaceUmeId: workspaces.umeId,
+      })
       .from(notifications)
       .leftJoin(workspaces, eq(workspaces.id, notifications.workspaceId))
       .where(where)
       .orderBy(desc(notifications.createdAt))
       .limit(pageSize)
       .offset((page - 1) * pageSize),
-    db.select({ total: count() }).from(notifications).where(where).then((r) => r[0]),
+    db
+      .select({ total: count() })
+      .from(notifications)
+      .where(where)
+      .then((r) => r[0]),
   ])
-  return { rows, total: num(totalRow?.total), page, pageSize, kinds, kind: kind ?? null, status: status ?? null }
+  return {
+    rows,
+    total: num(totalRow?.total),
+    page,
+    pageSize,
+    kinds,
+    kind: kind ?? null,
+    status: status ?? null,
+  }
 }
 
 // ────────────────────────────────────────────────────────────────────────────
 // Audit
 // ────────────────────────────────────────────────────────────────────────────
 
-export const AUDIT_PREFIXES = ['ceo.', 'workspace.', 'token.', 'member.', 'invite.', 'role.', 'playlist.', 'track.', 'purge.', 'reset.', 'billing.'] as const
+export const AUDIT_PREFIXES = [
+  'ceo.',
+  'workspace.',
+  'token.',
+  'member.',
+  'invite.',
+  'role.',
+  'playlist.',
+  'track.',
+  'purge.',
+  'reset.',
+  'billing.',
+] as const
 
-export async function listAudit(opts: { page?: number; pageSize?: number; prefix?: string; scope?: string; workspaceId?: string }) {
+export async function listAudit(opts: {
+  page?: number
+  pageSize?: number
+  prefix?: string
+  scope?: string
+  workspaceId?: string
+}) {
   const page = opts.page ?? 1
   const pageSize = opts.pageSize ?? DEFAULT_PAGE_SIZE
   const prefix = (opts.prefix ?? '').trim().replace(/[%_\\]/g, '')
@@ -584,7 +775,11 @@ export async function listAudit(opts: { page?: number; pageSize?: number; prefix
       .orderBy(desc(auditLogs.createdAt))
       .limit(pageSize)
       .offset((page - 1) * pageSize),
-    db.select({ total: count() }).from(auditLogs).where(where).then((r) => r[0]),
+    db
+      .select({ total: count() })
+      .from(auditLogs)
+      .where(where)
+      .then((r) => r[0]),
   ])
   return { rows, total: num(totalRow?.total), page, pageSize, prefix, scope }
 }
@@ -593,9 +788,20 @@ export async function listAudit(opts: { page?: number; pageSize?: number; prefix
 export async function listIdleFreeWorkspaces(days = 30, limit = 10) {
   const cutoff = new Date(Date.now() - days * 86_400_000)
   return db
-    .select({ id: workspaces.id, umeId: workspaces.umeId, guildName: workspaces.guildName, lastActivityAt: workspaces.lastActivityAt })
+    .select({
+      id: workspaces.id,
+      umeId: workspaces.umeId,
+      guildName: workspaces.guildName,
+      lastActivityAt: workspaces.lastActivityAt,
+    })
     .from(workspaces)
-    .where(and(eq(workspaces.plan, 'free'), eq(workspaces.status, 'connected'), lt(workspaces.lastActivityAt, cutoff)))
+    .where(
+      and(
+        eq(workspaces.plan, 'free'),
+        eq(workspaces.status, 'connected'),
+        lt(workspaces.lastActivityAt, cutoff),
+      ),
+    )
     .orderBy(asc(workspaces.lastActivityAt))
     .limit(limit)
 }

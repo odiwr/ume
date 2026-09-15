@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq } from '../lib/orm'
 import { ChannelType, PermissionFlagsBits } from 'discord.js'
 import { findCommand } from '@ume/shared'
 import { db, logAudit, touchActivity, workspaces } from '../lib/db'

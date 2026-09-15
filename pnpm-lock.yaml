@@ -202,6 +202,9 @@ importers:
       discord.js:
         specifier: ^14.27.0
         version: 14.27.0
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(kysely@0.29.5)(pg@8.23.0)(postgres@3.4.9)
       opusscript:
         specifier: ^0.1.1
         version: 0.1.1
@@ -360,6 +363,9 @@ importers:
       '@ume/storage':
         specifier: workspace:*
         version: link:../../packages/storage
+      drizzle-orm:
+        specifier: ^0.45.2
+        version: 0.45.2(kysely@0.29.5)(pg@8.23.0)(postgres@3.4.9)
       execa:
         specifier: ^9.6.0
         version: 9.6.1

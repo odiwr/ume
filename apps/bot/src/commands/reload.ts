@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq } from '../lib/orm'
 import { findCommand } from '@ume/shared'
 import { sendEmail, tokenRotatedEmail } from '@ume/email'
 import { db, issueClaimToken, logAudit, users } from '../lib/db'

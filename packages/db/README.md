@@ -11,7 +11,7 @@ const access = await getAccess(db, workspaceId, userId)
 if (!can(access, CAP.ADD_TRACK)) throw new Error('Forbidden')
 ```
 
-`getDb(url?)` caches a single `postgres` pool per process (`max: 3` on Vercel, `10` elsewhere, `prepare: false` for PgBouncer/Neon pooling). Long-lived processes should pass `directDatabaseUrl()` from `@ume/shared`. `closeDb()` drains it on shutdown.
+`getDb(url?)` caches a single `postgres` pool per process (`max: 3` on Vercel or with `DB_POOL_MODE=serverless`, `10` elsewhere, `prepare: false` for PgBouncer/Neon pooling). Long-lived processes pass `directDatabaseUrl()` from `@ume/shared`. `closeDb()` drains it on shutdown.
 
 ## Three ids for one server
 
@@ -21,7 +21,7 @@ if (!can(access, CAP.ADD_TRACK)) throw new Error('Forbidden')
 | `workspaces.ume_id` | `ume-01jxyz…-abcd1234` | **Public workspace id.** Appears in URLs (`/app/<umeId>`), Settings and support tickets. Opaque and unguessable, but not a secret: knowing it grants nothing. Resolve with `getWorkspaceByUmeId()`. |
 | `workspaces.guild_id` | `123456789012345678` | **Discord server id** (snowflake). Unique per workspace; the bot keys everything by it (`getWorkspaceByGuildId()`, `resolveDiscordAccess()`). Public on Discord. |
 
-Web routes take a `umeId` and resolve it once in the layout; server actions then pass the internal `id` around. The bot only ever sees `guild_id`. A purged workspace keeps its row (tombstone) for 30 days, so a guild can have at most one live workspace and the unique index on `guild_id` holds.
+Web routes take a `umeId` and resolve it once in the layout; server actions then pass the internal `id` around. The bot only ever sees `guild_id`. A purged workspace keeps its row (tombstone, `purged_at`), so a guild has at most one workspace row and the unique index on `guild_id` holds; `/reload` after a purge reuses the row.
 
 ## Schema overview
 
@@ -35,27 +35,27 @@ Files under `src/schema/`; `relations.ts` wires them for `db.query.*`.
 
 | Table | Purpose |
 | --- | --- |
-| `workspaces` | One per guild. `status` (`unclaimed` → `connected` ⇄ `disconnected` → `purging` → `purged`), owner, bot presence (`home_voice_channel_id`, `bot_connected`, `bot_last_seen_at`), activity + notice stamps, plan/quota/usage, Stripe ids, settings (`discord_role_sync_enabled`, `default_role_id`, `youtube_enabled`). |
-| `claim_tokens` | `/reload` tokens: `token_hash` only (SHA-256), guild, who it was issued to, `expires_at` (24 h), `claimed_at`, `revoked_at`. Single use. |
+| `workspaces` | One per guild. `status` (`unclaimed` → `connected` ⇄ `disconnected` → `purging` → `purged`), `owner_user_id`, `guild_owner_discord_id`, bot presence (`home_voice_channel_id`, `notice_text_channel_id`, `bot_connected`, `bot_last_seen_at`, `bot_voice_channel_id`, `bot_in_guild`), activity + notice stamps (`last_activity_at`, `inactivity_notice_30d_sent_at`, `inactivity_notice_48h_sent_at`), plan/quota/usage (`plan`, `storage_used_bytes`, `storage_quota_override_bytes`, `track_count`), Stripe (`stripe_customer_id`, `stripe_subscription_id`, `stripe_subscription_status`, `plan_renews_at`), settings (`discord_role_sync_enabled`, `default_role_id`), and the link extractor gates (`link_extract_enabled`, `link_extract_accepted_at`, `link_extract_accepted_by_user_id`). |
+| `claim_tokens` | `/reload` tokens: `token_hash` only (SHA-256), guild, who it was issued to, `expires_at` (24 h), `claimed_at` / `claimed_by_user_id`, `revoked_at`. Single use. |
 | `roles` | Capability bitmask per role; `system_key` (`owner`/`master`/`servant`/`peon`) marks the four defaults, unique per workspace. |
-| `memberships` | `(workspace_id, user_id)` unique; `role_id`, `source`, optional `expires_at`. |
-| `discord_role_maps` | Discord role id → Ume role. |
-| `invites` | `kind` link/email, clear `token` (it is the URL), bound `email`, role, `max_uses`/`uses`, `expires_at`, `membership_expires_at`, `require_guild_member`, `revoked_at`. |
+| `memberships` | `(workspace_id, user_id)` unique; `role_id`, `source` (`owner`, `manual`, `invite_link`, `email_invite`, `discord_role_map`, `default_role`), `invite_id`, optional `expires_at`. |
+| `discord_role_maps` | Discord role id → Ume role, unique per `(workspace_id, discord_role_id)`. |
+| `invites` | `kind` link/email, clear `token` (it is the URL), bound `email`, role, `max_uses`/`uses`, `expires_at`, `membership_expires_at`, `require_guild_member`, `revoked_at`, `email_sent_at`. |
 | `danger_confirmations` | Pending `reset`/`purge` codes (`code_hash`, 5-minute TTL, `consumed_at`). |
 
 ### `library.ts` — music
 
 | Table | Purpose |
 | --- | --- |
-| `playlists` | Flat, root-only. `(workspace_id, slug)` unique; denormalized `track_count`, `total_duration_ms`; optional cover/emoji/color. |
-| `tracks` | `source` upload/youtube; `status` pending → processing → ready / failed / disabled. Metadata, `storage_key` (Opus), `original_*` (deleted after transcode), `size_bytes` (counts against quota), `sha256`, `youtube_*`, provenance (`uploaded_by_user_id`/`_discord_id`, `added_via`). Unique per workspace on `sha256` and on `youtube_id`. |
-| `playlist_tracks` | Track membership in a playlist with `added_by_*`, `added_via`, `position`. A track can sit in many playlists. |
+| `playlists` | Flat, root-only (a playlist never contains another). `(workspace_id, slug)` unique; denormalized `track_count`, `total_duration_ms` (ready tracks only); optional `description`, `emoji`, `color`, `cover_storage_key`, `position`. |
+| `tracks` | `source` `upload` \| `link`; `status` `pending` → `processing` → `ready` / `failed` / `disabled` (taken down; object kept, playback and download blocked). Metadata (`title`, `artist`, `album`, `duration_ms`, `cover_storage_key`, `cover_url`), `storage_key` (the normalized Opus; null for a metadata-only link entry), `original_*` (deleted after transcode), `size_bytes` (counts against quota), `sha256`, the **link source columns** `source_site` (`youtube` \| `soundcloud` \| `bandcamp` \| `audius` \| `mixcloud` \| `vimeo` \| `archive` \| `direct`), `source_id` (site-specific id: YouTube video id, `artist/track` for SoundCloud, …), `source_url` (canonical), `source_author`, provenance (`uploaded_by_user_id` / `_discord_id`, `added_via` web/discord), `error_message`, `play_count`, `last_played_at`, `ready_at`. Unique per workspace on `sha256` and on `(source_site, source_id)`. |
+| `playlist_tracks` | Track membership in a playlist with `added_by_*`, `added_via`, `position`. Unique `(playlist_id, track_id)`; a track can sit in many playlists. Ids are `pt_…`. |
 
 ### `ops.ts` — operational
 
-`activity_events` (raw feed; `workspaces.last_activity_at` is the summary the sweep reads), `audit_logs` (every privileged action; `workspace_id` null = global/CEO), `feature_flags` (`youtube_ingest`, `uploads_enabled`, `signups_open`, `auto_purge_enabled`, `maintenance_banner`; defaults in `queries/flags.ts`), `notifications` (outbound email/DM/channel messages, for idempotency and the console), `stripe_events` (webhook idempotency), `blocked_hashes`, `dmca_notices`.
+`activity_events` (raw feed; `workspaces.last_activity_at` is the summary the sweep reads), `audit_logs` (every privileged action; `workspace_id` null = global/CEO), `feature_flags` (`link_extract` on by default, `uploads_enabled`, `signups_open`, `auto_purge_enabled`, `maintenance_banner`; defaults and descriptions in `queries/flags.ts`, rows only exist once a flag has been changed), `notifications` (outbound email / DM / channel messages with `status` sent/failed/skipped, for idempotency and the console), `stripe_events` (webhook idempotency), `blocked_hashes` (content that may never be uploaded or extracted again), `dmca_notices` (status `received` → `actioned` / `counter_noticed` / `restored` / `rejected`).
 
-All timestamps are `timestamptz`. Ids are prefixed ULIDs from `newId()` except Better Auth tables (uuid) and `feature_flags`/`blocked_hashes` (natural keys).
+All timestamps are `timestamptz`. Ids are prefixed ULIDs from `newId()` (`ID_PREFIX` in `@ume/shared`) except Better Auth tables (uuid), `notifications` (`ntf_` + uuid), `stripe_events` (Stripe's `evt_…`), and `feature_flags` / `blocked_hashes` (natural keys).
 
 ## Query helpers (`src/queries/`)
 
@@ -68,7 +68,7 @@ All timestamps are `timestamptz`. Ids are prefixed ULIDs from `newId()` except B
 | `audit.ts` | `logAudit` |
 | `library.ts` | `recountPlaylist`, `recomputeWorkspaceUsage`, `listPlaylistTracks` |
 
-`getAccess()` strips capabilities on non-`connected` workspaces down to view + settings + billing + danger zone; callers do not need to special-case status.
+`getAccess()` strips capabilities on non-`connected` workspaces down to view + settings + billing + danger zone and ignores expired memberships; callers do not need to special-case status.
 
 ## Migration workflow
 
@@ -92,6 +92,8 @@ pnpm db:generate
 # 5. apply (uses src/migrate.ts; point DATABASE_URL at the DIRECT Neon URL)
 DATABASE_URL="$DATABASE_URL_DIRECT" pnpm db:migrate
 ```
+
+`drizzle/` is empty until the first `pnpm db:generate` is run and committed; a production deploy needs that baseline migration before `db:migrate` has anything to apply.
 
 Rules of thumb:
 

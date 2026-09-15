@@ -1,6 +1,7 @@
-import { REST, Routes } from '@discordjs/rest'
 import {
   ChannelType,
+  REST,
+  Routes,
   InteractionContextType,
   PermissionFlagsBits,
   SlashCommandBuilder,

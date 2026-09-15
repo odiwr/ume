@@ -7,7 +7,10 @@ import { JOB_OPTIONS, directDatabaseUrl, type JobName, type JobPayloads } from '
  * connection, ensures the queue exists, sends one job and closes. The worker owns
  * the queue lifecycle (schedules, supervision); the web app only ever sends.
  */
-export async function enqueue<N extends JobName>(name: N, data: JobPayloads[N]): Promise<string | null> {
+export async function enqueue<N extends JobName>(
+  name: N,
+  data: JobPayloads[N],
+): Promise<string | null> {
   const boss = new PgBoss({
     connectionString: directDatabaseUrl(),
     // The worker runs maintenance and cron; a request-scoped producer must not.

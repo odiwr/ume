@@ -5,7 +5,7 @@ import {
   joinVoiceChannel,
   type VoiceConnection,
 } from '@discordjs/voice'
-import { and, eq, inArray, isNotNull, not } from 'drizzle-orm'
+import { and, eq, inArray, isNotNull, not } from '../lib/orm'
 import { ChannelType, PermissionFlagsBits, type Client, type Guild, type VoiceBasedChannel, type VoiceState } from 'discord.js'
 import { BOT_HEARTBEAT_MS } from '@ume/shared'
 import { db, getWorkspaceByGuildId, logAudit, setBotPresence, touchActivity, workspaces } from '../lib/db'

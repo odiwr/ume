@@ -12,7 +12,11 @@ import { UserBanControl } from '@/components/ceo/user-actions'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 
-export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}): Promise<Metadata> {
   const { id } = await params
   const d = await getUserDetail(id)
   return { title: d ? d.user.email : 'User' }
@@ -29,7 +33,9 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
   const d = await getUserDetail(id)
   if (!d) notFound()
   const { user } = d
-  const avatar = user.discordUserId ? userAvatarUrl(user.discordUserId, user.discordAvatar, 64) : user.image
+  const avatar = user.discordUserId
+    ? userAvatarUrl(user.discordUserId, user.discordAvatar, 64)
+    : user.image
 
   const membershipColumns: Column<MembershipRow>[] = [
     {
@@ -37,7 +43,10 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
       header: 'Workspace',
       render: (m) => (
         <div>
-          <Link href={`/ceo/workspaces/${m.workspace.id}`} className="font-medium hover:text-pink-soft">
+          <Link
+            href={`/ceo/workspaces/${m.workspace.id}`}
+            className="font-medium hover:text-pink-soft"
+          >
             {m.workspace.guildName}
           </Link>
           <div className="mt-0.5 flex items-center gap-2">
@@ -58,7 +67,12 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
       ),
     },
     { key: 'source', header: 'Source', render: (m) => <Badge>{m.source.replace('_', ' ')}</Badge> },
-    { key: 'expires', header: 'Expires', render: (m) => (m.expiresAt ? <Ago date={m.expiresAt} /> : <span className="text-fg-subtle">never</span>) },
+    {
+      key: 'expires',
+      header: 'Expires',
+      render: (m) =>
+        m.expiresAt ? <Ago date={m.expiresAt} /> : <span className="text-fg-subtle">never</span>,
+    },
     { key: 'since', header: 'Since', render: (m) => <Ago date={m.createdAt} /> },
   ]
 
@@ -74,7 +88,12 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
     },
     { key: 'status', header: 'Status', render: (w) => <WorkspaceStatusBadge status={w.status} /> },
     { key: 'plan', header: 'Plan', render: (w) => <PlanBadge plan={w.plan} /> },
-    { key: 'storage', header: 'Storage', align: 'right', render: (w) => formatBytes(w.storageUsedBytes) },
+    {
+      key: 'storage',
+      header: 'Storage',
+      align: 'right',
+      render: (w) => formatBytes(w.storageUsedBytes),
+    },
     { key: 'created', header: 'Created', render: (w) => <Ago date={w.createdAt} /> },
   ]
 
@@ -93,7 +112,18 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
           <span className="text-fg-subtle">global</span>
         ),
     },
-    { key: 'target', header: 'Target', render: (a) => (a.targetType ? <span className="text-xs text-fg-muted">{a.targetType} {a.targetId}</span> : '') },
+    {
+      key: 'target',
+      header: 'Target',
+      render: (a) =>
+        a.targetType ? (
+          <span className="text-xs text-fg-muted">
+            {a.targetType} {a.targetId}
+          </span>
+        ) : (
+          ''
+        ),
+    },
   ]
 
   return (
@@ -104,9 +134,17 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
           <span className="inline-flex items-center gap-3">
             {avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={avatar} alt="" width={40} height={40} className="size-10 rounded-full border border-border" />
+              <img
+                src={avatar}
+                alt=""
+                width={40}
+                height={40}
+                className="size-10 rounded-full border border-border"
+              />
             ) : (
-              <span className="inline-flex size-10 items-center justify-center rounded-full bg-surface-3 font-display text-lg">{(user.name || user.email).slice(0, 1).toUpperCase()}</span>
+              <span className="inline-flex size-10 items-center justify-center rounded-full bg-surface-3 font-display text-lg">
+                {(user.name || user.email).slice(0, 1).toUpperCase()}
+              </span>
             )}
             {user.name || user.email}
           </span>
@@ -114,7 +152,11 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
         description={
           <span className="inline-flex flex-wrap items-center gap-2">
             {user.email}
-            {user.banned ? <Badge tone="danger">banned</Badge> : <Badge tone="success">active</Badge>}
+            {user.banned ? (
+              <Badge tone="danger">banned</Badge>
+            ) : (
+              <Badge tone="success">active</Badge>
+            )}
             {d.providers.map((p) => (
               <Badge key={p.providerId} tone={p.providerId === 'discord' ? 'sage' : 'beige'}>
                 {p.providerId}
@@ -131,8 +173,14 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
               items={[
                 { label: 'User id', value: <Mono>{user.id}</Mono> },
                 { label: 'Email verified', value: user.emailVerified ? 'yes' : 'no' },
-                { label: 'Discord id', value: user.discordUserId ? <Mono>{user.discordUserId}</Mono> : 'not linked' },
-                { label: 'Discord username', value: user.discordUsername ? `@${user.discordUsername}` : null },
+                {
+                  label: 'Discord id',
+                  value: user.discordUserId ? <Mono>{user.discordUserId}</Mono> : 'not linked',
+                },
+                {
+                  label: 'Discord username',
+                  value: user.discordUsername ? `@${user.discordUsername}` : null,
+                },
                 { label: 'Joined', value: <Absolute date={user.createdAt} /> },
                 { label: 'Updated', value: <Absolute date={user.updatedAt} /> },
                 { label: 'Ban reason', value: user.banReason },
@@ -153,21 +201,45 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <UserBanControl userId={user.id} email={user.email} banned={user.banned} banReason={user.banReason} isSelf={user.id === session.user.id} />
+            <UserBanControl
+              userId={user.id}
+              email={user.email}
+              banned={user.banned}
+              banReason={user.banReason}
+              isSelf={user.id === session.user.id}
+            />
           </CardContent>
         </Card>
       </Section>
 
       <Section title={`Owns (${d.owned.length})`}>
-        <DataTable columns={ownedColumns} rows={d.owned} rowKey={(w) => w.id} empty="Does not own a workspace." dense />
+        <DataTable
+          columns={ownedColumns}
+          rows={d.owned}
+          rowKey={(w) => w.id}
+          empty="Does not own a workspace."
+          dense
+        />
       </Section>
 
       <Section title={`Memberships (${d.memberships.length})`}>
-        <DataTable columns={membershipColumns} rows={d.memberships} rowKey={(m) => m.id} empty="No memberships." dense />
+        <DataTable
+          columns={membershipColumns}
+          rows={d.memberships}
+          rowKey={(m) => m.id}
+          empty="No memberships."
+          dense
+        />
       </Section>
 
       <Section title="Recent actions" description="Audit entries where this user is the actor.">
-        <DataTable columns={auditColumns} rows={d.recentAudit} rowKey={(a) => a.id} empty="No audit entries." dense />
+        <DataTable
+          columns={auditColumns}
+          rows={d.recentAudit}
+          rowKey={(a) => a.id}
+          empty="No audit entries."
+          dense
+        />
       </Section>
     </>
   )

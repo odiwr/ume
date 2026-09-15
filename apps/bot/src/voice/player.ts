@@ -8,7 +8,7 @@ import {
   type AudioResource,
   type VoiceConnection,
 } from '@discordjs/voice'
-import { eq, sql } from 'drizzle-orm'
+import { eq, sql } from '../lib/orm'
 import { getStorage } from '@ume/storage'
 import type { Client } from 'discord.js'
 import { db, tracks, touchActivity, type Track } from '../lib/db'

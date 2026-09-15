@@ -1,4 +1,4 @@
-import { and, eq, ilike, isNotNull } from 'drizzle-orm'
+import { and, eq, ilike, isNotNull } from '../lib/orm'
 import { findCommand } from '@ume/shared'
 import { playlistTracks, db, touchActivity, tracks } from '../lib/db'
 import { findPlaylist } from '../lib/playlists'
@@ -28,7 +28,7 @@ export const play: Command = {
           embeds: [
             errorEmbed(
               skippedLinked
-                ? `**${playlist.name}** only has linked YouTube entries, and their audio is not stored. Upload files on the web to play them.`
+                ? `**${playlist.name}** only has link-only entries, and their audio is not stored. Upload files on the web, or ask the Owner to turn on extraction in Settings.`
                 : `**${playlist.name}** has nothing playable yet.`,
               'Nothing to play',
             ),

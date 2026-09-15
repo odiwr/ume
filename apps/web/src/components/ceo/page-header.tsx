@@ -17,14 +17,21 @@ export function PageHeader({
   className?: string
 }) {
   return (
-    <div className={cn('flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between', className)}>
+    <div
+      className={cn('flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between', className)}
+    >
       <div className="min-w-0">
         {back ? (
-          <Link href={back.href} className="mb-2 inline-flex items-center gap-1 text-xs font-medium text-fg-muted hover:text-fg">
+          <Link
+            href={back.href}
+            className="mb-2 inline-flex items-center gap-1 text-xs font-medium text-fg-muted hover:text-fg"
+          >
             <ChevronLeft className="size-3.5" /> {back.label}
           </Link>
         ) : null}
-        <h1 className="font-display text-2xl font-semibold tracking-tight text-fg sm:text-3xl">{title}</h1>
+        <h1 className="font-display text-2xl font-semibold tracking-tight text-fg sm:text-3xl">
+          {title}
+        </h1>
         {description ? <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p> : null}
       </div>
       {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
@@ -60,13 +67,23 @@ export function Section({
 }
 
 /** Key / value list for detail pages. */
-export function KeyValue({ items, className }: { items: Array<{ label: string; value: React.ReactNode }>; className?: string }) {
+export function KeyValue({
+  items,
+  className,
+}: {
+  items: Array<{ label: string; value: React.ReactNode }>
+  className?: string
+}) {
   return (
     <dl className={cn('grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2', className)}>
       {items.map((it) => (
         <div key={it.label} className="min-w-0">
-          <dt className="text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">{it.label}</dt>
-          <dd className="mt-0.5 break-words text-sm text-fg">{it.value ?? <span className="text-fg-subtle">—</span>}</dd>
+          <dt className="text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
+            {it.label}
+          </dt>
+          <dd className="mt-0.5 break-words text-sm text-fg">
+            {it.value ?? <span className="text-fg-subtle">—</span>}
+          </dd>
         </div>
       ))}
     </dl>
@@ -101,11 +118,15 @@ export function FilterChips({
             href={qs ? `${basePath}?${qs}` : basePath}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
-              active ? 'border-pink/40 bg-pink/15 text-pink-soft' : 'border-border bg-surface text-fg-muted hover:bg-surface-2 hover:text-fg',
+              active
+                ? 'border-pink/40 bg-pink/15 text-pink-soft'
+                : 'border-border bg-surface text-fg-muted hover:bg-surface-2 hover:text-fg',
             )}
           >
             {o.label}
-            {o.count !== undefined ? <span className="tabular-nums opacity-70">{o.count}</span> : null}
+            {o.count !== undefined ? (
+              <span className="tabular-nums opacity-70">{o.count}</span>
+            ) : null}
           </Link>
         )
       })}

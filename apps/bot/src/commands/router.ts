@@ -262,7 +262,7 @@ export async function handleMessage(client: Client<true>, message: Message): Pro
       return
     }
     // Guild prefix commands must respect channel send permission.
-    if (message.guild && message.channel.type !== ChannelType.DM) {
+    if (message.guild && 'permissionsFor' in message.channel) {
       const me = message.guild.members.me
       const perms = me ? message.channel.permissionsFor(me) : null
       if (perms && !perms.has(PermissionFlagsBits.SendMessages)) return

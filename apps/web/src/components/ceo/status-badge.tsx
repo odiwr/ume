@@ -26,19 +26,40 @@ export function TrackStatusBadge({ status }: { status: TrackStatus }) {
   return <Badge tone={trackTones[status]}>{status}</Badge>
 }
 
-const planTones: Record<string, BadgeTone> = { free: 'default', plus: 'sage', pro: 'pink', studio: 'pink' }
+const planTones: Record<string, BadgeTone> = {
+  free: 'default',
+  plus: 'sage',
+  pro: 'pink',
+  studio: 'pink',
+}
 
 export function PlanBadge({ plan }: { plan: string }) {
   return <Badge tone={planTones[plan] ?? 'default'}>{plan}</Badge>
 }
 
-const botTones: Record<BotHealth, BadgeTone> = { online: 'success', stale: 'warning', offline: 'default', not_in_guild: 'danger' }
-const botLabels: Record<BotHealth, string> = { online: 'online', stale: 'stale', offline: 'offline', not_in_guild: 'not in guild' }
+const botTones: Record<BotHealth, BadgeTone> = {
+  online: 'success',
+  stale: 'warning',
+  offline: 'default',
+  not_in_guild: 'danger',
+}
+const botLabels: Record<BotHealth, string> = {
+  online: 'online',
+  stale: 'stale',
+  offline: 'offline',
+  not_in_guild: 'not in guild',
+}
 
 export function BotHealthBadge({ health }: { health: BotHealth }) {
   return (
     <Badge tone={botTones[health]}>
-      <span className={health === 'online' ? 'size-1.5 rounded-full bg-success' : 'size-1.5 rounded-full bg-current opacity-60'} />
+      <span
+        className={
+          health === 'online'
+            ? 'size-1.5 rounded-full bg-success'
+            : 'size-1.5 rounded-full bg-current opacity-60'
+        }
+      />
       {botLabels[health]}
     </Badge>
   )

@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm'
+import { eq } from './orm'
 import { ActionRowBuilder, PermissionFlagsBits, StringSelectMenuBuilder, type Client, type Guild } from 'discord.js'
 import { db, users, workspaces } from './db'
 

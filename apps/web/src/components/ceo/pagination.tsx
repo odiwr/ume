@@ -13,7 +13,11 @@ export interface PaginationProps {
   className?: string
 }
 
-function href(basePath: string, params: Record<string, string | undefined> | undefined, page: number) {
+function href(
+  basePath: string,
+  params: Record<string, string | undefined> | undefined,
+  page: number,
+) {
   const sp = new URLSearchParams()
   for (const [k, v] of Object.entries(params ?? {})) if (v) sp.set(k, v)
   if (page > 1) sp.set('page', String(page))
@@ -22,14 +26,26 @@ function href(basePath: string, params: Record<string, string | undefined> | und
   return qs ? `${basePath}?${qs}` : basePath
 }
 
-export function Pagination({ page, pageSize, total, basePath, params, className }: PaginationProps) {
+export function Pagination({
+  page,
+  pageSize,
+  total,
+  basePath,
+  params,
+  className,
+}: PaginationProps) {
   const pages = Math.max(1, Math.ceil(total / pageSize))
   const from = total === 0 ? 0 : (page - 1) * pageSize + 1
   const to = Math.min(total, page * pageSize)
   const prevDisabled = page <= 1
   const nextDisabled = page >= pages
   return (
-    <div className={cn('flex flex-wrap items-center justify-between gap-3 text-sm text-fg-muted', className)}>
+    <div
+      className={cn(
+        'flex flex-wrap items-center justify-between gap-3 text-sm text-fg-muted',
+        className,
+      )}
+    >
       <p className="tabular-nums">
         {total === 0 ? 'No results' : `${from}–${to} of ${total.toLocaleString('en-US')}`}
       </p>
@@ -38,7 +54,10 @@ export function Pagination({ page, pageSize, total, basePath, params, className 
           Page {page} / {pages}
         </span>
         {prevDisabled ? (
-          <span className={buttonClasses('outline', 'sm', 'opacity-40 cursor-not-allowed')} aria-disabled>
+          <span
+            className={buttonClasses('outline', 'sm', 'opacity-40 cursor-not-allowed')}
+            aria-disabled
+          >
             <ChevronLeft className="size-4" /> Prev
           </span>
         ) : (
@@ -47,7 +66,10 @@ export function Pagination({ page, pageSize, total, basePath, params, className 
           </Link>
         )}
         {nextDisabled ? (
-          <span className={buttonClasses('outline', 'sm', 'opacity-40 cursor-not-allowed')} aria-disabled>
+          <span
+            className={buttonClasses('outline', 'sm', 'opacity-40 cursor-not-allowed')}
+            aria-disabled
+          >
             Next <ChevronRight className="size-4" />
           </span>
         ) : (

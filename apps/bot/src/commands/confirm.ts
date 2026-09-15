@@ -1,4 +1,4 @@
-import { and, desc, eq, gt, isNull } from 'drizzle-orm'
+import { and, eq, gt, isNull } from '../lib/orm'
 import { JOBS, findCommand, hashToken } from '@ume/shared'
 import {
   claimTokens,
@@ -34,7 +34,7 @@ export const confirm: Command = {
         isNull(dangerConfirmations.consumedAt),
         gt(dangerConfirmations.expiresAt, now),
       ),
-      orderBy: [desc(dangerConfirmations.createdAt)],
+      orderBy: (t, { desc }) => [desc(t.createdAt)],
       limit: 5,
     })
 

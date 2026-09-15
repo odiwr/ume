@@ -14,7 +14,7 @@ permissions:
 
 env:
   # Placeholders so `next build` can evaluate config and auth setup without real services.
-  # No process connects to a database during the build.
+  # No process connects to a database, Discord, Stripe or R2 during the build.
   APP_URL: http://localhost:3000
   NEXT_PUBLIC_APP_URL: http://localhost:3000
   BETTER_AUTH_URL: http://localhost:3000
@@ -22,6 +22,9 @@ env:
   DATABASE_URL: postgres://postgres:postgres@localhost:5432/ume
   DISCORD_CLIENT_ID: '000000000000000000'
   NEXT_PUBLIC_DISCORD_CLIENT_ID: '000000000000000000'
+  DISCORD_CLIENT_SECRET: ci
+  GOOGLE_CLIENT_ID: ci
+  GOOGLE_CLIENT_SECRET: ci
   S3_ENDPOINT: https://example.r2.cloudflarestorage.com
   S3_REGION: auto
   S3_BUCKET: ume
@@ -30,8 +33,12 @@ env:
   CEO_EMAILS: ci@example.com
   EMAIL_FROM: Ume <no-reply@example.com>
   CRON_SECRET: ci
+  DMCA_AGENT_NAME: CI
+  DMCA_AGENT_EMAIL: dmca@example.com
+  DMCA_AGENT_ADDRESS: nowhere
   TURBO_TELEMETRY_DISABLED: '1'
   NEXT_TELEMETRY_DISABLED: '1'
+  TURBO_UI: stream
 
 jobs:
   verify:
@@ -43,13 +50,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up pnpm
-        # Version comes from the `packageManager` field in package.json.
+        # Version comes from the `packageManager` field in package.json (pnpm 12).
         uses: pnpm/action-setup@v4
 
       - name: Set up Node 22
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
+          # Caches the pnpm store (keyed on pnpm-lock.yaml) between runs.
           cache: pnpm
 
       - name: Install dependencies
@@ -73,22 +81,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Check for Dockerfile
-        id: dockerfile
-        run: |
-          if [ -f "apps/${{ matrix.app }}/Dockerfile" ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "::warning::apps/${{ matrix.app }}/Dockerfile not found; skipping image build"
-          fi
-
       - name: Set up Docker Buildx
-        if: steps.dockerfile.outputs.present == 'true'
         uses: docker/setup-buildx-action@v3
 
       - name: Build image (no push)
-        if: steps.dockerfile.outputs.present == 'true'
         uses: docker/build-push-action@v6
         with:
           # Build context is the repo root so the Dockerfile can copy the pnpm workspace.

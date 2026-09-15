@@ -14,6 +14,7 @@
     "@ume/email": "workspace:*",
     "@ume/shared": "workspace:*",
     "@ume/storage": "workspace:*",
+    "drizzle-orm": "^0.45.2",
     "execa": "^9.6.0",
     "file-type": "^22.1.0",
     "music-metadata": "^11.15.0",

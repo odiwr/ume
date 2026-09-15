@@ -1,13 +1,13 @@
 'use server'
 
 import { revalidatePath } from 'next/cache'
-import { eq } from 'drizzle-orm'
+import { and, eq, isNull } from 'drizzle-orm'
 import { z } from 'zod'
 import { logAudit, workspaces } from '@ume/db'
 import { CAP } from '@ume/shared'
 import { db } from '@/lib/db'
 import { getGuildChannels } from '@/lib/discord-api'
-import { AppError, guard, runAction, type ActionResult } from '@/lib/app/guard'
+import { AppError, guard, guardOwner, runAction, type ActionResult } from '@/lib/app/guard'
 import { workspacePath } from '@/lib/app/nav'
 
 const snowflake = z.string().regex(/^\d{5,25}$/).nullable()
@@ -45,11 +45,31 @@ export async function updateBotChannels(
   })
 }
 
-export async function setYoutubeEnabled(workspaceId: string, enabled: boolean): Promise<ActionResult<undefined>> {
+/** Per-workspace switch for "Add from link" (also gated by the global link_extract flag). */
+export async function setLinkExtractEnabled(workspaceId: string, enabled: boolean): Promise<ActionResult<undefined>> {
   return runAction(async () => {
     const g = await guard(workspaceId, CAP.MANAGE_SETTINGS)
     await db.update(workspaces).set({ linkExtractEnabled: !!enabled, updatedAt: new Date() }).where(eq(workspaces.id, workspaceId))
-    await logAudit(db, { workspaceId, actorUserId: g.user.id, action: 'settings.youtube', metadata: { enabled: !!enabled } })
+    await logAudit(db, { workspaceId, actorUserId: g.user.id, action: 'settings.link_extract', metadata: { enabled: !!enabled } })
+    revalidatePath(workspacePath(g.workspace.umeId), 'layout')
+    return undefined
+  })
+}
+
+/** Owner only: accept the rights attestation that unlocks storing audio from links. */
+export async function acceptLinkAttestation(workspaceId: string, accepted: boolean): Promise<ActionResult<undefined>> {
+  return runAction(async () => {
+    const g = await guardOwner(workspaceId)
+    if (!accepted) throw new AppError('Tick the box to confirm the attestation.')
+    const now = new Date()
+    const updated = await db
+      .update(workspaces)
+      .set({ linkExtractAcceptedAt: now, linkExtractAcceptedByUserId: g.user.id, updatedAt: now })
+      .where(and(eq(workspaces.id, workspaceId), isNull(workspaces.linkExtractAcceptedAt)))
+      .returning({ id: workspaces.id })
+    if (updated.length) {
+      await logAudit(db, { workspaceId, actorUserId: g.user.id, action: 'settings.link_attestation', metadata: { acceptedAt: now.toISOString() } })
+    }
     revalidatePath(workspacePath(g.workspace.umeId), 'layout')
     return undefined
   })

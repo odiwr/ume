@@ -58,7 +58,9 @@ export function CeoSidebar({ email }: { email: string }) {
             aria-current={active ? 'page' : undefined}
             className={cn(
               'flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-medium transition-colors',
-              active ? 'bg-pink/15 text-pink-soft' : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
+              active
+                ? 'bg-pink/15 text-pink-soft'
+                : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
             )}
           >
             <Icon className="size-4 shrink-0" />
@@ -120,7 +122,9 @@ function SignedInAs({ email }: { email: string }) {
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="min-w-0">
-        <p className="text-[10px] font-semibold uppercase tracking-wide text-fg-subtle">Signed in</p>
+        <p className="text-[10px] font-semibold uppercase tracking-wide text-fg-subtle">
+          Signed in
+        </p>
         <p className="truncate text-xs text-fg-muted" title={email}>
           {email}
         </p>

@@ -1,5 +1,5 @@
 import { PLANS, formatBytes } from '@ume/shared'
-import { Clock, RotateCcw, ShieldAlert, Unplug } from 'lucide-react'
+import { Clock, Link2, Link2Off, RotateCcw, ShieldAlert, Unplug } from 'lucide-react'
 import {
   disconnectWorkspaceAction,
   purgeWorkspaceAction,
@@ -7,6 +7,7 @@ import {
   resetWorkspaceAction,
   setPlanAction,
   setQuotaOverrideAction,
+  toggleLinkExtractAction,
 } from '@/lib/ceo/actions'
 import { ActionButton, ActionForm, ActionSubmit } from '@/components/ceo/action-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -23,11 +24,15 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
           <CardTitle>Storage quota override</CardTitle>
           <CardDescription>
             Effective quota is {formatBytes(quotaBytes)}
-            {ws.storageQuotaOverrideBytes !== null ? ' (override)' : ` (from the ${ws.plan} plan)`}. Leave empty to clear the override.
+            {ws.storageQuotaOverrideBytes !== null ? ' (override)' : ` (from the ${ws.plan} plan)`}.
+            Leave empty to clear the override.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ActionForm action={setQuotaOverrideAction} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <ActionForm
+            action={setQuotaOverrideAction}
+            className="flex flex-col gap-3 sm:flex-row sm:items-end"
+          >
             <input type="hidden" name="workspaceId" value={ws.id} />
             <div className="flex-1">
               <Label htmlFor="quota-bytes">Bytes</Label>
@@ -47,17 +52,25 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
               Save quota
             </ActionSubmit>
           </ActionForm>
-          <p className="mt-2 text-xs text-fg-subtle">1 GB = {(1024 ** 3).toLocaleString('en-US')} bytes.</p>
+          <p className="mt-2 text-xs text-fg-subtle">
+            1 GB = {(1024 ** 3).toLocaleString('en-US')} bytes.
+          </p>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
           <CardTitle>Plan override</CardTitle>
-          <CardDescription>Changes the tier in Ume only. Stripe is not called; use this for comps, refunds already handled, or testing.</CardDescription>
+          <CardDescription>
+            Changes the tier in Ume only. Stripe is not called; use this for comps, refunds already
+            handled, or testing.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <ActionForm action={setPlanAction} className="flex flex-col gap-3 sm:flex-row sm:items-end">
+          <ActionForm
+            action={setPlanAction}
+            className="flex flex-col gap-3 sm:flex-row sm:items-end"
+          >
             <input type="hidden" name="workspaceId" value={ws.id} />
             <div className="flex-1">
               <Label htmlFor="plan">Plan</Label>
@@ -80,16 +93,56 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
       <Card>
         <CardHeader>
           <CardTitle>Inactivity clock</CardTitle>
-          <CardDescription>Sets last activity to now and clears the 30-day / 48-hour notice markers. Use it when a purge notice went out by mistake.</CardDescription>
+          <CardDescription>
+            Sets last activity to now and clears the 30-day / 48-hour notice markers. Use it when a
+            purge notice went out by mistake.
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <ActionButton action={resetInactivityClockAction} fields={{ workspaceId: ws.id }} variant="secondary" disabled={terminal}>
+          <ActionButton
+            action={resetInactivityClockAction}
+            fields={{ workspaceId: ws.id }}
+            variant="secondary"
+            disabled={terminal}
+          >
             <Clock className="size-4" /> Reset inactivity clock
           </ActionButton>
         </CardContent>
       </Card>
 
-      <Card className="border-danger/30">
+      <Card>
+        <CardHeader>
+          <CardTitle>Link extractor</CardTitle>
+          <CardDescription>
+            {ws.linkExtractEnabled
+              ? 'On for this workspace. Links are extracted to Opus when the global link_extract flag is also on.'
+              : 'Off for this workspace. New links are stored as metadata-only entries; existing extracted tracks keep playing.'}
+            {ws.linkExtractAcceptedAt
+              ? ' The Owner accepted the rights attestation.'
+              : ' The Owner has not accepted the rights attestation yet, so nothing has been extracted here.'}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ActionButton
+            action={toggleLinkExtractAction}
+            fields={{ workspaceId: ws.id, enabled: ws.linkExtractEnabled ? 'false' : 'true' }}
+            variant="secondary"
+            disabled={terminal}
+          >
+            {ws.linkExtractEnabled ? (
+              <>
+                <Link2Off className="size-4" /> Turn off for this workspace
+              </>
+            ) : (
+              <>
+                <Link2 className="size-4" /> Turn on for this workspace
+              </>
+            )}
+          </ActionButton>
+        </CardContent>
+      </Card>
+
+      <Card className="border-danger/30 lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-danger">
             <ShieldAlert className="size-4" /> Danger zone
@@ -100,7 +153,9 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
             <div className="text-sm">
               <p className="font-medium">Disconnect</p>
-              <p className="text-xs text-fg-muted">Read-only until an admin runs /reload and enters the new token.</p>
+              <p className="text-xs text-fg-muted">
+                Read-only until an admin runs /reload and enters the new token.
+              </p>
             </div>
             <ActionButton
               action={disconnectWorkspaceAction}
@@ -117,7 +172,9 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
           <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
             <div className="text-sm">
               <p className="font-medium">Reset members</p>
-              <p className="text-xs text-fg-muted">Removes every member except the Owner and revokes all invites. Music stays.</p>
+              <p className="text-xs text-fg-muted">
+                Removes every member except the Owner and revokes all invites. Music stays.
+              </p>
             </div>
             <ActionButton
               action={resetWorkspaceAction}
@@ -134,11 +191,23 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
           <div className="rounded-xl border border-danger/30 bg-danger/5 p-3">
             <p className="text-sm font-medium text-danger">Purge workspace</p>
             <p className="mt-0.5 text-xs text-fg-muted">
-              Queues the purge job: every track, playlist, member and invite is deleted and storage is wiped. Cannot be undone. Type the Ume ID to confirm.
+              Queues the purge job: every track, playlist, member and invite is deleted and storage
+              is wiped. Cannot be undone. Type the Ume ID to confirm.
             </p>
-            <ActionForm action={purgeWorkspaceAction} className="mt-3 flex flex-col gap-2 sm:flex-row" resetOnSuccess>
+            <ActionForm
+              action={purgeWorkspaceAction}
+              className="mt-3 flex flex-col gap-2 sm:flex-row"
+              resetOnSuccess
+            >
               <input type="hidden" name="workspaceId" value={ws.id} />
-              <Input name="confirm" placeholder={ws.umeId} autoComplete="off" spellCheck={false} disabled={terminal} className="font-mono text-xs" />
+              <Input
+                name="confirm"
+                placeholder={ws.umeId}
+                autoComplete="off"
+                spellCheck={false}
+                disabled={terminal}
+                className="font-mono text-xs"
+              />
               <ActionSubmit variant="danger" disabled={terminal}>
                 Purge forever
               </ActionSubmit>
