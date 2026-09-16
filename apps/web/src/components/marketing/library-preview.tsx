@@ -42,7 +42,7 @@ export function LibraryPreview() {
           aria-label="Preview server"
         >
           <Logo size={26} />
-          <div className="mt-7 flex items-center gap-3 pb-3">
+          <div className="mt-7 flex items-center gap-3 px-2 pb-3">
             <HeadphonesFilled className="size-5 shrink-0 text-sage" />
             <p className="text-sm font-semibold">Moonwave</p>
           </div>
