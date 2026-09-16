@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Link2, ShieldAlert } from 'lucide-react'
+import { Link2, ShieldAlert } from '@/components/ui/icons'
 import { SUPPORTED_LINK_SITES } from '@ume/shared'
 import { db, getAllFlags } from '@/lib/db'
 import { setFlagValueAction } from '@/lib/ceo/actions'
@@ -89,7 +89,7 @@ export default async function CeoFlagsPage() {
     <>
       <PageHeader
         title="Flags"
-        description="Global kill-switches. They apply to every workspace at once and take effect on the next request; the bot and worker read them on each job."
+        description="Controls for all servers. Changes apply on the next request or job."
       />
 
       {linkExtract ? (
@@ -158,10 +158,7 @@ export default async function CeoFlagsPage() {
         </Card>
       ) : null}
 
-      <Section
-        title="All flags"
-        description="Defaults live in packages/db FLAG_DEFAULTS; a row is written on first change."
-      >
+      <Section title="All flags">
         <DataTable columns={columns} rows={flags} rowKey={(f) => f.key} />
       </Section>
 

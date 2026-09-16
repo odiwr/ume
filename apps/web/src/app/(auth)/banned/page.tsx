@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Ban } from 'lucide-react'
+import { Ban } from '@/components/ui/icons'
 import { getSession } from '@/lib/session'
 import { supportInviteUrl } from '@/lib/site/links'
 import { SignOutButton } from './sign-out-button'
@@ -21,7 +21,7 @@ export default async function BannedPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="rounded-2xl border border-danger/30 bg-surface/90 p-6 shadow-2xl backdrop-blur sm:p-8">
+      <div className="rounded-2xl border border-danger/30 bg-surface p-6 sm:p-8">
         <span className="flex size-12 items-center justify-center rounded-xl bg-danger/15 text-danger">
           <Ban className="size-6" aria-hidden />
         </span>

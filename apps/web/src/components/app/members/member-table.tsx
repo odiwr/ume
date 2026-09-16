@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { CalendarClock, Crown, MoreVertical, UserMinus } from 'lucide-react'
+import { CalendarClock, Crown, MoreVertical, UserMinus } from '@/components/ui/icons'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'

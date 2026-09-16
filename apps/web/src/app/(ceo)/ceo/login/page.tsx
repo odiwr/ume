@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
-import Image from 'next/image'
+import { BrandMark } from '@/components/ui/logo'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { and, eq } from 'drizzle-orm'
-import { ShieldAlert } from 'lucide-react'
+import { ShieldAlert } from '@/components/ui/icons'
 import { db, accounts } from '@/lib/db'
 import { getSession, isCeoEmail } from '@/lib/session'
 import { CeoLoginForm } from '@/components/ceo/login-form'
@@ -29,22 +29,11 @@ export default async function CeoLoginPage({
   }
 
   return (
-    <main className="bg-glow flex min-h-dvh items-center justify-center px-4 py-12">
+    <main className="flex min-h-dvh items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
         <div className="mb-6 flex flex-col items-center text-center">
-          <span className="inline-flex size-14 items-center justify-center rounded-2xl bg-pink shadow-glow">
-            <Image
-              src="/brand/ume-logo.svg"
-              alt=""
-              width={44}
-              height={44}
-              className="scale-[1.15]"
-              priority
-            />
-          </span>
-          <h1 className="mt-4 font-display text-2xl font-semibold tracking-tight">
-            Founder console
-          </h1>
+          <BrandMark size={44} />
+          <h1 className="mt-4 font-display text-3xl font-medium tracking-tight">Founder console</h1>
           <p className="mt-1 text-sm text-fg-muted">Google accounts on the allow-list only.</p>
         </div>
 

@@ -1,4 +1,4 @@
-import { Ban, CheckCircle2, FileText, RotateCcw, XCircle } from 'lucide-react'
+import { Ban, CheckCircle2, FileText, RotateCcw, XCircle } from '@/components/ui/icons'
 import { dmcaDisableTrackAction, dmcaSaveNotesAction, dmcaSetStatusAction } from '@/lib/ceo/actions'
 import { ActionButton, ActionForm, ActionSubmit } from '@/components/ceo/action-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'

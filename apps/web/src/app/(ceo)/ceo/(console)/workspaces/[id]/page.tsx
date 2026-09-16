@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink } from '@/components/ui/icons'
 import { formatBytes, guildIconUrl } from '@ume/shared'
 import { getWorkspaceDetail, classifyBot } from '@/lib/ceo/queries'
 import { PageHeader, KeyValue, Section } from '@/components/ceo/page-header'
@@ -264,7 +264,7 @@ export default async function CeoWorkspaceDetailPage({
         />
       </StatGrid>
 
-      <Section title="Record" description="Everything on the workspace row.">
+      <Section title="Record">
         <Card>
           <CardContent>
             <KeyValue
@@ -368,10 +368,7 @@ export default async function CeoWorkspaceDetailPage({
         </Card>
       </Section>
 
-      <Section
-        title="Admin actions"
-        description="Overrides and the danger zone. Every action here is audited under ceo.*."
-      >
+      <Section title="Admin actions" description="All changes are recorded in the audit log.">
         <WorkspaceActions ws={ws} quotaBytes={d.quotaBytes} />
       </Section>
 

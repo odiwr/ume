@@ -81,16 +81,16 @@ export async function updateRole(
   })
 }
 
-/** Delete a custom role; members holding it fall back to Peon. */
+/** Delete a custom role; members holding it fall back to Listener. */
 export async function deleteRole(workspaceId: string, roleId: string): Promise<ActionResult<{ reassigned: number }>> {
   return runAction(async () => {
     const g = await guard(workspaceId, CAP.MANAGE_ROLES)
     const role = await db.query.roles.findFirst({ where: and(eq(roles.id, roleId), eq(roles.workspaceId, workspaceId)) })
     if (!role) throw new AppError('That role does not exist.')
-    if (role.systemKey) throw new AppError('System roles (Owner, Master, Servant, Peon) cannot be deleted. You can rename them instead.')
+    if (role.systemKey) throw new AppError('System roles (Owner, Admin, Contributor, Listener) cannot be deleted. You can rename them instead.')
     assertGrantable(g, role.capabilities)
     const peon = await db.query.roles.findFirst({ where: and(eq(roles.workspaceId, workspaceId), eq(roles.systemKey, 'peon')) })
-    if (!peon) throw new AppError('The Peon role is missing; reload the page and try again.')
+    if (!peon) throw new AppError('The Listener role is missing; reload the page and try again.')
     const moved = await db
       .update(memberships)
       .set({ roleId: peon.id, updatedAt: new Date() })

@@ -46,7 +46,7 @@ export async function ensureDefaultRoles(db: Db, workspaceId: string): Promise<R
   const all = await db.query.roles.findMany({ where: eq(roles.workspaceId, workspaceId) })
   const out = {} as Record<SystemRoleKey, Role>
   for (const r of all) if (r.systemKey) out[r.systemKey as SystemRoleKey] = r
-  // Default role for signed-in Discord members = Peon (read-only) if not set.
+  // Default role for signed-in Discord members = Listener (read-only) if not set.
   const ws = await getWorkspaceById(db, workspaceId)
   if (ws && !ws.defaultRoleId && out.peon) {
     await db.update(workspaces).set({ defaultRoleId: out.peon.id }).where(eq(workspaces.id, workspaceId))
@@ -54,7 +54,7 @@ export async function ensureDefaultRoles(db: Db, workspaceId: string): Promise<R
   return out
 }
 
-/** Give `userId` the Owner role (idempotent). Demotes any previous owner membership to Master. */
+/** Give `userId` the Owner role (idempotent). Demotes any previous owner membership to Admin. */
 export async function setWorkspaceOwner(db: Db, workspaceId: string, userId: string): Promise<void> {
   const sys = await ensureDefaultRoles(db, workspaceId)
   await db.transaction(async (tx) => {

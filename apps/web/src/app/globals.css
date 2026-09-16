@@ -1,41 +1,41 @@
 @import 'tailwindcss';
 
-/*
-  Ume design tokens — dark by default (it lives next to Discord), with the brand
-  pink as the single accent. Sage / beige come from the headphone artwork.
-*/
+/* Cool blue and lilac surfaces. Legacy color names keep shared controls compatible. */
 @theme {
-  --color-bg: #0a0a0a;
-  --color-surface: #141414;
-  --color-surface-2: #1c1c1c;
-  --color-surface-3: #242424;
-  --color-border: #262626;
-  --color-border-strong: #333333;
-  --color-fg: #f2f2f2;
-  --color-fg-muted: #a3a3a3;
-  --color-fg-subtle: #737373;
-  --color-pink: #e464b0;
-  --color-pink-strong: #d94a9f;
-  --color-pink-soft: #f4a3d2;
-  --color-sage: #b5c1b4;
-  --color-beige: #d6cabf;
-  --color-gray: #b3b3b3;
-  --color-success: #5ad07b;
-  --color-warning: #f2b84b;
-  --color-danger: #f0556b;
-
+  --color-bg: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #eef0f6;
+  --color-surface-3: #e2e6f0;
+  --color-border: #cbd2df;
+  --color-border-strong: #828ba0;
+  --color-fg: #253149;
+  --color-fg-muted: #535e73;
+  --color-fg-subtle: #59647a;
+  --color-pink: #5f4c94;
+  --color-pink-strong: #493777;
+  --color-pink-soft: #56418b;
+  --color-blush: #ece6f6;
+  --color-sage: #435b90;
+  --color-sage-light: #e4ebf9;
+  --color-beige: #73613e;
+  --color-gray: #5c6578;
+  --color-success: #347147;
+  --color-warning: #855d10;
+  --color-danger: #b03044;
   --font-sans: var(--font-body), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: var(--font-display-face), var(--font-body), ui-sans-serif, system-ui, sans-serif;
-
-  --radius-xl: 1rem;
+  --font-display: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --radius-xl: 0.875rem;
   --radius-2xl: 1.25rem;
-  --shadow-glow: 0 0 0 1px rgb(228 100 176 / 0.35), 0 12px 48px -12px rgb(228 100 176 / 0.45);
+  --shadow-glow: 0 8px 28px rgb(37 49 73 / 0.06);
 }
 
 :root {
-  color-scheme: dark;
+  color-scheme: light;
 }
-
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 2rem;
+}
 html,
 body {
   background: var(--color-bg);
@@ -43,69 +43,117 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
 }
-
-::selection {
-  background: var(--color-pink);
-  color: var(--color-bg);
+body {
+  line-height: 1.6;
 }
-
+::selection {
+  background: var(--color-blush);
+  color: var(--color-fg);
+}
 .font-display {
   font-family: var(--font-display);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.045em;
 }
-
-/* Subtle dotted grid used on marketing sections */
-.bg-grid {
-  background-image: radial-gradient(rgb(255 255 255 / 0.06) 1px, transparent 1px);
-  background-size: 22px 22px;
-}
-
-/* Pink -> transparent radial glow */
-.bg-glow {
-  background: radial-gradient(60% 50% at 50% 0%, rgb(228 100 176 / 0.22), transparent 70%);
-}
-
 *:focus-visible {
   outline: 2px solid var(--color-pink);
-  outline-offset: 2px;
+  outline-offset: 4px;
 }
-
-@keyframes ume-float {
-  0%,
-  100% {
-    transform: translateY(0);
+button,
+summary,
+a,
+input,
+select,
+textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+button:not(:disabled),
+summary {
+  cursor: pointer;
+}
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 16px;
+  z-index: 100;
+  transform: translateY(-180%);
+  border-radius: 8px;
+  background: var(--color-fg);
+  color: white;
+  padding: 12px 20px;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+.marketing-shell h1,
+.marketing-shell h2,
+.marketing-shell h3 {
+  text-wrap: balance;
+}
+.marketing-shell p {
+  text-wrap: pretty;
+}
+.hero-panel {
+  background: #edf0fa;
+}
+/* Original demo cover artwork, arranged as a 3 × 2 sprite sheet. */
+.album-cover {
+  background-image: url('/artwork/demo-covers.webp');
+  background-size: 300% 200%;
+  background-repeat: no-repeat;
+}
+.auth-art {
+  background: linear-gradient(155deg, #ddd9f3 0%, #c2d3f1 45%, #e3ebf9 80%);
+}
+.auth-art::after {
+  content: '';
+  position: absolute;
+  inset: 40% 0 0;
+  background: linear-gradient(transparent, #e3ebf9 80%);
+  pointer-events: none;
+}
+.auth-wave {
+  position: absolute;
+  inset: -35% -85% 22% -55%;
+  border-radius: 44%;
+  background: linear-gradient(135deg, #a7bde7 10%, #bca9dc 50%, #e9e1f5 85%);
+  box-shadow:
+    0 35px 0 8px #e5dcf580,
+    0 78px 0 15px #b3c7ed70,
+    0 115px 0 20px #eff2fb70;
+  animation: auth-tide 18s ease-in-out infinite alternate;
+  transform-origin: 55% 45%;
+}
+@keyframes auth-tide {
+  from {
+    transform: translate3d(-2%, -5%, 0) rotate(-14deg);
   }
-  50% {
-    transform: translateY(-8px);
+  to {
+    transform: translate3d(5%, 8%, 0) rotate(12deg);
   }
 }
-.animate-float {
-  animation: ume-float 5s ease-in-out infinite;
-}
-
-@keyframes ume-eq {
-  0%,
-  100% {
-    transform: scaleY(0.3);
-  }
-  50% {
-    transform: scaleY(1);
-  }
-}
-.animate-eq > span {
-  display: inline-block;
-  width: 3px;
-  border-radius: 2px;
-  background: currentColor;
+.spectrum-bar {
+  flex: 1;
+  min-width: 2px;
+  max-width: 7px;
+  border-radius: 3px 3px 1px 1px;
+  background: #b8c9f0;
   transform-origin: bottom;
-  animation: ume-eq 1s ease-in-out infinite;
+  height: 100%;
 }
-.animate-eq > span:nth-child(2) {
-  animation-delay: 0.15s;
+.spectrum-bar:nth-child(3n) {
+  background: #c8b4eb;
 }
-.animate-eq > span:nth-child(3) {
-  animation-delay: 0.3s;
+.spectrum-bar:nth-child(5n) {
+  background: #f4c9a8;
 }
-.animate-eq > span:nth-child(4) {
-  animation-delay: 0.45s;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
 }

@@ -13,10 +13,18 @@ const tones: Record<BadgeTone, string> = {
   danger: 'bg-danger/15 text-danger border-danger/30',
 }
 
-export function Badge({ tone = 'default', className, ...props }: React.HTMLAttributes<HTMLSpanElement> & { tone?: BadgeTone }) {
+export function Badge({
+  tone = 'default',
+  className,
+  ...props
+}: React.HTMLAttributes<HTMLSpanElement> & { tone?: BadgeTone }) {
   return (
     <span
-      className={cn('inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium', tones[tone], className)}
+      className={cn(
+        'inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium',
+        tones[tone],
+        className,
+      )}
       {...props}
     />
   )

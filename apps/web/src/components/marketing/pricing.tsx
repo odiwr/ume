@@ -1,8 +1,7 @@
 import Link from 'next/link'
-import { ArrowRight, Check } from 'lucide-react'
+import { ArrowRight, Check } from '@/components/ui/icons'
 import { PLANS, formatBytes, type Plan } from '@ume/shared'
 import { Container, Section, SectionLead, SectionTitle } from '@/components/site/container'
-import { Badge } from '@/components/ui/badge'
 import { buttonClasses } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 
@@ -13,23 +12,19 @@ export function PlanCard({ plan, cta }: { plan: Plan; cta?: { href: string; labe
   return (
     <div
       className={cn(
-        'relative flex flex-col rounded-2xl border bg-surface p-6',
-        recommended
-          ? 'border-pink/50 shadow-[0_0_0_1px_rgb(228_100_176/0.25),0_20px_60px_-24px_rgb(228_100_176/0.45)]'
-          : 'border-border',
+        'relative flex flex-col rounded-3xl p-6 sm:p-7',
+        recommended ? 'bg-sage-light' : 'bg-surface-2/70',
       )}
     >
-      {recommended ? (
-        <Badge tone="pink" className="absolute -top-3 left-6">
-          Recommended
-        </Badge>
-      ) : null}
-      <h3 className="font-display text-xl font-semibold">{plan.name}</h3>
-      <p className="mt-3 flex items-baseline gap-1">
-        <span className="font-display text-4xl font-bold tracking-tight">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="font-display text-xl font-semibold">{plan.name}</h3>
+        {recommended ? <span className="text-xs font-medium text-sage">Recommended</span> : null}
+      </div>
+      <p className="mt-4 flex flex-wrap items-baseline gap-1">
+        <span className="font-display text-5xl font-medium tracking-tight">
           ${plan.priceUsdMonthly}
         </span>
-        <span className="text-sm text-fg-subtle">/ month per server</span>
+        <span className="text-sm text-fg-subtle">/ month</span>
       </p>
       <p className="mt-2 text-sm text-fg-muted">
         {formatBytes(plan.storageBytes)} · about {plan.hoursOfMusic.toLocaleString('en-US')} hours
@@ -46,7 +41,7 @@ export function PlanCard({ plan, cta }: { plan: Plan; cta?: { href: string; labe
       <div className="mt-auto pt-6">
         <Link
           href={cta?.href ?? '/login'}
-          className={buttonClasses(recommended ? 'primary' : 'outline', 'md', 'w-full')}
+          className={buttonClasses(recommended ? 'primary' : 'secondary', 'md', 'w-full border-0')}
         >
           {cta?.label ?? (plan.priceUsdMonthly === 0 ? 'Start free' : `Get ${plan.name}`)}
         </Link>
@@ -67,16 +62,16 @@ export function PlanGrid() {
 
 export function PricingTeaser() {
   return (
-    <Section id="pricing" className="border-t border-border bg-surface/40">
+    <Section id="pricing" className="bg-surface/40">
       <Container>
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div className="max-w-2xl">
             <SectionTitle className="[text-wrap:balance]">
-              Flat tiers. Pay for storage, not for seats.
+              Start free. Add storage when you need it.
             </SectionTitle>
             <SectionLead className="[text-wrap:pretty]">
-              One plan per server, unlimited members and playlists on every tier. Every track is
-              normalized to Opus, so a gigabyte is always about {PLANS[0]!.hoursOfMusic} hours.
+              Every plan includes the 24/7 bot, unlimited members, and unlimited playlists. Choose
+              how much music to store. Pricing is per server.
             </SectionLead>
           </div>
           <Link href="/pricing" className={buttonClasses('ghost', 'md', 'self-start md:self-auto')}>

@@ -110,8 +110,8 @@ export default function LandingPage() {
       <CommandsTeaser />
       <PricingTeaser />
       <FaqSection
-        title="Questions people ask before adding a bot."
-        lead="Short answers. The long versions live in the Terms and Privacy pages."
+        title="Frequently asked questions."
+        lead="Setup, storage, and adding music."
         items={FAQ}
       />
       <FinalCta inviteHref={invite} />

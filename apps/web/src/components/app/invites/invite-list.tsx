@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { Ban, Link2, Mail, Ticket } from 'lucide-react'
+import { Ban, Link2, Mail, Ticket } from '@/components/ui/icons'
 import { Badge, type BadgeTone } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CheckboxField } from '@/components/ui/checkbox'

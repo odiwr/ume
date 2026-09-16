@@ -68,10 +68,7 @@ export default async function CeoNotificationsPage({
 
   return (
     <>
-      <PageHeader
-        title="Notifications"
-        description="Every email, Discord DM and channel message the worker sent or tried to send. Rows double as idempotency keys, so a notice is never sent twice."
-      />
+      <PageHeader title="Notifications" description="Email and Discord delivery history." />
       <div className="flex flex-col gap-2">
         <FilterChips
           basePath="/ceo/notifications"

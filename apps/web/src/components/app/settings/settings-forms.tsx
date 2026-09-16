@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { CheckboxField } from '@/components/ui/checkbox'
 import { Label, Select } from '@/components/ui/input'

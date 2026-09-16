@@ -1,5 +1,13 @@
 import type { Metadata } from 'next'
-import { Activity, MessageSquare, Mic, Play, ScrollText, Shuffle, Volume2 } from 'lucide-react'
+import {
+  Activity,
+  MessageSquare,
+  Mic,
+  Play,
+  ScrollText,
+  Shuffle,
+  Volume2,
+} from '@/components/ui/icons'
 import { can } from '@ume/db'
 import { CAP } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'
@@ -40,17 +48,25 @@ export default async function ActivityPage({ params }: { params: Promise<{ ws: s
   const { ws: umeId } = await params
   const { workspace, access } = await requireWorkspacePage(umeId, CAP.VIEW_LIBRARY)
   const showAudit = access.isOwner || can(access, CAP.MANAGE_MEMBERS)
-  const [events, audit] = await Promise.all([listActivity(workspace.id), showAudit ? listAudit(workspace.id) : Promise.resolve([])])
+  const [events, audit] = await Promise.all([
+    listActivity(workspace.id),
+    showAudit ? listAudit(workspace.id) : Promise.resolve([]),
+  ])
   const users = await usersByIds(events.map((e) => e.userId ?? '').filter(Boolean))
 
   return (
     <>
       <PageHeader
         title="Activity"
-        description="Everything that keeps this workspace alive: people in the channel, commands, playback and web edits. The newest entry resets the inactivity clock."
+        description="Channel activity, commands, playback, and library changes."
       />
 
-      <Section title="Recent activity" description={`Last activity ${workspace.lastActivityAt ? '' : 'unknown'}`.trim() || undefined}>
+      <Section
+        title="Recent activity"
+        description={
+          `Last activity ${workspace.lastActivityAt ? '' : 'unknown'}`.trim() || undefined
+        }
+      >
         {events.length ? (
           <ol className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
             {events.map((e) => {
@@ -68,7 +84,13 @@ export default async function ActivityPage({ params }: { params: Promise<{ ws: s
                       {kind.label}
                       {detail ? <span className="text-fg-muted"> · {detail}</span> : null}
                     </p>
-                    <p className="truncate text-xs text-fg-muted">{who ? displayName(who) : e.discordUserId ? `Discord user ${e.discordUserId}` : 'System'}</p>
+                    <p className="truncate text-xs text-fg-muted">
+                      {who
+                        ? displayName(who)
+                        : e.discordUserId
+                          ? `Discord user ${e.discordUserId}`
+                          : 'System'}
+                    </p>
                   </div>
                   <span className="shrink-0 text-xs text-fg-subtle">
                     <Ago date={e.createdAt} />
@@ -78,12 +100,16 @@ export default async function ActivityPage({ params }: { params: Promise<{ ws: s
             })}
           </ol>
         ) : (
-          <EmptyState icon={<Volume2 className="size-6" />} title="Nothing yet" description="Once someone joins the home channel, runs a command or adds music, it shows up here." />
+          <EmptyState
+            icon={<Volume2 className="size-6" />}
+            title="Nothing yet"
+            description="Once someone joins the home channel, runs a command or adds music, it shows up here."
+          />
         )}
       </Section>
 
       {showAudit ? (
-        <Section title="Audit log" description="Privileged actions with who did them. Visible to Masters and the Owner.">
+        <Section title="Audit log" description="Admin actions, visible to Admins and the Owner.">
           {audit.length ? (
             <ol className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
               {audit.map((a) => (
@@ -97,7 +123,11 @@ export default async function ActivityPage({ params }: { params: Promise<{ ws: s
                       {a.targetType ? <Badge>{a.targetType}</Badge> : null}
                     </p>
                     <p className="truncate text-xs text-fg-muted">
-                      {a.actor ? displayName(a.actor) : a.actorDiscordId ? `Discord user ${a.actorDiscordId}` : 'System'}
+                      {a.actor
+                        ? displayName(a.actor)
+                        : a.actorDiscordId
+                          ? `Discord user ${a.actorDiscordId}`
+                          : 'System'}
                       {describeMeta(a.metadata) ? ` · ${describeMeta(a.metadata)}` : ''}
                     </p>
                   </div>

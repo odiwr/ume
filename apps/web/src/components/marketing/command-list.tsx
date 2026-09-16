@@ -14,7 +14,7 @@ export const COMMAND_CATEGORIES: Record<CommandSpec['category'], { title: string
     },
     playback: {
       title: 'Playback',
-      blurb: 'Control what the channel hears. Ume stays connected no matter what you press.',
+      blurb: 'Play, pause, skip, and adjust playback.',
     },
     info: {
       title: 'Info',
@@ -82,7 +82,7 @@ export function CommandRow({ command, compact }: { command: CommandSpec; compact
   return (
     <li className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <code className="rounded-lg bg-surface-3 px-2 py-1 font-mono text-sm text-fg">
+        <code className="rounded-lg bg-surface-3 px-2 py-1 font-mono text-sm text-fg break-all">
           {slashForm(command)}
         </code>
         <span className="text-xs text-fg-subtle">or</span>
@@ -118,7 +118,10 @@ export function CommandRow({ command, compact }: { command: CommandSpec; compact
               <dt className="font-semibold uppercase tracking-wide text-fg-subtle">Example</dt>
               <dd className="flex flex-wrap gap-2">
                 {command.examples.map((e) => (
-                  <code key={e} className="rounded-md bg-bg px-1.5 py-0.5 font-mono text-fg-muted">
+                  <code
+                    key={e}
+                    className="rounded-md bg-bg px-1.5 py-0.5 font-mono text-fg-muted break-all"
+                  >
                     {e}
                   </code>
                 ))}

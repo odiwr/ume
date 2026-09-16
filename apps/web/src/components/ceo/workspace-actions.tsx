@@ -1,5 +1,5 @@
 import { PLANS, formatBytes } from '@ume/shared'
-import { Clock, Link2, Link2Off, RotateCcw, ShieldAlert, Unplug } from 'lucide-react'
+import { Clock, Link2, Link2Off, RotateCcw, ShieldAlert, Unplug } from '@/components/ui/icons'
 import {
   disconnectWorkspaceAction,
   purgeWorkspaceAction,

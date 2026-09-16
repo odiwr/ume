@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink } from '@/components/ui/icons'
 import { DMCA_STATUSES, listDmcaNotices, str } from '@/lib/ceo/queries'
 import { PageHeader, FilterChips } from '@/components/ceo/page-header'
 import { DataTable, type Column } from '@/components/ceo/data-table'

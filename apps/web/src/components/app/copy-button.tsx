@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { Check, Copy } from 'lucide-react'
+import { Check, Copy } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { Button, type ButtonProps } from '@/components/ui/button'
 

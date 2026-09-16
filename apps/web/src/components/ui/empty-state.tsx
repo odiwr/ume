@@ -21,10 +21,16 @@ export function EmptyState({
         className,
       )}
     >
-      {icon ? <div className="flex size-12 items-center justify-center rounded-2xl bg-pink/10 text-pink">{icon}</div> : null}
+      {icon ? (
+        <div className="flex size-12 items-center justify-center rounded-2xl bg-pink/10 text-pink">
+          {icon}
+        </div>
+      ) : null}
       <h3 className="font-display text-lg font-semibold">{title}</h3>
       {description ? <p className="max-w-md text-sm text-fg-muted">{description}</p> : null}
-      {children ? <div className="mt-2 flex flex-wrap items-center justify-center gap-2">{children}</div> : null}
+      {children ? (
+        <div className="mt-2 flex flex-wrap items-center justify-center gap-2">{children}</div>
+      ) : null}
     </div>
   )
 }

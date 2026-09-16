@@ -1,7 +1,7 @@
 'use client'
 import * as React from 'react'
 import Link from 'next/link'
-import { ArrowUpRight, ExternalLink } from 'lucide-react'
+import { ArrowUpRight, ExternalLink } from '@/components/ui/icons'
 import { Badge, type BadgeTone } from '@/components/ui/badge'
 import { Button, buttonClasses } from '@/components/ui/button'
 import { CheckboxField } from '@/components/ui/checkbox'

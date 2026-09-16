@@ -1,7 +1,7 @@
 'use client'
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
-import { MoreVertical, Pencil, Plus, Trash } from 'lucide-react'
+import { MoreVertical, Pencil, Plus, Trash } from '@/components/ui/icons'
 import { PLAYLIST } from '@ume/shared'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'

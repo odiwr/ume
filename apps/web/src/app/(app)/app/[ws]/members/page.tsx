@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Ticket } from 'lucide-react'
+import { Ticket } from '@/components/ui/icons'
 import { can } from '@ume/db'
 import { CAP } from '@ume/shared'
 import { buttonClasses } from '@/components/ui/button'
@@ -16,10 +16,16 @@ export const metadata: Metadata = { title: 'Members', robots: { index: false } }
 export default async function MembersPage({ params }: { params: Promise<{ ws: string }> }) {
   const { ws: umeId } = await params
   const { workspace, access, user } = await requireWorkspacePage(umeId, CAP.MANAGE_MEMBERS)
-  const [members, roles, maps] = await Promise.all([listMembers(workspace.id), listRoles(workspace.id), listRoleMaps(workspace.id)])
+  const [members, roles, maps] = await Promise.all([
+    listMembers(workspace.id),
+    listRoles(workspace.id),
+    listRoleMaps(workspace.id),
+  ])
 
   const grantable = (caps: number) => access.isOwner || (caps & ~access.caps) === 0
-  const roleOptions: RoleOption[] = roles.filter((r) => r.systemKey !== 'owner').map((r) => ({ id: r.id, name: r.name, color: r.color, grantable: grantable(r.capabilities) }))
+  const roleOptions: RoleOption[] = roles
+    .filter((r) => r.systemKey !== 'owner')
+    .map((r) => ({ id: r.id, name: r.name, color: r.color, grantable: grantable(r.capabilities) }))
   const rows: MemberRow[] = members.map((m) => {
     const isOwner = m.userId === workspace.ownerUserId || m.role.systemKey === 'owner'
     return {
@@ -52,7 +58,9 @@ export default async function MembersPage({ params }: { params: Promise<{ ws: st
         isEveryone: r.id === workspace.guildId,
         mappedRoleId: mappedBy.get(r.id) ?? null,
       }))
-      if (!fetched.length) loadError = 'Ume cannot read this server’s roles. Make sure the bot is in the server, then reload.'
+      if (!fetched.length)
+        loadError =
+          'Ume cannot read this server’s roles. Make sure the bot is in the server, then reload.'
     } catch {
       loadError = 'Could not reach Discord to list roles. Try again in a moment.'
     }
@@ -77,7 +85,7 @@ export default async function MembersPage({ params }: { params: Promise<{ ws: st
         <Section
           id="discord-roles"
           title="Discord role mapping"
-          description="Give Ume roles to people based on the Discord roles they already have. No invite needed."
+          description="Assign Ume access through existing Discord roles."
         >
           <RoleMapEditor
             workspaceId={workspace.id}

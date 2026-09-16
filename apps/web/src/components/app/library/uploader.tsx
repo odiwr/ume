@@ -2,7 +2,7 @@
 import * as React from 'react'
 import { useRouter } from 'next/navigation'
 import { useDropzone, type FileRejection } from 'react-dropzone'
-import { CloudUpload, FileMusic, X } from 'lucide-react'
+import { CloudUpload, FileMusic, X } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { UPLOAD, formatBytes } from '@ume/shared'
 import { Button } from '@/components/ui/button'

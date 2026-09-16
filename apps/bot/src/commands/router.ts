@@ -98,7 +98,7 @@ async function gate(spec: CommandSpec, guild: Guild | null, userId: string): Pro
       const why =
         status !== 'connected'
           ? `This workspace is **${status}**. An admin needs to enter the latest Ume token at ${env.appUrl}/app.`
-          : `You need the **${capLabel(spec.requires)}** permission — ask a Master, or sign in at ${env.appUrl}/app to link your Discord account.`
+          : `You need the **${capLabel(spec.requires)}** permission — ask an Admin, or sign in at ${env.appUrl}/app to link your Discord account.`
       return { ok: false, message: why, access, isGuildAdmin }
     }
   }

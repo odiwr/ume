@@ -1,4 +1,4 @@
-import { Search } from 'lucide-react'
+import { Search } from '@/components/ui/icons'
 import { Input } from '@/components/ui/input'
 import { buttonClasses } from '@/components/ui/button'
 import Link from 'next/link'

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { ArrowRight, Crown } from 'lucide-react'
+import { ArrowRight, Crown } from '@/components/ui/icons'
 import { effectiveQuotaBytes, type Workspace } from '@ume/db'
 import { getPlan, guildIconUrl } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'

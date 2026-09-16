@@ -32,7 +32,7 @@ export function LegalPage({
               <a
                 key={s.id}
                 href={`#${s.id}`}
-                className="rounded-lg px-2 py-1.5 text-sm text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
+                className="flex min-h-11 items-center rounded-lg px-2 py-2 text-sm text-fg-muted transition-colors hover:bg-surface-2 hover:text-fg"
               >
                 <span className="mr-2 tabular-nums text-fg-subtle">{i + 1}.</span>
                 {s.title}
@@ -40,19 +40,19 @@ export function LegalPage({
             ))}
           </nav>
           <div className="mt-6 flex flex-wrap gap-x-3 gap-y-1 text-xs text-fg-subtle lg:flex-col">
-            <Link href="/terms" className="hover:text-fg">
+            <Link href="/terms" className="inline-flex min-h-11 items-center hover:text-fg">
               Terms
             </Link>
-            <Link href="/privacy" className="hover:text-fg">
+            <Link href="/privacy" className="inline-flex min-h-11 items-center hover:text-fg">
               Privacy
             </Link>
-            <Link href="/dmca" className="hover:text-fg">
+            <Link href="/dmca" className="inline-flex min-h-11 items-center hover:text-fg">
               DMCA
             </Link>
           </div>
         </aside>
-        <article className="min-w-0">
-          <h1 className="font-display text-4xl font-bold tracking-tight sm:text-5xl">{title}</h1>
+        <article className="min-w-0 max-w-3xl">
+          <h1 className="font-display text-4xl font-medium tracking-tight sm:text-5xl">{title}</h1>
           <p className="mt-3 text-sm text-fg-subtle">Effective {effectiveDate}</p>
           <p className="mt-6 text-base text-fg-muted sm:text-lg">{intro}</p>
           <div className="mt-10 flex flex-col gap-12">{children}</div>
@@ -79,7 +79,7 @@ export function LegalSection({
         <span className="mr-2 text-pink">{index}.</span>
         {title}
       </h2>
-      <div className="mt-4 flex flex-col gap-4 text-[15px] leading-7 text-fg-muted [&_a]:text-pink-soft [&_a]:underline [&_a]:underline-offset-4 [&_li]:pl-1 [&_strong]:text-fg [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6">
+      <div className="mt-4 flex flex-col gap-4 text-base leading-7 text-fg-muted [&_a]:text-pink-soft [&_a]:underline [&_a]:underline-offset-4 [&_li]:pl-1 [&_strong]:text-fg [&_ul]:list-disc [&_ul]:space-y-2 [&_ul]:pl-6">
         {children}
       </div>
     </section>

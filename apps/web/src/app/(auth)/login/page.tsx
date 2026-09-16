@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { Info } from 'lucide-react'
+import { Info } from '@/components/ui/icons'
 import { getSession } from '@/lib/session'
 import { safeNextPath } from '@/lib/site/safe-next'
 import { SignInButtons } from './sign-in-buttons'
@@ -36,21 +36,19 @@ export default async function LoginPage({
 
   return (
     <div className="w-full max-w-md">
-      <div className="rounded-2xl border border-border bg-surface/90 p-6 shadow-2xl backdrop-blur sm:p-8">
-        <h1 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
-          Log in to Ume
+      <div className="rounded-2xl p-5 sm:p-8">
+        <h1 className="font-display text-4xl font-medium leading-tight sm:text-5xl">
+          Welcome back.
         </h1>
-        <p className="mt-2 text-sm text-fg-muted">
-          Discord is the identity for everyone who manages music. Google works too, if you were
-          invited by email or run the console.
-        </p>
+        <p className="mt-4 text-base text-fg-muted">Sign in to manage your servers and music.</p>
 
         {errorMessage ? (
           <p
-            className="mt-5 rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger"
+            className="mt-5 flex items-start gap-3 rounded-2xl bg-blush px-4 py-3 text-sm text-fg"
             role="alert"
           >
-            {errorMessage}
+            <Info className="mt-0.5 size-4 shrink-0 text-pink" aria-hidden />
+            <span>{errorMessage}</span>
           </p>
         ) : null}
 

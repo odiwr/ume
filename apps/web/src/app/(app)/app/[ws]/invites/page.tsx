@@ -42,13 +42,18 @@ export default async function InvitesPage({ params }: { params: Promise<{ ws: st
     createdAt: inv.createdAt.toISOString(),
     createdBy: displayName(inv.createdBy),
   }))
-  const active = rows.filter((r) => !r.revokedAt && new Date(r.expiresAt).getTime() > Date.now() && (r.maxUses === null || r.uses < r.maxUses)).length
+  const active = rows.filter(
+    (r) =>
+      !r.revokedAt &&
+      new Date(r.expiresAt).getTime() > Date.now() &&
+      (r.maxUses === null || r.uses < r.maxUses),
+  ).length
 
   return (
     <>
       <PageHeader
         title="Invites"
-        description={`${active} active invite${active === 1 ? '' : 's'}. Share links grant contributor roles to anyone holding them; email invites are bound to one address and can grant up to Master.`}
+        description={`${active} active invite${active === 1 ? '' : 's'}. Share links grant contributor roles to anyone holding them; email invites are bound to one address and can grant up to Admin.`}
         actions={<CreateInviteButtons workspaceId={workspace.id} roles={roleOptions} />}
       />
       <InviteList workspaceId={workspace.id} rows={rows} />

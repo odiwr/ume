@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { Trash, UserMinus } from 'lucide-react'
+import { Trash, UserMinus } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
 import { Input, Label } from '@/components/ui/input'

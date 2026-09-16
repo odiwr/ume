@@ -18,7 +18,8 @@
     "db:migrate": "pnpm --filter @ume/db migrate",
     "db:push": "pnpm --filter @ume/db push",
     "db:studio": "pnpm --filter @ume/db studio",
-    "format": "prettier --write \"**/*.{ts,tsx,md,json,yaml,yml,css}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,yaml,yml,css}\"",
+    "deploy:check": "node scripts/check-deploy.mjs"
   },
   "devDependencies": {
     "prettier": "^3.6.0",

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { INACTIVITY, PLANS, UPLOAD, formatBytes } from '@ume/shared'
-import { Container, Eyebrow, SectionLead, SectionTitle } from '@/components/site/container'
+import { Container, SectionLead } from '@/components/site/container'
 import { PlanGrid } from '@/components/marketing/pricing'
 import { FaqSection, type FaqItem } from '@/components/marketing/faq'
 import { FinalCta } from '@/components/marketing/cta'
@@ -37,9 +37,8 @@ const BILLING_FAQ: FaqItem[] = [
     q: 'What happens if I go over my quota?',
     a: (
       <p>
-        Uploads pause. That is the whole consequence. Existing music keeps playing, playlists stay
-        editable, and links still work. We never delete tracks to enforce a quota, including after a
-        downgrade; you just cannot add more until you free up space or upgrade.
+        Existing music keeps playing. New uploads and songs from links pause until you free up space
+        or upgrade. Changing plans never deletes your tracks.
       </p>
     ),
   },
@@ -86,11 +85,12 @@ export default function PricingPage() {
     <>
       <Container className="pb-8 pt-16 sm:pt-24">
         <div className="max-w-2xl">
-          <Eyebrow>Pricing</Eyebrow>
-          <SectionTitle className="sm:text-5xl">Four flat tiers, priced by storage.</SectionTitle>
+          <h1 className="font-display text-5xl font-medium leading-[1.1] sm:text-6xl">
+            Choose your storage plan.
+          </h1>
           <SectionLead>
-            Our marginal cost per gigabyte is flat, so the price is too, with a better rate the more
-            you keep. Every tier gets the 24/7 bot, unlimited members and unlimited playlists.
+            Start with 1 GB free or choose a larger library. Every plan includes the 24/7 bot,
+            unlimited members, and unlimited playlists.
           </SectionLead>
         </div>
       </Container>
@@ -119,9 +119,8 @@ export default function PricingPage() {
       </Container>
       <FaqSection
         id="billing-faq"
-        eyebrow="Billing"
-        title="The boring, important details."
-        lead="Everything about money in one place, so nothing about your library ever surprises you."
+        title="Billing questions."
+        lead="How subscriptions, storage limits, and cancellations work."
         items={BILLING_FAQ}
       />
       <FinalCta inviteHref={inviteUrl()} />

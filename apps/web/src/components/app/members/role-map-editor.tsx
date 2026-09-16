@@ -17,7 +17,7 @@ export interface DiscordRoleRow {
 
 /**
  * Discord role -> Ume role mapping. Most servers never need invites: map @DJ to
- * Servant and @everyone to Peon and members get in the moment they sign in.
+ * Contributor and @everyone to Listener and members get in the moment they sign in.
  */
 export function RoleMapEditor({
   workspaceId,
@@ -66,7 +66,7 @@ export function RoleMapEditor({
             </option>
           ))}
         </Select>
-        <p className="mt-1.5 text-xs text-fg-muted [text-wrap:pretty]">Given to signed-in members of the Discord server who match no mapping. Peon is the safe choice: browse and playback only.</p>
+        <p className="mt-1.5 text-xs text-fg-muted [text-wrap:pretty]">Given to signed-in members of the Discord server who match no mapping. Listener is the safe choice: browse and playback only.</p>
       </div>
 
       <div className="rounded-2xl border border-border bg-surface">

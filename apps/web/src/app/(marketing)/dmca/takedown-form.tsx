@@ -2,7 +2,7 @@
 
 import * as React from 'react'
 import { useActionState } from 'react'
-import { CheckCircle2, Send } from 'lucide-react'
+import { CheckCircle2, Send } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { Input, Label, Textarea } from '@/components/ui/input'
 import { submitDmcaNotice, type DmcaField, type DmcaFormState } from './actions'

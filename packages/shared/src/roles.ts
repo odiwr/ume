@@ -1,6 +1,6 @@
 /**
- * Roles are capability bitmasks. The three default roles keep the names the founder
- * chose (Master / Servant / Peon) plus an implicit, non-removable Owner. Servers can
+ * Roles are capability bitmasks. The three default roles use the professional default names
+ * Admin / Contributor / Listener plus an implicit, non-removable Owner. Servers can
  * rename roles or add custom ones later without touching this file.
  */
 export const CAP = {
@@ -28,14 +28,26 @@ export const CAP_LABELS: Record<CapabilityName, { label: string; description: st
   VIEW_LIBRARY: { label: 'View library', description: 'See playlists and tracks.' },
   ADD_TRACK: { label: 'Add music', description: 'Upload files or add links to playlists.' },
   DELETE_OWN_TRACK: { label: 'Remove own additions', description: 'Remove tracks they added.' },
-  DELETE_ANY_TRACK: { label: 'Remove any track', description: 'Remove any track from any playlist.' },
+  DELETE_ANY_TRACK: {
+    label: 'Remove any track',
+    description: 'Remove any track from any playlist.',
+  },
   EDIT_TRACK_META: { label: 'Edit track details', description: 'Fix titles, artists and covers.' },
-  MANAGE_PLAYLISTS: { label: 'Manage playlists', description: 'Create, rename and delete playlists.' },
+  MANAGE_PLAYLISTS: {
+    label: 'Manage playlists',
+    description: 'Create, rename and delete playlists.',
+  },
   CONTROL_PLAYBACK: { label: 'Control playback', description: 'Play, pause, skip in Discord.' },
   MANAGE_MEMBERS: { label: 'Manage members', description: 'Change roles or remove members.' },
-  MANAGE_INVITES: { label: 'Manage invites', description: 'Create and revoke links and email invites.' },
+  MANAGE_INVITES: {
+    label: 'Manage invites',
+    description: 'Create and revoke links and email invites.',
+  },
   MANAGE_ROLES: { label: 'Manage roles', description: 'Create roles and edit capabilities.' },
-  MANAGE_SETTINGS: { label: 'Manage settings', description: 'Home channel, token, Discord role mapping.' },
+  MANAGE_SETTINGS: {
+    label: 'Manage settings',
+    description: 'Home channel, token, Discord role mapping.',
+  },
   MANAGE_BILLING: { label: 'Manage billing', description: 'Change storage plan.' },
   DANGER_ZONE: { label: 'Danger zone', description: 'Reset or purge the workspace.' },
 }
@@ -55,14 +67,15 @@ export const DEFAULT_ROLES: readonly DefaultRole[] = [
   {
     key: 'owner',
     name: 'Owner',
-    description: 'The server owner. Exactly one; cannot be removed. Only role that can purge or change billing.',
+    description:
+      'The server owner. Exactly one; cannot be removed. Only role that can purge or change billing.',
     capabilities: ALL_CAPS,
     position: 0,
-    color: '#E464B0',
+    color: '#5F4C94',
   },
   {
     key: 'master',
-    name: 'Master',
+    name: 'Admin',
     description: 'Can edit every playlist, add and remove music, and manage members and invites.',
     capabilities:
       CAP.VIEW_LIBRARY |
@@ -76,23 +89,23 @@ export const DEFAULT_ROLES: readonly DefaultRole[] = [
       CAP.MANAGE_INVITES |
       CAP.MANAGE_SETTINGS,
     position: 1,
-    color: '#B5C1B4',
+    color: '#435B90',
   },
   {
     key: 'servant',
-    name: 'Servant',
+    name: 'Contributor',
     description: 'Can add music to playlists but cannot delete or edit anything.',
     capabilities: CAP.VIEW_LIBRARY | CAP.ADD_TRACK | CAP.CONTROL_PLAYBACK,
     position: 2,
-    color: '#D6CABF',
+    color: '#347147',
   },
   {
     key: 'peon',
-    name: 'Peon',
+    name: 'Listener',
     description: 'Can browse the library and use playback commands. Cannot change anything.',
     capabilities: CAP.VIEW_LIBRARY | CAP.CONTROL_PLAYBACK,
     position: 3,
-    color: '#B3B3B3',
+    color: '#59647A',
   },
 ] as const
 

@@ -27,9 +27,15 @@ export default async function RolesPage({ params }: { params: Promise<{ ws: stri
     <>
       <PageHeader
         title="Roles"
-        description="Each role is a set of capabilities. Master, Servant and Peon can be renamed but not deleted; custom roles can be anything short of Owner."
+        description="Set permissions for each role. Built-in roles can be renamed but not deleted."
       />
-      <RoleEditor workspaceId={workspace.id} roles={rows} viewerCaps={access.caps} viewerIsOwner={access.isOwner} viewerRoleId={access.role?.id ?? null} />
+      <RoleEditor
+        workspaceId={workspace.id}
+        roles={rows}
+        viewerCaps={access.caps}
+        viewerIsOwner={access.isOwner}
+        viewerRoleId={access.role?.id ?? null}
+      />
     </>
   )
 }

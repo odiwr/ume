@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { KeyRound } from 'lucide-react'
+import { KeyRound } from '@/components/ui/icons'
 import { Button } from '@/components/ui/button'
 import { CheckboxField } from '@/components/ui/checkbox'
 import { Input, Label } from '@/components/ui/input'

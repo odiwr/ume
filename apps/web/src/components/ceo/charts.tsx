@@ -17,26 +17,26 @@ import { formatBytes } from '@ume/shared'
  * ordinal (free < plus < pro < studio) so they use a pink lightness ramp rather
  * than four competing hues.
  */
-const PINK = '#e464b0'
+const PINK = 'var(--color-pink)'
 const PLAN_RAMP: Record<string, string> = {
   free: '#6f3556',
   plus: '#a8478a',
-  pro: '#e464b0',
+  pro: 'var(--color-pink)',
   studio: '#f4a3d2',
 }
-const GRID = '#262626'
-const TICK = { fill: '#737373', fontSize: 11 }
+const GRID = 'var(--color-border)'
+const TICK = { fill: 'var(--color-fg-subtle)', fontSize: 11 }
 const TOOLTIP_STYLE = {
   contentStyle: {
-    background: '#1c1c1c',
-    border: '1px solid #333333',
+    background: 'var(--color-surface)',
+    border: '1px solid var(--color-border)',
     borderRadius: 12,
     fontSize: 12,
-    color: '#f2f2f2',
+    color: 'var(--color-fg)',
   },
-  labelStyle: { color: '#a3a3a3', marginBottom: 4 },
-  itemStyle: { color: '#f2f2f2' },
-  cursor: { fill: 'rgba(255,255,255,0.04)' },
+  labelStyle: { color: 'var(--color-fg-muted)', marginBottom: 4 },
+  itemStyle: { color: 'var(--color-fg)' },
+  cursor: { fill: 'rgba(37,43,38,0.04)' },
 }
 
 export function WorkspacesPerWeekChart({
@@ -153,7 +153,7 @@ export function MrrByPlanChart({
 /** Horizontal usage meter used in storage tables. */
 export function UsageBar({ used, quota }: { used: number; quota: number }) {
   const pct = quota > 0 ? Math.min(100, (used / quota) * 100) : 0
-  const tone = pct >= 100 ? '#f0556b' : pct >= 85 ? '#f2b84b' : PINK
+  const tone = pct >= 100 ? 'var(--color-danger)' : pct >= 85 ? 'var(--color-warning)' : PINK
   return (
     <div className="flex items-center gap-2">
       <div

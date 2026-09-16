@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { X } from 'lucide-react'
+import { X } from '@/components/ui/icons'
 import { AUDIT_PREFIXES, clampPage, listAudit, str } from '@/lib/ceo/queries'
 import { PageHeader, FilterChips } from '@/components/ceo/page-header'
 import { DataTable, JsonInline, Mono, type Column } from '@/components/ceo/data-table'
@@ -90,7 +90,7 @@ export default async function CeoAuditPage({
     <>
       <PageHeader
         title="Audit"
-        description="Every privileged mutation, from the app, the bot and this console. Global rows have no workspace; ceo.* rows are yours."
+        description="Admin actions across the app, bot, and founder console."
       />
       <div className="flex flex-col gap-2">
         <FilterChips

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ListMusic } from 'lucide-react'
+import { ListMusic } from '@/components/ui/icons'
 import { can } from '@ume/db'
 import { CAP, PLAYLIST } from '@ume/shared'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -30,14 +30,28 @@ export default async function LibraryPage({ params }: { params: Promise<{ ws: st
             ? `${playlists.length} playlist${playlists.length === 1 ? '' : 's'}, ${totalTracks.toLocaleString('en-US')} ready track${totalTracks === 1 ? '' : 's'}. Play any of them in Discord with /play.`
             : 'Playlists are the whole structure: flat, shared, and playable with /play <name>.'
         }
-        actions={canManage ? <CreatePlaylistButton workspaceId={workspace.id} umeId={umeId} count={playlists.length} /> : null}
+        actions={
+          canManage ? (
+            <CreatePlaylistButton
+              workspaceId={workspace.id}
+              umeId={umeId}
+              count={playlists.length}
+            />
+          ) : null
+        }
       />
 
       {playlists.length ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {playlists.map((p) => (
-            <div key={p.id} className="group relative flex flex-col rounded-2xl border border-border bg-surface transition-colors hover:border-border-strong hover:bg-surface-2">
-              <Link href={`/app/${umeId}/library/${p.slug}`} className="flex flex-1 flex-col gap-4 p-5 focus-visible:outline-none">
+            <div
+              key={p.id}
+              className="group relative flex flex-col rounded-2xl border border-border bg-surface transition-colors hover:border-border-strong hover:bg-surface-2"
+            >
+              <Link
+                href={`/app/${umeId}/library/${p.slug}`}
+                className="flex flex-1 flex-col gap-4 p-5 focus-visible:outline-none"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <span className="flex size-11 items-center justify-center rounded-xl bg-surface-3 text-fg-muted transition-colors group-hover:bg-pink/15 group-hover:text-pink">
                     <ListMusic className="size-5" aria-hidden />
@@ -49,7 +63,11 @@ export default async function LibraryPage({ params }: { params: Promise<{ ws: st
                 <div className="min-w-0">
                   <h3 className="truncate font-display text-lg font-semibold">{p.name}</h3>
                   <p className="mt-0.5 truncate text-xs text-fg-muted">
-                    {p.description ? p.description : <>{formatDuration(p.totalDurationMs)} of music</>}
+                    {p.description ? (
+                      p.description
+                    ) : (
+                      <>{formatDuration(p.totalDurationMs)} of music</>
+                    )}
                   </p>
                 </div>
                 <p className="mt-auto text-[11px] text-fg-subtle">
@@ -59,7 +77,12 @@ export default async function LibraryPage({ params }: { params: Promise<{ ws: st
               </Link>
               {canManage ? (
                 <div className="absolute right-3 top-3">
-                  <PlaylistMenu workspaceId={workspace.id} umeId={umeId} playlist={p} afterDelete="library" />
+                  <PlaylistMenu
+                    workspaceId={workspace.id}
+                    umeId={umeId}
+                    playlist={p}
+                    afterDelete="library"
+                  />
                 </div>
               ) : null}
             </div>
@@ -72,10 +95,12 @@ export default async function LibraryPage({ params }: { params: Promise<{ ws: st
           description={
             canManage
               ? `Create the first one. A workspace can hold up to ${PLAYLIST.maxPerWorkspace} playlists, each with up to ${PLAYLIST.maxTracks.toLocaleString('en-US')} tracks.`
-              : 'A Master needs to create a playlist before anyone can add music.'
+              : 'A Admin needs to create a playlist before anyone can add music.'
           }
         >
-          {canManage ? <CreatePlaylistButton workspaceId={workspace.id} umeId={umeId} count={0} size="sm" /> : null}
+          {canManage ? (
+            <CreatePlaylistButton workspaceId={workspace.id} umeId={umeId} count={0} size="sm" />
+          ) : null}
         </EmptyState>
       )}
     </>

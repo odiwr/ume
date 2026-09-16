@@ -2,7 +2,7 @@
 import * as React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ChevronDown, LayoutGrid, LogOut, Plus } from 'lucide-react'
+import { ChevronDown, LayoutGrid, LogOut, Plus } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { authClient } from '@/lib/auth-client'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'

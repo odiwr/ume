@@ -1,5 +1,7 @@
 # Deploying Ume
 
+For the latest verified configuration and remaining blockers, see [DEPLOY_STATUS.md](DEPLOY_STATUS.md). Run `pnpm deploy:check` before a production deployment; it reports missing configuration without printing secrets. Domains in the examples below must be replaced with the confirmed domain you own.
+
 This is the full path from an empty account to a running product. Do the sections in order the first time; each one produces environment variables that later sections consume. The variable names match `.env.example` exactly.
 
 Hosting shape (decided in [`PLAN_REVIEW.md`](PLAN_REVIEW.md)): web on **Vercel**, bot and worker on **Railway or Fly.io** (built remotely from the Dockerfiles in `apps/bot` and `apps/worker`, so no Docker on your Mac), Postgres on **Neon**, files on **Cloudflare R2**, payments on **Stripe**, email on **Resend**, and, because the link extractor is on by default, an optional second worker on a **residential connection**.
@@ -57,7 +59,7 @@ Contents
   - Scopes: `bot`, `applications.commands`
   - Permissions: **View Channels, Send Messages, Embed Links, Read Message History, Connect, Speak, Use Application Commands**
 
-`botInviteUrl(clientId, guildId?)` in `@ume/shared` encodes exactly these scopes and permissions (permissions integer `2150714368`), so the "Add to Discord" buttons on the site never drift from this list. Do not grant Administrator: the bot does not need it and reviewers flag it. The optional "Now playing" voice channel status line additionally needs *Set Voice Channel Status* in the home channel and is skipped silently without it.
+`botInviteUrl(clientId, guildId?)` in `@ume/shared` encodes exactly these scopes and permissions (permissions integer `2150714368`), so the "Add to Discord" buttons on the site never drift from this list. Do not grant Administrator: the bot does not need it and reviewers flag it. The optional "Now playing" voice channel status line additionally needs _Set Voice Channel Status_ in the home channel and is skipped silently without it.
 
 ### 1.5 Register slash commands
 
@@ -108,6 +110,7 @@ One database serves the app tables and the pg-boss job queue (no Redis).
    ```
 
    `pnpm db:push` is for local development only; it bypasses migration files. The full workflow is in [`packages/db/README.md`](../packages/db/README.md). The `pgboss` schema is created by the worker on its first start; it is not part of Drizzle's snapshot.
+
 4. Turn on **Point-in-time restore** (Settings → Storage → History retention; 7 days on the free tier, more on paid). It is the backup strategy; see [`OPERATIONS.md`](OPERATIONS.md#restore-from-neon-point-in-time-recovery).
 5. Optional but recommended for production: create a branch called `staging` for Vercel preview deployments and point preview env vars at it, so previews never touch production rows.
 
@@ -147,12 +150,12 @@ Key layout, for reference (`packages/storage/src/keys.ts`): `ws/<workspaceId>/up
 Plans are defined once in `packages/shared/src/plans.ts` (Plus $4 / 10 GB, Pro $12 / 50 GB, Studio $35 / 250 GB, monthly, per workspace). Stripe only needs matching prices.
 
 1. Stripe Dashboard (start in **test mode**) → **Product catalog → Add product**, three times:
-   | Product | Price | Billing |
-   | --- | --- | --- |
-   | Ume Plus | $4.00 USD | Recurring, monthly |
-   | Ume Pro | $12.00 USD | Recurring, monthly |
-   | Ume Studio | $35.00 USD | Recurring, monthly |
-   Copy each price id (`price_…`) → `STRIPE_PRICE_PLUS`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_STUDIO`. The webhook maps a subscription back to a plan by comparing its price id with these three variables, so they must be set on the web host.
+   | Product                                                                                                                                                                                                                                    | Price      | Billing            |
+   | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | ------------------ |
+   | Ume Plus                                                                                                                                                                                                                                   | $4.00 USD  | Recurring, monthly |
+   | Ume Pro                                                                                                                                                                                                                                    | $12.00 USD | Recurring, monthly |
+   | Ume Studio                                                                                                                                                                                                                                 | $35.00 USD | Recurring, monthly |
+   | Copy each price id (`price_…`) → `STRIPE_PRICE_PLUS`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_STUDIO`. The webhook maps a subscription back to a plan by comparing its price id with these three variables, so they must be set on the web host. |
 2. **Developers → API keys** → Secret key → `STRIPE_SECRET_KEY`.
 3. **Developers → Webhooks → Add endpoint**: URL `<APP_URL>/api/stripe/webhook`, events:
    - `checkout.session.completed`
@@ -164,6 +167,7 @@ Plans are defined once in `packages/shared/src/plans.ts` (Plus $4 / 10 GB, Pro $
    - `invoice.payment_failed`
 
    Copy the **Signing secret** (`whsec_…`) → `STRIPE_WEBHOOK_SECRET`. The handler verifies the signature, records every event id in `stripe_events` before acting (so Stripe's retries are idempotent), and retrieves the subscription fresh rather than trusting the payload.
+
 4. **Settings → Billing → Customer portal**: turn it on, allow customers to **update payment methods**, **cancel subscriptions**, and **switch plans** between the three prices. Set the business name and the link back to `https://ume.app`. The dashboard's "Manage billing" button opens this portal, and existing subscribers change plans through it (deep-linked into the plan-change confirmation).
 5. **Settings → Billing → Subscriptions and emails**: enable failed-payment emails and Smart Retries. `past_due` keeps the paid plan; when a subscription is deleted the webhook downgrades the workspace to Free. Over-quota workspaces become read-only for uploads and extractions and are never purged for being over quota.
 6. Local development:
@@ -187,7 +191,7 @@ Transactional email only: invites, inactivity notices, purge confirmations, toke
    - **DKIM**: one TXT at `resend._domainkey` (the long `p=…` key).
    - **SPF**: an MX and a TXT on the sending subdomain Resend names (typically `send.ume.app`), value like `v=spf1 include:amazonses.com ~all`.
    - **DMARC**: TXT at `_dmarc.ume.app`, start with `v=DMARC1; p=none; rua=mailto:dmarc@ume.app` and tighten to `p=quarantine` once reports look clean.
-   Wait for the domain to show **Verified**.
+     Wait for the domain to show **Verified**.
 3. **API Keys → Create** with **Sending access**, restricted to the domain → `RESEND_API_KEY`.
 4. `EMAIL_FROM="Ume <no-reply@ume.app>"` (the address must be on the verified domain).
 5. Send yourself an invite from a test workspace and check it lands in the inbox, not spam.
@@ -210,6 +214,7 @@ Three processes send mail: the web (invites), the bot (token-rotation alert to t
    `APP_URL`, `NEXT_PUBLIC_APP_URL`, `DATABASE_URL` (pooled), `DATABASE_URL_DIRECT` (the pg-boss producer and any migration step use it), `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `DISCORD_CLIENT_ID`, `NEXT_PUBLIC_DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_BOT_TOKEN` (server-side Discord REST lookups: guild, roles, channels, member checks for invites), `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `CEO_EMAILS`, `S3_*`, `STRIPE_*`, `RESEND_API_KEY`, `EMAIL_FROM`, `CRON_SECRET`, `NEXT_PUBLIC_DISCORD_SUPPORT_INVITE`, `NEXT_PUBLIC_GITHUB_URL`, `DMCA_AGENT_*`.
 
    The web app does **not** need `FFMPEG_PATH`, `WORKER_QUEUES`, `EXTRACTOR_PROVIDER`, `YTDLP_*`, `COBALT_*` or `DISCORD_DEV_GUILD_ID`. For previews, point `DATABASE_URL` at a Neon branch and set `APP_URL`/`BETTER_AUTH_URL` to the preview domain, otherwise OAuth callbacks will not match.
+
 4. **Domains**: add `ume.app` and `www.ume.app` (redirect www → apex). Update `APP_URL`, `BETTER_AUTH_URL`, `NEXT_PUBLIC_APP_URL` to `https://ume.app` and add the matching Discord and Google redirect URIs (sections 1.3 and 2).
 5. **Runtime notes**:
    - `src/proxy.ts` (the Next.js 16 replacement for middleware) runs on the **Node runtime**, so it can import `better-auth/cookies` without Edge restrictions. It only checks for the presence of a session cookie; real authorization happens in server code on every request.
@@ -231,9 +236,9 @@ Pick a region near Discord's voice infrastructure: **us-east** (Railway "US East
 
 ### Environment variables
 
-| Process | Variables |
-| --- | --- |
-| bot | `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_ID`, `DISCORD_MESSAGE_CONTENT_INTENT`, `DATABASE_URL_DIRECT` (or `DATABASE_URL`), `APP_URL`, `S3_*`, `RESEND_API_KEY`, `EMAIL_FROM`, `NEXT_PUBLIC_DISCORD_SUPPORT_INVITE` (optional), `LOG_LEVEL` |
+| Process        | Variables                                                                                                                                                                                                                                                                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| bot            | `DISCORD_BOT_TOKEN`, `DISCORD_CLIENT_ID`, `DISCORD_MESSAGE_CONTENT_INTENT`, `DATABASE_URL_DIRECT` (or `DATABASE_URL`), `APP_URL`, `S3_*`, `RESEND_API_KEY`, `EMAIL_FROM`, `NEXT_PUBLIC_DISCORD_SUPPORT_INVITE` (optional), `LOG_LEVEL`                                                                                              |
 | worker (cloud) | `DATABASE_URL_DIRECT` (or `DATABASE_URL`), `APP_URL`, `S3_*`, `S3_PUBLIC_BASE_URL` (if set), `DISCORD_BOT_TOKEN` (DM and channel notices), `RESEND_API_KEY`, `EMAIL_FROM`, `FFMPEG_PATH`, `EXTRACTOR_PROVIDER`, `YTDLP_PATH`, `YTDLP_COOKIES`, `YTDLP_EXTRA_ARGS`, `COBALT_API_URL`, `COBALT_API_KEY`, `WORKER_QUEUES`, `LOG_LEVEL` |
 
 Neither needs Stripe, Google or Better Auth secrets. The Dockerfile already sets `FFMPEG_PATH=ffmpeg`, `YTDLP_PATH=/usr/local/bin/yt-dlp` and `EXTRACTOR_PROVIDER=ytdlp` for the worker image.

@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { Crown, Lock, Plus, Trash } from 'lucide-react'
+import { Crown, Lock, Plus, Trash } from '@/components/ui/icons'
 import { CAP, CAP_LABELS, OWNER_ONLY_CAPS, hasCap, type CapabilityName } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -155,7 +155,7 @@ function RoleCard({ workspaceId, role, canGrant, viewerIsOwner, isMine }: { work
         ) : null}
       </div>
       <Dialog open={confirmDelete} onOpenChange={(o) => (!o && !pending ? setConfirmDelete(false) : undefined)}>
-        <DialogContent title={`Delete “${role.name}”?`} description={role.memberCount ? `${role.memberCount} member${role.memberCount === 1 ? '' : 's'} holding it will become Peon (browse and playback only).` : 'Nobody holds this role.'}>
+        <DialogContent title={`Delete “${role.name}”?`} description={role.memberCount ? `${role.memberCount} member${role.memberCount === 1 ? '' : 's'} holding it will become Listener (browse and playback only).` : 'Nobody holds this role.'}>
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={() => setConfirmDelete(false)} disabled={pending}>
               Cancel
@@ -185,7 +185,7 @@ function CreateRoleDialog({ workspaceId, open, onClose, canGrant }: { workspaceI
   const { run, pending } = useAction()
   return (
     <Dialog open={open} onOpenChange={(o) => (!o && !pending ? onClose() : undefined)}>
-      <DialogContent title="New custom role" description="Start from the capabilities a Peon has and add what this role needs." className="max-w-2xl">
+      <DialogContent title="New custom role" description="Start from the capabilities a Listener has and add what this role needs." className="max-w-2xl">
         <form
           className="space-y-4"
           onSubmit={async (e) => {

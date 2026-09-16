@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { KeyRound, RadioTower, Trash2 } from 'lucide-react'
+import { KeyRound, RadioTower, Trash2 } from '@/components/ui/icons'
 import type { Workspace } from '@ume/db'
 import { Ago } from '@/components/app/time'
 import { isBotOnline } from '@/lib/app/workspace'

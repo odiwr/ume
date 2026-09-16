@@ -1,8 +1,8 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Mail, MapPin, ScrollText, UserRound } from 'lucide-react'
+import { Mail, MapPin, ScrollText, UserRound } from '@/components/ui/icons'
 import { BRAND } from '@ume/shared'
-import { Container, Eyebrow, SectionLead, SectionTitle } from '@/components/site/container'
+import { Container, SectionLead } from '@/components/site/container'
 import { Card, CardContent } from '@/components/ui/card'
 import { TakedownForm } from './takedown-form'
 
@@ -26,8 +26,9 @@ export default function DmcaPage() {
     <>
       <Container className="pb-8 pt-16 sm:pt-24">
         <div className="max-w-2xl">
-          <Eyebrow>Copyright</Eyebrow>
-          <SectionTitle className="sm:text-5xl">DMCA notices and counter-notices.</SectionTitle>
+          <h1 className="font-display text-4xl font-medium leading-tight sm:text-5xl">
+            DMCA notices and counter-notices.
+          </h1>
           <SectionLead>
             {BRAND.name} hosts audio that members upload to their own servers. If you own the rights
             to something that was uploaded without permission, this page is how you get it taken

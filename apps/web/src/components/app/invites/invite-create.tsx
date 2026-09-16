@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { Link2, Mail } from 'lucide-react'
+import { Link2, Mail } from '@/components/ui/icons'
 import { INVITE } from '@ume/shared'
 import { Button } from '@/components/ui/button'
 import { CheckboxField } from '@/components/ui/checkbox'
@@ -73,7 +73,7 @@ function CreateInviteDialog({ workspaceId, roles, kind, onClose }: { workspaceId
           description={
             isLink
               ? 'Anyone holding the link gets the role, so links are limited to contributor roles. Requiring Discord server membership is on by default.'
-              : 'Bound to one address and verified at sign-in. This is the only way to hand out Master-level roles.'
+              : 'Bound to one address and verified at sign-in. This is the only way to hand out Admin-level roles.'
           }
         >
           {created ? (

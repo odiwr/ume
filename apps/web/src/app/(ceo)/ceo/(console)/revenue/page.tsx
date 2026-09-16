@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { CreditCard, DollarSign, ExternalLink, TriangleAlert, Users } from 'lucide-react'
+import { CreditCard, DollarSign, ExternalLink, TriangleAlert, Users } from '@/components/ui/icons'
 import { PLANS } from '@ume/shared'
 import { getRevenueReport } from '@/lib/ceo/queries'
 import { PageHeader, Section } from '@/components/ceo/page-header'
@@ -115,7 +115,7 @@ export default async function CeoRevenuePage() {
     <>
       <PageHeader
         title="Revenue"
-        description="MRR is list price × workspaces whose Stripe subscription is active or trialing. Discounts, taxes and refunds live in Stripe; this page never calls the Stripe API."
+        description="Estimated monthly revenue from active and trial subscriptions, before discounts, taxes, and refunds."
       />
 
       <StatGrid>

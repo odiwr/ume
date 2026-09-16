@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { COMMAND_PREFIX, DANGER_CONFIRM_TTL_MS } from '@ume/shared'
-import { Container, Eyebrow, Section, SectionLead, SectionTitle } from '@/components/site/container'
+import { Container, Section, SectionLead } from '@/components/site/container'
 import { Badge } from '@/components/ui/badge'
 import {
   COMMAND_CATEGORIES,
@@ -21,11 +21,11 @@ export default function CommandsPage() {
     <>
       <Container className="pb-4 pt-16 sm:pt-24">
         <div className="max-w-2xl">
-          <Eyebrow>Commands</Eyebrow>
-          <SectionTitle className="sm:text-5xl">Every command, both spellings.</SectionTitle>
+          <h1 className="font-display text-5xl font-medium leading-[1.1] sm:text-6xl">
+            Discord commands.
+          </h1>
           <SectionLead>
-            Slash commands are the primary interface: they are discoverable in Discord, replies are
-            private, and setup commands are hidden from members who cannot run them. The{' '}
+            Type a slash command in Discord. Setup replies are private. The{' '}
             <code className="font-mono text-fg">{COMMAND_PREFIX}</code> prefix is an alias with the
             same names.
           </SectionLead>
@@ -43,10 +43,9 @@ export default function CommandsPage() {
           <div className="rounded-2xl border border-border bg-surface p-5">
             <Badge tone="beige">DM or server</Badge>
             <p className="mt-3 text-sm text-fg-muted">
-              Setup commands answer privately. Run the slash form in your server (reply is
-              ephemeral) or type the <code className="font-mono text-fg">{COMMAND_PREFIX}</code>{' '}
-              form in a DM with Ume. In a DM, Ume infers the server from the ones you own or
-              administer and asks you to pick if there are several.
+              Run setup commands privately in your server, or use the{' '}
+              <code className="font-mono text-fg">{COMMAND_PREFIX}</code> form in a DM. Ume asks you
+              to choose a server when needed.
             </p>
           </div>
           <div className="rounded-2xl border border-border bg-surface p-5">
@@ -94,11 +93,9 @@ export default function CommandsPage() {
               About the {COMMAND_PREFIX} prefix
             </h2>
             <p className="mt-2">
-              Reading ordinary messages in a server is a privileged Discord intent (Message
-              Content). Ume does not ask for it by default, which keeps setup simple and avoids
-              Discord&apos;s review process. If you self-host or run a small bot instance and turn
-              the intent on, the <code className="font-mono text-fg">{COMMAND_PREFIX}</code> alias
-              starts working in server channels too. In a DM with Ume it works regardless.
+              The Message Content setting is off by default. If you self-host and enable it, the{' '}
+              <code className="font-mono text-fg">{COMMAND_PREFIX}</code> prefix also works in
+              server channels. It always works in DMs.
             </p>
           </div>
         </Container>

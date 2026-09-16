@@ -19,7 +19,7 @@ Everything else (token lifecycle, three destructive commands, playlists, roles, 
 - The Ume token flow: `~reload` issues a single-use token; entering it on the web claims or reconnects the server; a token can never be reused.
 - `~reload` rotates and disconnects (workspace stays, read-only, until the new token is entered); `~reset` removes every member except the Owner; `~purge` deletes everything.
 - Playlists are flat (root only). Each playlist shows who added what and when.
-- Roles Master / Servant / Peon by default, plus a non-removable Owner.
+- Roles Admin / Contributor / Listener by default, plus a non-removable Owner.
 - Share links and email invites with a role and an expiry date.
 - Drag-and-drop uploads with a size limit; monthly storage tiers.
 - 60-day inactivity purge with notices at 30 days and 48 hours by email and Discord.
@@ -36,16 +36,16 @@ Everything else (token lifecycle, three destructive commands, playlists, roles, 
 | "Highest members" = owner or admin roles | Role names differ per server | Owner **or** the Administrator permission bit. Re-checked on every privileged command. |
 | `~reload [server-name]` in DM | DM has no server context; names collide | Run `/reload` inside the server (guild known). In DMs, Ume infers the server from the servers where you are owner/admin; if several, it asks you to pick. |
 | YouTube → mp3 converter as a headline feature | YouTube ToS; C&D precedent; yt-dlp is blocked from datacenter IPs | "Add a song from a link": a general extractor behind a provider interface (local yt-dlp, or a self-hosted Cobalt API). On by default. Never the word "converter". Owners accept a rights attestation before the first extraction; takedowns disable the track and block its hash everywhere; the extractor worker can run on a residential connection (WORKER_QUEUES=extract-link) so datacenter-IP blocks don't apply; a global `link_extract` switch in the CEO console turns links back into metadata-only entries. |
-| Peon = no permissions | A role that grants nothing is the same as not being a member | Peon = read-only: can browse the library and use playback commands. |
+| Listener = no permissions | A role that grants nothing is the same as not being a member | Listener = read-only: can browse the library and use playback commands. |
 | Reject large files | Discord voice is Opus; storing originals wastes storage | Every upload is transcoded to 128 kbps Opus with loudness normalization; the original is deleted. Bot streams Opus with **zero transcoding** at play time. |
 | Exponential price scaling | Marginal cost per GB is flat (R2: $0.015/GB, zero egress) | Four flat tiers with decreasing $/GB. Free 1 GB, Plus $4/10 GB, Pro $12/50 GB, Studio $35/250 GB. |
-| Public link for any role | A link is a bearer credential; a leaked Master link hands out delete-all | Links can grant Servant-level roles at most; Master needs an email invite bound to an address. Links require Discord server membership by default. |
+| Public link for any role | A link is a bearer credential; a leaked Admin link hands out delete-all | Links can grant Contributor-level roles at most; Admin needs an email invite bound to an address. Links require Discord server membership by default. |
 | Activity = someone joined the channel | Ignores uploads, edits and commands; curating for a launch would get purged | Activity = a human in the home channel, any command, any playback, any web edit/upload. Paid workspaces are never auto-purged (they downgrade instead). |
 
 ## Add
 
 - **Link extractor guardrails** (because it ships on by default): the Owner accepts a rights attestation when claiming the server; every extracted file is hashed and takedowns block the hash everywhere; the extractor runs in the worker behind a provider interface (local yt-dlp or a self-hosted Cobalt API) and can live on a residential connection; a global `link_extract` switch turns links back into metadata-only entries; marketing says "add a song from a link", never "converter".
-- **Discord role mapping** (`@DJ → Servant`, `@everyone → Peon`). Most servers never need invites.
+- **Discord role mapping** (`@DJ → Contributor`, `@everyone → Listener`). Most servers never need invites.
 - **Confirmation codes** for `~reset` and `~purge` (`~confirm K7Q2ZP`), and a typed-server-name Danger Zone on the web.
 - **Auto-pause when the channel is empty** (30 s grace); resume when someone joins. Bot stays connected.
 - **DMCA**: designated agent page, takedown form, `disabled` track status, blocked content hashes, repeat-infringer policy in the Terms. Register the agent at copyright.gov ($6, renew every 3 years) before launch.
@@ -104,3 +104,7 @@ Everything else (token lifecycle, three destructive commands, playlists, roles, 
 **Ship first (in this repo):** Discord sign-in, OAuth server claim + token claim, roles + role mapping, playlists, uploads with Opus transcode + metadata, link extractor (on by default), 24/7 bot with auto-pause, slash + `~` commands, share links + email invites, Stripe tiers, inactivity sweep, CEO console, marketing site, Terms/Privacy/DMCA pages.
 
 **Later:** custom roles UI polish, vanity URLs, 24-hour purge undo, second 256 kbps rendition for boosted servers, Discord Premium Apps SKU parity, sharding (needed at ~2,500 servers).
+
+## Role naming update — September 16, 2026
+
+The founder requested professional default role names: Owner, Admin, Contributor, Listener. These replace Master, Servant, and Peon in new-server defaults and public copy. Internal system keys and capability masks remain unchanged. Existing server-customized names are retained; no database migration is required.

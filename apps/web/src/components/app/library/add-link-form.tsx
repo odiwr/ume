@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { Link2 } from 'lucide-react'
+import { Link2 } from '@/components/ui/icons'
 import { toast } from 'sonner'
 import { SUPPORTED_LINK_SITES, parseMediaLink } from '@ume/shared'
 import { Button } from '@/components/ui/button'

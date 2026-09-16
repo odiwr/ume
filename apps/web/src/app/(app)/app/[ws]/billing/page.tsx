@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Check, CreditCard, ExternalLink, Sparkles } from 'lucide-react'
+import { Check, CreditCard, ExternalLink, Sparkles } from '@/components/ui/icons'
 import { effectiveQuotaBytes } from '@ume/db'
 import { CAP, PLANS, formatBytes, getPlan, isPaidPlan } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'
@@ -15,7 +15,8 @@ export const metadata: Metadata = { title: 'Billing', robots: { index: false } }
 
 const ERRORS: Record<string, string> = {
   forbidden: 'Only members with the Manage billing permission can change the plan.',
-  unconfigured: 'Billing is not set up on this Ume instance yet. Storage plans will open once Stripe is connected.',
+  unconfigured:
+    'Billing is not set up on this Ume instance yet. Storage plans will open once Stripe is connected.',
   plan: 'That plan cannot be purchased right now.',
   stripe: 'Stripe did not respond. Nothing was charged. Try again in a minute.',
   no_customer: 'This server has no billing account yet. Pick a plan first.',
@@ -50,25 +51,30 @@ export default async function BillingPage({
     <>
       <PageHeader
         title="Billing"
-        description="Storage is per server and paid monthly. Changing plans never deletes music: over the limit, uploads pause until you trim or upgrade."
+        description="Monthly storage plans for this server. Your existing music is kept when you change plans."
       />
 
       {checkout === 'success' ? (
         <Notice tone="success" icon={<Check className="size-4" />}>
-          Payment received. Your new limit applies as soon as Stripe confirms the subscription, usually within a few seconds. Refresh if this page still shows the old plan.
+          Payment received. Your new limit applies as soon as Stripe confirms the subscription,
+          usually within a few seconds. Refresh if this page still shows the old plan.
         </Notice>
       ) : null}
-      {checkout === 'cancelled' ? <Notice tone="info">Checkout was cancelled. Nothing was charged.</Notice> : null}
+      {checkout === 'cancelled' ? (
+        <Notice tone="info">Checkout was cancelled. Nothing was charged.</Notice>
+      ) : null}
       {error ? <Notice tone="danger">{error}</Notice> : null}
       {notice ? <Notice tone="info">{notice}</Notice> : null}
       {pastDue ? (
         <Notice tone="warning">
-          Your last payment failed. Playback keeps working and uploads are paused until the card is updated in the billing portal.
+          Your last payment failed. Playback keeps working and uploads are paused until the card is
+          updated in the billing portal.
         </Notice>
       ) : null}
       {overQuota ? (
         <Notice tone="warning">
-          This server uses {formatBytes(workspace.storageUsedBytes)} of a {formatBytes(quota)} limit. Uploads and link adds are paused; remove tracks or pick a bigger plan.
+          This server uses {formatBytes(workspace.storageUsedBytes)} of a {formatBytes(quota)}{' '}
+          limit. Uploads and link adds are paused; remove tracks or pick a bigger plan.
         </Notice>
       ) : null}
 
@@ -80,12 +86,19 @@ export default async function BillingPage({
               <Badge tone={isPaidPlan(current.id) ? 'pink' : 'default'}>
                 {current.priceUsdMonthly === 0 ? 'Free' : `$${current.priceUsdMonthly} / month`}
               </Badge>
-              {subscriptionStatus ? <Badge tone={pastDue ? 'warning' : 'success'}>{subscriptionStatus.replace('_', ' ')}</Badge> : null}
-              {workspace.storageQuotaOverrideBytes != null ? <Badge tone="sage">Custom limit</Badge> : null}
+              {subscriptionStatus ? (
+                <Badge tone={pastDue ? 'warning' : 'success'}>
+                  {subscriptionStatus.replace('_', ' ')}
+                </Badge>
+              ) : null}
+              {workspace.storageQuotaOverrideBytes != null ? (
+                <Badge tone="sage">Custom limit</Badge>
+              ) : null}
             </div>
             <StorageBar used={workspace.storageUsedBytes} quota={quota} />
             <p className="text-sm text-fg-muted tabular-nums">
-              {workspace.trackCount.toLocaleString('en-US')} of {current.maxTracks.toLocaleString('en-US')} tracks
+              {workspace.trackCount.toLocaleString('en-US')} of{' '}
+              {current.maxTracks.toLocaleString('en-US')} tracks
               {workspace.planRenewsAt ? (
                 <>
                   {' · renews '}
@@ -133,10 +146,13 @@ export default async function BillingPage({
                 </div>
                 <p className="mt-2 font-display text-3xl font-semibold tabular-nums">
                   {plan.priceUsdMonthly === 0 ? 'Free' : `$${plan.priceUsdMonthly}`}
-                  {plan.priceUsdMonthly > 0 ? <span className="text-sm font-normal text-fg-muted"> / month</span> : null}
+                  {plan.priceUsdMonthly > 0 ? (
+                    <span className="text-sm font-normal text-fg-muted"> / month</span>
+                  ) : null}
                 </p>
                 <p className="mt-1 text-sm text-fg-muted">
-                  {formatBytes(plan.storageBytes)} · about {plan.hoursOfMusic.toLocaleString('en-US')} hours of music
+                  {formatBytes(plan.storageBytes)} · about{' '}
+                  {plan.hoursOfMusic.toLocaleString('en-US')} hours of music
                 </p>
                 <ul className="mt-4 flex-1 space-y-1.5 text-sm">
                   {plan.highlights.map((h) => (
@@ -153,13 +169,18 @@ export default async function BillingPage({
                     </Button>
                   ) : plan.priceUsdMonthly === 0 ? (
                     <p className="text-xs text-fg-muted [text-wrap:pretty]">
-                      Cancel from the billing portal to return to Free at the end of the period. Music over the free limit stays but uploads pause.
+                      Cancel from the billing portal to return to Free at the end of the period.
+                      Music over the free limit stays but uploads pause.
                     </p>
                   ) : purchasable ? (
                     <form method="post" action="/api/stripe/checkout">
                       <input type="hidden" name="ws" value={workspace.umeId} />
                       <input type="hidden" name="plan" value={plan.id} />
-                      <Button type="submit" variant={isUpgrade ? 'primary' : 'outline'} className="w-full">
+                      <Button
+                        type="submit"
+                        variant={isUpgrade ? 'primary' : 'outline'}
+                        className="w-full"
+                      >
                         {isUpgrade ? 'Upgrade' : 'Switch'} to {plan.name}
                         <ExternalLink className="size-3.5" />
                       </Button>
@@ -179,16 +200,22 @@ export default async function BillingPage({
       <Section title="How billing works">
         <div className="grid gap-3 text-sm text-fg-muted sm:grid-cols-2">
           <p className="[text-wrap:pretty]">
-            <strong className="text-fg">Upgrades apply immediately.</strong> Stripe charges the difference for the rest of the month; the new limit lands as soon as the payment confirms.
+            <strong className="text-fg">Upgrades apply immediately.</strong> Stripe charges the
+            difference for the rest of the month; the new limit lands as soon as the payment
+            confirms.
           </p>
           <p className="[text-wrap:pretty]">
-            <strong className="text-fg">Downgrades apply at the end of the period.</strong> If the library is bigger than the new limit, uploads pause until you trim it. Nothing is deleted.
+            <strong className="text-fg">Downgrades apply at the end of the period.</strong> If the
+            library is bigger than the new limit, uploads pause until you trim it. Nothing is
+            deleted.
           </p>
           <p className="[text-wrap:pretty]">
-            <strong className="text-fg">Failed payments get a grace period.</strong> Playback continues; uploads pause until the card is fixed in the portal.
+            <strong className="text-fg">Failed payments get a grace period.</strong> Playback
+            continues; uploads pause until the card is fixed in the portal.
           </p>
           <p className="[text-wrap:pretty]">
-            <strong className="text-fg">Invoices and receipts</strong> live in the billing portal, together with card changes and cancellation.
+            <strong className="text-fg">Invoices and receipts</strong> live in the billing portal,
+            together with card changes and cancellation.
           </p>
         </div>
       </Section>

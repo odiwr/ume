@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Radio, TriangleAlert, Unplug, WifiOff } from 'lucide-react'
+import { Radio, TriangleAlert, Unplug, WifiOff } from '@/components/ui/icons'
 import { BOT_HEARTBEAT_MS } from '@ume/shared'
 import { BOT_ONLINE_WINDOW_MS, getBotHealth, str, type BotHealth } from '@/lib/ceo/queries'
 import { PageHeader, FilterChips, Section } from '@/components/ceo/page-header'

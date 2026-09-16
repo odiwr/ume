@@ -1,4 +1,4 @@
-import { Ban, RotateCcw } from 'lucide-react'
+import { Ban, RotateCcw } from '@/components/ui/icons'
 import { banUserAction, unbanUserAction } from '@/lib/ceo/actions'
 import { ActionButton, ActionForm, ActionSubmit } from '@/components/ceo/action-form'
 import { Input, Label } from '@/components/ui/input'

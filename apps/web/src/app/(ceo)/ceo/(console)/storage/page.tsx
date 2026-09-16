@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Database, HardDrive, ShieldOff, Music } from 'lucide-react'
+import { Database, HardDrive, ShieldOff, Music } from '@/components/ui/icons'
 import { formatBytes } from '@ume/shared'
 import { getStorageReport } from '@/lib/ceo/queries'
 import { PageHeader, Section } from '@/components/ceo/page-header'
@@ -89,7 +89,7 @@ export default async function CeoStoragePage() {
     <>
       <PageHeader
         title="Storage"
-        description="Bytes are normalized Opus, so 1 GB is roughly 17 hours of music at 128 kbps. Usage counters come from workspaces.storage_used_bytes and are reconciled daily by the worker."
+        description="Storage usage is reconciled daily. 1 GB holds roughly 17 hours of music."
       />
 
       <StatGrid>

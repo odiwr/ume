@@ -57,7 +57,7 @@ async function record(
     .catch(() => undefined) // never let bookkeeping break a notice
 }
 
-/** Owner + every member whose role carries MANAGE_SETTINGS (Masters), deduplicated by email. */
+/** Owner + every member whose role carries MANAGE_SETTINGS (Admins), deduplicated by email. */
 export async function workspaceManagers(db: Db, workspace: Workspace) {
   const rows = await db
     .select({ user: users, caps: roles.capabilities })
@@ -83,7 +83,7 @@ export async function workspaceManagers(db: Db, workspace: Workspace) {
 }
 
 /**
- * Fan a notice out to the people who can act on it: email to the Owner and every Master,
+ * Fan a notice out to the people who can act on it: email to the Owner and every Admin,
  * then one Discord message — DM to the owner, else the notice channel, else the guild's
  * system channel. One `notifications` row per attempt. Idempotency is the caller's job.
  */

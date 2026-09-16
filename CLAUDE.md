@@ -10,15 +10,15 @@ Ume is a 24/7 Discord music bot with a web app. pnpm + Turborepo monorepo, Node 
 
 ## Package roles
 
-| Path | Role |
-| --- | --- |
-| `apps/web` | Next.js 16 App Router, React 19, Tailwind v4, Better Auth (Discord + Google). Marketing, `/app/<umeId>` dashboard, `/ceo` console, API routes. |
-| `apps/bot` | discord.js 14 + @discordjs/voice. Slash commands generated from `COMMANDS`; `~` prefix as alias. Streams stored Opus, no transcoding. |
-| `apps/worker` | pg-boss consumers: transcode, YouTube ingest (flag-gated), sweeps, purge, email. |
-| `packages/shared` | `@ume/shared` constants, ids, CAP bitmasks, token helpers, Discord helpers, plans, validation, command list, job names/payloads. |
-| `packages/db` | `@ume/db` Drizzle schema, relations, migrations (`drizzle/`), query helpers (`getAccess`, `claimToken`, `logAudit`, …). |
-| `packages/storage` | `@ume/storage` S3/R2 client, presigned URLs, key layout under `ws/<workspaceId>/`. |
-| `packages/email` | `@ume/email` Resend sender (dry-run without key) and templates. |
+| Path               | Role                                                                                                                                           |
+| ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `apps/web`         | Next.js 16 App Router, React 19, Tailwind v4, Better Auth (Discord + Google). Marketing, `/app/<umeId>` dashboard, `/ceo` console, API routes. |
+| `apps/bot`         | discord.js 14 + @discordjs/voice. Slash commands generated from `COMMANDS`; `~` prefix as alias. Streams stored Opus, no transcoding.          |
+| `apps/worker`      | pg-boss consumers: transcode, YouTube ingest (flag-gated), sweeps, purge, email.                                                               |
+| `packages/shared`  | `@ume/shared` constants, ids, CAP bitmasks, token helpers, Discord helpers, plans, validation, command list, job names/payloads.               |
+| `packages/db`      | `@ume/db` Drizzle schema, relations, migrations (`drizzle/`), query helpers (`getAccess`, `claimToken`, `logAudit`, …).                        |
+| `packages/storage` | `@ume/storage` S3/R2 client, presigned URLs, key layout under `ws/<workspaceId>/`.                                                             |
+| `packages/email`   | `@ume/email` Resend sender (dry-run without key) and templates.                                                                                |
 
 ## Ownership boundaries
 
@@ -57,7 +57,7 @@ if (!can(access, CAP.MANAGE_PLAYLISTS)) throw new Error('Forbidden')
 
 ## Design
 
-Dark UI with the tokens in `apps/web/src/app/globals.css` (bg, surface, border, fg, pink accent, sage, beige, gray, success/warning/danger). Pink is the single accent. Rounded-2xl cards, generous spacing, readable at 400 px. lucide-react icons. Use the primitives in `src/components/ui`. Real copy, no lorem ipsum. The user-facing word is "playlist" everywhere (never "bucket" or "folder").
+Cool light UI with the tokens in `apps/web/src/app/globals.css`: white background, navy text and primary actions, blue and lilac surfaces, and accessible violet emphasis. See `docs/DESIGN_REVIEW.md` for the Halsa-inspired layout. The public header is static and opaque, never sticky or blurred. Use subtle equalizer/accordion motion and respect reduced-motion preferences. Public pages use borderless surfaces separated by spacing and soft color; reserve outlines for fill buttons, provider sign-in buttons, and the dashed upload illustration. Use deliberate grouping, generous spacing, and layouts readable at 320 px. All interface icons come from the Icones catalog through `src/components/ui/icons.tsx`; see `public/icons/NOTICE.md`. Keep copy direct and specific; avoid slogans and buzzwords. Use the primitives in `src/components/ui`. Real copy, no lorem ipsum. The user-facing word is "playlist" everywhere (never "bucket" or "folder").
 
 ## Verify
 

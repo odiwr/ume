@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { ExternalLink } from 'lucide-react'
+import { ExternalLink } from '@/components/ui/icons'
 import { formatBytes, linkSiteLabel } from '@ume/shared'
 import { getDmcaNotice } from '@/lib/ceo/queries'
 import { formatDuration } from '@/lib/utils'
@@ -49,10 +49,7 @@ export default async function CeoDmcaDetailPage({ params }: { params: Promise<{ 
         }
       />
 
-      <Section
-        title="Decision"
-        description="Every button is audited under ceo.dmca.* and ceo.track.*."
-      >
+      <Section title="Decision" description="All actions are recorded in the audit log.">
         <DmcaActions notice={notice} track={track} hashBlocked={d.hashBlocked} />
       </Section>
 

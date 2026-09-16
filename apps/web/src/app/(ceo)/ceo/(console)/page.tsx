@@ -11,7 +11,7 @@ import {
   Server,
   TriangleAlert,
   Users,
-} from 'lucide-react'
+} from '@/components/ui/icons'
 import { formatBytes } from '@ume/shared'
 import { getOverview, listIdleFreeWorkspaces } from '@/lib/ceo/queries'
 import { PageHeader, Section } from '@/components/ceo/page-header'
@@ -31,10 +31,7 @@ export default async function CeoOverviewPage() {
 
   return (
     <>
-      <PageHeader
-        title="Overview"
-        description="Where Ume stands right now. Numbers refresh on every load."
-      />
+      <PageHeader title="Overview" description="Current usage and service status." />
 
       <StatGrid>
         <StatTile

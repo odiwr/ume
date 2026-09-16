@@ -1,6 +1,15 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { ArrowUpRight, Clock, HardDrive, ListMusic, RadioTower, Settings, Ticket, Users } from 'lucide-react'
+import {
+  ArrowUpRight,
+  Clock,
+  HardDrive,
+  ListMusic,
+  RadioTower,
+  Settings,
+  Ticket,
+  Users,
+} from '@/components/ui/icons'
 import { can, effectiveQuotaBytes } from '@ume/db'
 import { CAP, INACTIVITY, formatBytes, getPlan, isPaidPlan, linkSiteLabel } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'
@@ -29,14 +38,39 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
   const paid = isPaidPlan(workspace.plan)
   const idleDays = relativeDays(workspace.lastActivityAt)
   const daysLeft = Math.max(0, INACTIVITY.purgeAfterDays - idleDays)
-  const purgeTone = daysLeft <= 2 ? 'text-danger' : daysLeft <= INACTIVITY.purgeAfterDays - INACTIVITY.firstNoticeAtDays ? 'text-warning' : 'text-fg'
+  const purgeTone =
+    daysLeft <= 2
+      ? 'text-danger'
+      : daysLeft <= INACTIVITY.purgeAfterDays - INACTIVITY.firstNoticeAtDays
+        ? 'text-warning'
+        : 'text-fg'
   const firstName = (user.name || user.discordUsername || 'there').split(' ')[0]
 
   const quick = [
-    { href: `/app/${umeId}/library`, label: 'Open the library', icon: ListMusic, show: can(access, CAP.VIEW_LIBRARY) },
-    { href: `/app/${umeId}/invites`, label: 'Invite curators', icon: Ticket, show: can(access, CAP.MANAGE_INVITES) },
-    { href: `/app/${umeId}/members`, label: 'Manage members', icon: Users, show: can(access, CAP.MANAGE_MEMBERS) },
-    { href: `/app/${umeId}/settings`, label: 'Bot settings', icon: Settings, show: can(access, CAP.MANAGE_SETTINGS) },
+    {
+      href: `/app/${umeId}/library`,
+      label: 'Open the library',
+      icon: ListMusic,
+      show: can(access, CAP.VIEW_LIBRARY),
+    },
+    {
+      href: `/app/${umeId}/invites`,
+      label: 'Invite curators',
+      icon: Ticket,
+      show: can(access, CAP.MANAGE_INVITES),
+    },
+    {
+      href: `/app/${umeId}/members`,
+      label: 'Manage members',
+      icon: Users,
+      show: can(access, CAP.MANAGE_MEMBERS),
+    },
+    {
+      href: `/app/${umeId}/settings`,
+      label: 'Bot settings',
+      icon: Settings,
+      show: can(access, CAP.MANAGE_SETTINGS),
+    },
   ].filter((q) => q.show)
 
   return (
@@ -59,16 +93,29 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
                 <RadioTower className="size-4" aria-hidden /> Bot
               </span>
               <Badge tone={online ? 'success' : workspace.botInGuild ? 'warning' : 'danger'}>
-                <span className={online ? 'size-1.5 rounded-full bg-success' : 'size-1.5 rounded-full bg-current opacity-60'} aria-hidden />
+                <span
+                  className={
+                    online
+                      ? 'size-1.5 rounded-full bg-success'
+                      : 'size-1.5 rounded-full bg-current opacity-60'
+                  }
+                  aria-hidden
+                />
                 {online ? 'Online' : workspace.botInGuild ? 'Offline' : 'Not in server'}
               </Badge>
             </div>
-            <p className="font-display text-2xl font-semibold">{online ? (workspace.botVoiceChannelId ? 'In the room' : 'Standing by') : 'Quiet'}</p>
+            <p className="font-display text-2xl font-semibold">
+              {online ? (workspace.botVoiceChannelId ? 'In the room' : 'Standing by') : 'Quiet'}
+            </p>
             <p className="text-xs text-fg-muted">
               {online ? (
-                <>Heartbeat <Ago date={workspace.botLastSeenAt} /></>
+                <>
+                  Heartbeat <Ago date={workspace.botLastSeenAt} />
+                </>
               ) : workspace.botLastSeenAt ? (
-                <>Last seen <Ago date={workspace.botLastSeenAt} /></>
+                <>
+                  Last seen <Ago date={workspace.botLastSeenAt} />
+                </>
               ) : (
                 'Never connected yet.'
               )}
@@ -84,10 +131,13 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
               </span>
               <Badge tone={paid ? 'pink' : 'default'}>{plan.name}</Badge>
             </div>
-            <p className="font-display text-2xl font-semibold tabular-nums">{percent(workspace.storageUsedBytes, quota)}%</p>
+            <p className="font-display text-2xl font-semibold tabular-nums">
+              {percent(workspace.storageUsedBytes, quota)}%
+            </p>
             <StorageBar used={workspace.storageUsedBytes} quota={quota} compact />
             <p className="text-xs text-fg-muted tabular-nums">
-              {workspace.trackCount.toLocaleString('en-US')} of {plan.maxTracks.toLocaleString('en-US')} tracks
+              {workspace.trackCount.toLocaleString('en-US')} of{' '}
+              {plan.maxTracks.toLocaleString('en-US')} tracks
             </p>
           </CardContent>
         </Card>
@@ -100,8 +150,14 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
               </span>
               {paid ? <Badge tone="sage">Never auto-removed</Badge> : null}
             </div>
-            <p className={`font-display text-2xl font-semibold tabular-nums ${paid ? '' : purgeTone}`}>
-              {paid ? (idleDays === 0 ? 'Active today' : `${idleDays}d idle`) : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
+            <p
+              className={`font-display text-2xl font-semibold tabular-nums ${paid ? '' : purgeTone}`}
+            >
+              {paid
+                ? idleDays === 0
+                  ? 'Active today'
+                  : `${idleDays}d idle`
+                : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
             </p>
             <p className="text-xs text-fg-muted [text-wrap:pretty]">
               Last activity <Ago date={workspace.lastActivityAt} />.{' '}
@@ -125,9 +181,12 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
 
       <Section
         title="Recent additions"
-        description="The latest songs across every playlist, and who added them."
+        description="Latest tracks across all playlists."
         actions={
-          <Link href={`/app/${umeId}/library`} className="inline-flex items-center gap-1 text-sm font-medium text-fg-muted hover:text-fg">
+          <Link
+            href={`/app/${umeId}/library`}
+            className="inline-flex items-center gap-1 text-sm font-medium text-fg-muted hover:text-fg"
+          >
             All playlists <ArrowUpRight className="size-3.5" />
           </Link>
         }
@@ -143,18 +202,29 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
                     <p className="truncate text-sm font-medium">{e.track.title}</p>
                     <p className="truncate text-xs text-fg-muted">
                       {e.track.artist ? `${e.track.artist} · ` : ''}
-                      <Link href={`/app/${umeId}/library/${e.playlist.slug}`} className="hover:text-fg">
+                      <Link
+                        href={`/app/${umeId}/library/${e.playlist.slug}`}
+                        className="hover:text-fg"
+                      >
                         {e.playlist.name}
                       </Link>
-                      {e.track.source === 'link' ? ` · ${linkSiteLabel(e.track.sourceSite)}` : ' · Upload'}
+                      {e.track.source === 'link'
+                        ? ` · ${linkSiteLabel(e.track.sourceSite)}`
+                        : ' · Upload'}
                     </p>
                   </div>
                   <div className="hidden items-center gap-2 sm:flex">
                     <UserAvatar user={e.addedBy} size={22} />
-                    <span className="max-w-32 truncate text-xs text-fg-muted">{displayName(e.addedBy)}</span>
+                    <span className="max-w-32 truncate text-xs text-fg-muted">
+                      {displayName(e.addedBy)}
+                    </span>
                   </div>
-                  <span className="hidden text-xs text-fg-muted tabular-nums md:inline">{formatDuration(e.track.durationMs)}</span>
-                  {e.track.status !== 'ready' ? <Badge tone={status.tone}>{status.label}</Badge> : null}
+                  <span className="hidden text-xs text-fg-muted tabular-nums md:inline">
+                    {formatDuration(e.track.durationMs)}
+                  </span>
+                  {e.track.status !== 'ready' ? (
+                    <Badge tone={status.tone}>{status.label}</Badge>
+                  ) : null}
                   <span className="text-xs text-fg-subtle">
                     <Ago date={e.addedAt} />
                   </span>
@@ -166,7 +236,7 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
           <EmptyState
             icon={<ListMusic className="size-6" />}
             title="Nothing added yet"
-            description="Upload a file or add a song from a link in any playlist and it will show up here with your name on it."
+            description="Upload a file or add a link to a playlist."
           >
             <Link href={`/app/${umeId}/library`} className={buttonClasses('primary', 'sm')}>
               Go to the library
@@ -176,7 +246,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
       </Section>
 
       <p className="text-xs text-fg-subtle">
-        {formatBytes(workspace.storageUsedBytes)} of {formatBytes(quota)} used across {workspace.trackCount.toLocaleString('en-US')} tracks.
+        {formatBytes(workspace.storageUsedBytes)} of {formatBytes(quota)} used across{' '}
+        {workspace.trackCount.toLocaleString('en-US')} tracks.
       </p>
     </>
   )
@@ -185,10 +256,21 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
 function Cover({ src }: { src: string | null }) {
   if (src) {
     // eslint-disable-next-line @next/next/no-img-element
-    return <img src={src} alt="" width={40} height={40} className="size-10 shrink-0 rounded-lg bg-surface-3 object-cover" />
+    return (
+      <img
+        src={src}
+        alt=""
+        width={40}
+        height={40}
+        className="size-10 shrink-0 rounded-lg bg-surface-3 object-cover"
+      />
+    )
   }
   return (
-    <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-3 text-fg-subtle" aria-hidden>
+    <span
+      className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-surface-3 text-fg-subtle"
+      aria-hidden
+    >
       <ListMusic className="size-4" />
     </span>
   )

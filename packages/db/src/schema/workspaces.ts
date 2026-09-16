@@ -183,7 +183,7 @@ export const memberships = pgTable(
   ],
 )
 
-/** Discord role -> Ume role mapping ("@DJ -> Servant"). Highest position wins. */
+/** Discord role -> Ume role mapping ("@DJ -> Contributor"). Highest position wins. */
 export const discordRoleMaps = pgTable(
   'discord_role_maps',
   {

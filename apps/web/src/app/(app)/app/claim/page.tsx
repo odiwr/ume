@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Info } from 'lucide-react'
+import { Info } from '@/components/ui/icons'
 import { isClaimTokenShape } from '@ume/shared'
 import { Card, CardContent } from '@/components/ui/card'
 import { ClaimTokenForm } from '@/components/app/claim-token-form'
@@ -10,7 +10,11 @@ import { requireUser } from '@/lib/session'
 
 export const metadata: Metadata = { title: 'Enter a token', robots: { index: false } }
 
-export default async function ClaimPage({ searchParams }: { searchParams: Promise<{ token?: string | string[] }> }) {
+export default async function ClaimPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ token?: string | string[] }>
+}) {
   const session = await requireUser('/app/claim')
   const params = await searchParams
   const raw = Array.isArray(params.token) ? params.token[0] : params.token
@@ -19,11 +23,14 @@ export default async function ClaimPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="min-h-dvh">
-      <TopBar user={session.user} crumbs={[{ href: '/app', label: 'Your servers' }, { label: 'Enter a token' }]} />
+      <TopBar
+        user={session.user}
+        crumbs={[{ href: '/app', label: 'Your servers' }, { label: 'Enter a token' }]}
+      />
       <main className="mx-auto w-full max-w-2xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         <PageHeader
           title="Enter an Ume token"
-          description="The token Ume sent you in Discord claims a new server or reconnects one after a /reload. It works exactly once."
+          description="Paste the single-use token from Ume’s Discord message."
         />
         <Card>
           <CardContent className="space-y-6">

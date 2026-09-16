@@ -1,42 +1,41 @@
-import Link from 'next/link'
-import { ArrowRight } from 'lucide-react'
-import { COMMANDS } from '@ume/shared'
-import { Container, Eyebrow, Section, SectionLead, SectionTitle } from '@/components/site/container'
-import { buttonClasses } from '@/components/ui/button'
-import { CommandRow } from './command-list'
-
-const TEASER = ['play', 'add', 'np', 'home', 'reload', 'purge']
+import { ArrowUpRight } from '@/components/ui/icons'
+import { Container, Section, SectionLead, SectionTitle } from '@/components/site/container'
+import { FillLink } from '@/components/ui/fill-link'
 
 export function CommandsTeaser() {
-  const picks = TEASER.map((n) => COMMANDS.find((c) => c.name === n)).filter(
-    (c): c is NonNullable<typeof c> => !!c,
-  )
   return (
     <Section id="commands">
-      <Container>
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
-            <Eyebrow>Commands</Eyebrow>
-            <SectionTitle>Slash commands first. A tilde if you want it.</SectionTitle>
-            <SectionLead>
-              Every command is a slash command with an ephemeral reply, so setup commands stay
-              invisible to members who should not see them. The{' '}
-              <code className="font-mono text-fg">~</code> alias works in DMs always.
-            </SectionLead>
-          </div>
-          <Link
-            href="/commands"
-            className={buttonClasses('outline', 'md', 'self-start md:self-auto')}
-          >
-            All commands
-            <ArrowRight className="size-4" />
-          </Link>
+      <Container className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
+        <div>
+          <SectionTitle>
+            Play, skip, pause.
+            <br />
+            Right in Discord.
+          </SectionTitle>
+          <SectionLead>
+            Start a playlist, skip a track, or see what’s on. Use slash commands without leaving
+            your voice chat.
+          </SectionLead>
+          <FillLink href="/commands" className="mt-7">
+            Explore the commands <ArrowUpRight className="size-4" aria-hidden />
+          </FillLink>
         </div>
-        <ul className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {picks.map((c) => (
-            <CommandRow key={c.name} command={c} compact />
-          ))}
-        </ul>
+        <div className="rounded-3xl bg-surface-2 p-6 sm:p-8">
+          <dl className="">
+            {[
+              { name: '/play', desc: 'Play a playlist.' },
+              { name: '/skip', desc: 'Skip the current track.' },
+              { name: '/np', desc: 'Show the current track.' },
+            ].map((c) => (
+              <div key={c.name} className="flex flex-wrap items-center justify-between gap-3 py-5">
+                <dt className="rounded-md bg-surface px-3 py-1.5 font-mono text-sm text-pink">
+                  {c.name}
+                </dt>
+                <dd className="text-sm text-fg-muted">{c.desc}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
       </Container>
     </Section>
   )

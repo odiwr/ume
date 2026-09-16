@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { KeyRound, Server } from 'lucide-react'
+import { KeyRound, Server } from '@/components/ui/icons'
 import { botInviteUrl, canClaimGuild, guildIconUrl, type OAuthGuild } from '@ume/shared'
 import { buttonClasses } from '@/components/ui/button'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -43,9 +43,18 @@ export default async function NewWorkspacePage() {
       if (!ws && !admin) continue
       if (ws?.status === 'purged') continue
       let state: PickerState = 'no_workspace'
-      if (ws) state = ws.status === 'unclaimed' ? 'unclaimed' : ws.status === 'connected' ? 'connected' : ws.status === 'purging' ? 'purging' : 'disconnected'
+      if (ws)
+        state =
+          ws.status === 'unclaimed'
+            ? 'unclaimed'
+            : ws.status === 'connected'
+              ? 'connected'
+              : ws.status === 'purging'
+                ? 'purging'
+                : 'disconnected'
       const access = ws ? await getAccess(db, ws.id, me.id) : null
-      const isGuildOwner = g.owner || (!!ws?.guildOwnerDiscordId && ws.guildOwnerDiscordId === me.discordUserId)
+      const isGuildOwner =
+        g.owner || (!!ws?.guildOwnerDiscordId && ws.guildOwnerDiscordId === me.discordUserId)
       rows.push({
         id: g.id,
         name: g.name,
@@ -65,11 +74,14 @@ export default async function NewWorkspacePage() {
 
   return (
     <div className="min-h-dvh">
-      <TopBar user={me} crumbs={[{ href: '/app', label: 'Your servers' }, { label: 'Add a server' }]} />
+      <TopBar
+        user={me}
+        crumbs={[{ href: '/app', label: 'Your servers' }, { label: 'Add a server' }]}
+      />
       <main className="mx-auto w-full max-w-4xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
         <PageHeader
           title="Add a server"
-          description="Servers where you are the owner or an Administrator on Discord can be claimed straight from here. Claiming makes you the workspace Owner."
+          description="Claim a Discord server you own or administer."
           actions={
             <Link href="/app/claim" className={buttonClasses('outline', 'md')}>
               <KeyRound className="size-4" /> Use a token instead
@@ -87,7 +99,10 @@ export default async function NewWorkspacePage() {
 
         {guilds ? (
           <>
-            <Section title="Servers you administer" description="Claim a server to create its workspace, or reconnect one after a /reload.">
+            <Section
+              title="Servers you administer"
+              description="Claim a server to create its workspace, or reconnect one after a /reload."
+            >
               {claimable.length ? (
                 <ServerPicker guilds={claimable} />
               ) : (
@@ -103,7 +118,10 @@ export default async function NewWorkspacePage() {
               )}
             </Section>
             {joinable.length ? (
-              <Section title="Servers you are in that use Ume" description="Your access comes from the server’s Discord role mapping or its default role.">
+              <Section
+                title="Servers you are in that use Ume"
+                description="Your access comes from the server’s Discord role mapping or its default role."
+              >
                 <ServerPicker guilds={joinable} />
               </Section>
             ) : null}

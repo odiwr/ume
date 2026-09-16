@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { CircleAlert, ExternalLink, ListMusic, MoreVertical, Pencil, RotateCcw, Trash, Upload } from 'lucide-react'
+import { CircleAlert, ExternalLink, ListMusic, MoreVertical, Pencil, RotateCcw, Trash, Upload } from '@/components/ui/icons'
 import { linkSiteLabel } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
