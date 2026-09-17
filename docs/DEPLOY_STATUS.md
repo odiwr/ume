@@ -2,6 +2,14 @@
 
 The web app, bot and worker build locally and all seven workspace type checks pass. Nothing has been deployed or connected to a production database yet.
 
+## Live state (17 September 2026)
+
+- Web is deployed to Vercel production at https://ume-ivory.vercel.app (project `odiwr/ume`, root `apps/web`, `ENABLE_EXPERIMENTAL_COREPACK=1` so the build uses pnpm 12.4.1). Production env vars are set; `BETTER_AUTH_SECRET` and `CRON_SECRET` are production-only values. `ume.odiwr.dev` is the official domain and still needs DNS and Vercel domain setup.
+- Neon (Postgres 18, us-east-2) has both migrations applied. R2 bucket `ume` allows uploads from ume.odiwr.dev, ume-ivory.vercel.app and localhost.
+- Discord app `1549931718041927760`: Terms/Privacy URLs and redirects for localhost, ume.odiwr.dev and ume-ivory.vercel.app are saved. The bot is in Sokko and slash commands are registered there (guild-scoped).
+- Google OAuth needs `https://ume-ivory.vercel.app/api/auth/callback/google` (and later the ume.odiwr.dev one) in the client's redirect URIs.
+- Not yet configured: Stripe, Resend, DMCA agent details, bot and worker hosting, the home extraction worker.
+
 ## Code changes in this pass
 
 - Added the missing `/invite/[token]` page. Share links and invite emails already pointed there; the acceptance action existed but had no route. Signed-out visitors go to `/login?next=/invite/<token>`; signed-in visitors see the server, role and expiry before accepting.
