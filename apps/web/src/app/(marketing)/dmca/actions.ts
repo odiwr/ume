@@ -2,9 +2,13 @@
 
 import { randomUUID } from 'node:crypto'
 import { z } from 'zod'
+import { JOBS } from '@ume/shared'
+import { dmcaNoticeEmail } from '@ume/email'
 import { db, dmcaNotices, logAudit } from '@/lib/db'
-import { getSession } from '@/lib/session'
+import { enqueue } from '@/lib/queue'
+import { ceoEmails, getSession } from '@/lib/session'
 import { requestIp } from '@/lib/site/request-ip'
+import { appUrl } from '@/lib/utils'
 
 export interface DmcaFormState {
   ok: boolean
@@ -59,6 +63,52 @@ const noticeSchema = z.object({
   accuracy: checkbox.refine((v) => v === true, 'You must confirm this statement.'),
   signature: z.string().trim().min(2, 'Type your full legal name as a signature.').max(200),
 })
+
+function noticeReference(id: string): string {
+  return id.replace('dmca_', 'DMCA-').slice(0, 13).toUpperCase()
+}
+
+/** DMCA_AGENT_EMAIL, else the first CEO_EMAILS entry, else nobody (logged). */
+function operatorEmail(): string | null {
+  return process.env.DMCA_AGENT_EMAIL?.trim().toLowerCase() || ceoEmails()[0] || null
+}
+
+/**
+ * Tell the operator a notice landed. Runs after the row is stored and never throws:
+ * the claimant's submission stands on the row, and the console lists it either way.
+ * Logs carry the notice id only, never the claimant's details.
+ */
+async function notifyOperator(input: {
+  id: string
+  claimantName: string
+  reported: string[]
+}): Promise<void> {
+  const to = operatorEmail()
+  if (!to) {
+    console.warn(
+      `[dmca] notice ${input.id} stored but DMCA_AGENT_EMAIL and CEO_EMAILS are both unset; nobody was notified`,
+    )
+    return
+  }
+  try {
+    const message = dmcaNoticeEmail({
+      to,
+      noticeId: input.id,
+      reference: noticeReference(input.id),
+      claimantName: input.claimantName,
+      reported: input.reported,
+      consoleUrl: appUrl(`/ceo/dmca/${input.id}`),
+    })
+    await enqueue(JOBS.sendEmail, {
+      ...message,
+      kind: 'dmca_notice',
+      workspaceId: null,
+      userId: null,
+    })
+  } catch (err) {
+    console.error(`[dmca] could not enqueue operator notification for notice ${input.id}`, err)
+  }
+}
 
 function fieldErrors(error: z.ZodError): Partial<Record<DmcaField, string>> {
   const out: Partial<Record<DmcaField, string>> = {}
@@ -144,5 +194,7 @@ export async function submitDmcaNotice(
     }
   }
 
-  return { ok: true, reference: id.replace('dmca_', 'DMCA-').slice(0, 13).toUpperCase() }
+  await notifyOperator({ id, claimantName: data.claimantName, reported: [data.infringingUrl] })
+
+  return { ok: true, reference: noticeReference(id) }
 }

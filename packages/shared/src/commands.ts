@@ -33,16 +33,24 @@ export const COMMANDS: readonly CommandSpec[] = [
   {
     name: 'reload',
     description:
-      'Issue a fresh Ume token for your server and disconnect the current web workspace until the new token is entered.',
+      'Issue a fresh Ume token and disconnect the web workspace until the new token is entered.',
     scope: 'dm',
     requiresGuildAdmin: true,
-    options: [{ name: 'server', description: 'Server name (only needed if you admin several)', required: false, type: 'string' }],
+    options: [
+      {
+        name: 'server',
+        description: 'Server name (only needed if you admin several)',
+        required: false,
+        type: 'string',
+      },
+    ],
     examples: ['~reload', '~reload My Cool Server'],
     category: 'setup',
   },
   {
     name: 'reset',
-    description: 'Disconnect the workspace and remove every web member except the Owner. Playlists and music stay.',
+    description:
+      'Disconnect the workspace and remove every web member except the Owner. Playlists and music stay.',
     scope: 'dm',
     requiresOwner: true,
     options: [{ name: 'server', description: 'Server name', required: false, type: 'string' }],
@@ -51,7 +59,8 @@ export const COMMANDS: readonly CommandSpec[] = [
   },
   {
     name: 'purge',
-    description: 'Permanently delete the workspace: playlists, music, members, everything. Asks for a confirmation code.',
+    description:
+      'Permanently delete the workspace: playlists, music, members, everything. Asks for a confirm code.',
     scope: 'dm',
     requiresOwner: true,
     options: [{ name: 'server', description: 'Server name', required: false, type: 'string' }],
@@ -62,7 +71,9 @@ export const COMMANDS: readonly CommandSpec[] = [
     name: 'confirm',
     description: 'Confirm a pending ~reset or ~purge with the code Ume sent you.',
     scope: 'dm',
-    options: [{ name: 'code', description: 'The 6-character code', required: true, type: 'string' }],
+    options: [
+      { name: 'code', description: 'The 6-character code', required: true, type: 'string' },
+    ],
     examples: ['~confirm K7Q2ZP'],
     category: 'setup',
   },
@@ -77,14 +88,18 @@ export const COMMANDS: readonly CommandSpec[] = [
   },
   {
     name: 'add',
-    description: 'Add a song from a link (YouTube, SoundCloud, Bandcamp, Audius and more). Ume extracts the audio and fills in the title, artist and cover.',
+    description:
+      'Add a song from a link (YouTube, SoundCloud, Bandcamp and more). Ume fetches the audio and metadata.',
     scope: 'guild',
     requires: CAP.ADD_TRACK,
     options: [
       { name: 'playlist', description: 'Playlist name', required: true, type: 'string' },
       { name: 'url', description: 'Link to the song', required: true, type: 'string' },
     ],
-    examples: ['~add city-pop https://www.youtube.com/watch?v=RMPX_vgqQnM', '~add rage https://soundcloud.com/artist/track'],
+    examples: [
+      '~add city-pop https://www.youtube.com/watch?v=RMPX_vgqQnM',
+      '~add rage https://soundcloud.com/artist/track',
+    ],
     category: 'library',
   },
   {
@@ -101,7 +116,14 @@ export const COMMANDS: readonly CommandSpec[] = [
     description: 'Play a playlist (shuffled) or search for a track by name.',
     scope: 'guild',
     requires: CAP.CONTROL_PLAYBACK,
-    options: [{ name: 'query', description: 'Playlist name or track title', required: true, type: 'string' }],
+    options: [
+      {
+        name: 'query',
+        description: 'Playlist name or track title',
+        required: true,
+        type: 'string',
+      },
+    ],
     examples: ['~play rage', '~play plastic love'],
     category: 'playback',
   },

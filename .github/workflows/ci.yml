@@ -42,7 +42,7 @@ env:
 
 jobs:
   verify:
-    name: Typecheck and build
+    name: Typecheck, lint, test and build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -65,6 +65,13 @@ jobs:
 
       - name: Typecheck
         run: pnpm typecheck
+
+      - name: Lint
+        # ESLint is only configured in @ume/web (see CLAUDE.md: there is no next lint).
+        run: pnpm --filter @ume/web lint
+
+      - name: Test
+        run: pnpm test
 
       - name: Build
         run: pnpm build

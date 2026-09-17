@@ -67,10 +67,12 @@ export function WorkspaceSidebar({
 }) {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
-
-  React.useEffect(() => {
+  // Close the drawer on navigation, adjusting state during render instead of in an effect.
+  const [lastPathname, setLastPathname] = React.useState(pathname)
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname)
     setOpen(false)
-  }, [pathname])
+  }
 
   const links = (
     <nav className="flex flex-col gap-0.5" aria-label="Workspace">

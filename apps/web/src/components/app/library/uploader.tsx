@@ -18,7 +18,9 @@ interface UploadItem {
   error: string | null
 }
 
-const ACCEPT: Record<string, string[]> = Object.fromEntries(UPLOAD.acceptedMimeTypes.map((m) => [m, UPLOAD.acceptedExtensions.map((e) => `.${e}`)]))
+const ACCEPT: Record<string, string[]> = Object.fromEntries(
+  UPLOAD.acceptedMimeTypes.map((m) => [m, UPLOAD.acceptedExtensions.map((e) => `.${e}`)]),
+)
 const PARALLEL = 2
 
 async function readError(res: Response): Promise<string> {
@@ -30,7 +32,11 @@ async function readError(res: Response): Promise<string> {
   }
 }
 
-function putWithProgress(url: string, file: File, onProgress: (pct: number) => void): Promise<void> {
+function putWithProgress(
+  url: string,
+  file: File,
+  onProgress: (pct: number) => void,
+): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest()
     xhr.open('PUT', url)
@@ -38,7 +44,10 @@ function putWithProgress(url: string, file: File, onProgress: (pct: number) => v
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100))
     }
-    xhr.onload = () => (xhr.status >= 200 && xhr.status < 300 ? resolve() : reject(new Error(`Storage answered ${xhr.status}.`)))
+    xhr.onload = () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error(`Storage answered ${xhr.status}.`))
     xhr.onerror = () => reject(new Error('The connection dropped during the upload.'))
     xhr.onabort = () => reject(new Error('Upload cancelled.'))
     xhr.send(file)
@@ -50,7 +59,17 @@ function putWithProgress(url: string, file: File, onProgress: (pct: number) => v
  * -> complete (queues the transcode). Failures are reported back so the server can
  * release the reserved quota.
  */
-export function Uploader({ workspaceId, playlistId, disabled, disabledReason }: { workspaceId: string; playlistId: string; disabled?: boolean; disabledReason?: string }) {
+export function Uploader({
+  workspaceId,
+  playlistId,
+  disabled,
+  disabledReason,
+}: {
+  workspaceId: string
+  playlistId: string
+  disabled?: boolean
+  disabledReason?: string
+}) {
   const router = useRouter()
   const [items, setItems] = React.useState<UploadItem[]>([])
   const queueRef = React.useRef<UploadItem[]>([])
@@ -68,7 +87,13 @@ export function Uploader({ workspaceId, playlistId, disabled, disabledReason }: 
         const presign = await fetch('/api/upload/presign', {
           method: 'POST',
           headers: { 'content-type': 'application/json' },
-          body: JSON.stringify({ workspaceId, playlistId, filename: item.file.name, sizeBytes: item.file.size, mimeType: item.file.type || 'application/octet-stream' }),
+          body: JSON.stringify({
+            workspaceId,
+            playlistId,
+            filename: item.file.name,
+            sizeBytes: item.file.size,
+            mimeType: item.file.type || 'application/octet-stream',
+          }),
         })
         if (!presign.ok) throw new Error(await readError(presign))
         const { trackId: id, url } = (await presign.json()) as { trackId: string; url: string }
@@ -102,24 +127,36 @@ export function Uploader({ workspaceId, playlistId, disabled, disabledReason }: 
   )
 
   const pump = React.useCallback(() => {
-    while (activeRef.current < PARALLEL && queueRef.current.length) {
-      const next = queueRef.current.shift()!
-      activeRef.current += 1
-      void uploadOne(next).finally(() => {
-        activeRef.current -= 1
-        pump()
-      })
+    function drain() {
+      while (activeRef.current < PARALLEL && queueRef.current.length) {
+        const next = queueRef.current.shift()!
+        activeRef.current += 1
+        void uploadOne(next).finally(() => {
+          activeRef.current -= 1
+          drain()
+        })
+      }
     }
+    drain()
   }, [uploadOne])
 
   const onDrop = React.useCallback(
     (accepted: File[], rejections: FileRejection[]) => {
       for (const r of rejections) {
-        const reason = r.errors[0]?.code === 'file-too-large' ? `is over ${formatBytes(UPLOAD.maxOriginalBytes)}` : 'is not a supported audio file'
+        const reason =
+          r.errors[0]?.code === 'file-too-large'
+            ? `is over ${formatBytes(UPLOAD.maxOriginalBytes)}`
+            : 'is not a supported audio file'
         toast.error(`${r.file.name} ${reason}.`)
       }
       if (!accepted.length) return
-      const fresh: UploadItem[] = accepted.map((file) => ({ id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`, file, state: 'queued', progress: 0, error: null }))
+      const fresh: UploadItem[] = accepted.map((file) => ({
+        id: `${file.name}-${file.size}-${Date.now()}-${Math.random()}`,
+        file,
+        state: 'queued',
+        progress: 0,
+        error: null,
+      }))
       setItems((prev) => [...fresh, ...prev])
       queueRef.current.push(...fresh)
       pump()
@@ -145,21 +182,37 @@ export function Uploader({ workspaceId, playlistId, disabled, disabledReason }: 
         {...getRootProps()}
         className={cn(
           'flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed px-6 py-8 text-center transition-colors',
-          disabled ? 'cursor-not-allowed border-border bg-surface/40 opacity-60' : 'border-border-strong bg-surface/60',
+          disabled
+            ? 'cursor-not-allowed border-border bg-surface/40 opacity-60'
+            : 'border-border-strong bg-surface/60',
           isDragActive && !disabled ? 'border-pink bg-pink/5' : '',
         )}
       >
         <input {...getInputProps()} aria-label="Choose audio files" />
-        <span className={cn('flex size-11 items-center justify-center rounded-2xl', isDragActive ? 'bg-pink/15 text-pink' : 'bg-surface-2 text-fg-muted')}>
+        <span
+          className={cn(
+            'flex size-11 items-center justify-center rounded-2xl',
+            isDragActive ? 'bg-pink/15 text-pink' : 'bg-surface-2 text-fg-muted',
+          )}
+        >
           <CloudUpload className="size-5" aria-hidden />
         </span>
-        <p className="text-sm font-medium">{isDragActive ? 'Drop to upload' : 'Drag audio files here'}</p>
+        <p className="text-sm font-medium">
+          {isDragActive ? 'Drop to upload' : 'Drag audio files here'}
+        </p>
         <p className="max-w-md text-xs text-fg-muted [text-wrap:pretty]">
           {disabled && disabledReason
             ? disabledReason
             : `${UPLOAD.acceptedExtensions.join(', ')} up to ${formatBytes(UPLOAD.maxOriginalBytes)} each. Every file is normalized to ${UPLOAD.output.bitrateKbps} kbps Opus; the original is not kept.`}
         </p>
-        <Button type="button" size="sm" variant="outline" onClick={open} disabled={disabled} className="mt-1">
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onClick={open}
+          disabled={disabled}
+          className="mt-1"
+        >
           Choose files
         </Button>
       </div>
@@ -167,7 +220,10 @@ export function Uploader({ workspaceId, playlistId, disabled, disabledReason }: 
       {items.length ? (
         <ul className="space-y-1.5" aria-live="polite" aria-busy={busy}>
           {items.map((it) => (
-            <li key={it.id} className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 text-sm">
+            <li
+              key={it.id}
+              className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+            >
               <FileMusic className="size-4 shrink-0 text-fg-muted" aria-hidden />
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
@@ -185,7 +241,13 @@ export function Uploader({ workspaceId, playlistId, disabled, disabledReason }: 
                   <p className="mt-0.5 text-xs text-danger [text-wrap:pretty]">{it.error}</p>
                 ) : (
                   <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-surface-3">
-                    <div className={cn('h-full rounded-full transition-[width]', it.state === 'done' ? 'bg-success' : 'bg-pink')} style={{ width: `${it.state === 'done' ? 100 : it.progress}%` }} />
+                    <div
+                      className={cn(
+                        'h-full rounded-full transition-[width]',
+                        it.state === 'done' ? 'bg-success' : 'bg-pink',
+                      )}
+                      style={{ width: `${it.state === 'done' ? 100 : it.progress}%` }}
+                    />
                   </div>
                 )}
               </div>

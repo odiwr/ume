@@ -88,3 +88,12 @@ Validation for the annotated pass: all three app builds and seven workspace type
 - Login uses the shared navigation aligned right, without account actions, including its mobile menu. A slow blue/lilac wave replaces the headphones in the decorative panel. Both sign-in error paths use borderless lilac alerts with navy text and an Icones information marker. Reduced motion disables the wave.
 
 Production builds for all three apps and all seven workspace type checks pass. The 24 public-route checks at 320, 768, and 1440 px pass with no horizontal overflow, broken images, or missing primary headings. Deployment and live OAuth still require the configuration recorded in DEPLOY_STATUS.md.
+
+## Public-surface consistency pass (16 September 2026)
+
+- Commands, DMCA and Privacy still carried outlined white cards from the earlier border treatment. They now use the same borderless tinted panels as the homepage: blue (`bg-sage-light`), lilac (`bg-blush`) and grey-blue (`bg-surface-2`) surfaces separated by spacing. Command rows sit on `bg-surface-2` with the slash form on a white chip. Form outlines on the takedown form are unchanged, as the design rules reserve outlines for inputs, fill buttons, provider sign-in buttons and the dashed upload illustration.
+- The privacy retention table lives in a tinted panel with white row separators instead of a bordered box.
+- `apps/web/README.md` described the retired dark, pink-accent, lucide-react conventions; it now matches this document.
+- The new `/invite/[token]` acceptance page follows the sign-in layout (see the route map in `apps/web/README.md`).
+
+Checked in the browser at 1440 px and 320 px: no horizontal overflow, no console or server errors on `/`, `/login`, `/pricing`, `/commands` and `/dmca`.

@@ -48,7 +48,15 @@ export interface SendEmailJob {
   subject: string
   html: string
   text: string
-  kind: 'invite' | 'inactivity_30d' | 'inactivity_48h' | 'purged' | 'token_rotated' | 'quota_warning' | 'other'
+  kind:
+    | 'invite'
+    | 'inactivity_30d'
+    | 'inactivity_48h'
+    | 'purged'
+    | 'token_rotated'
+    | 'quota_warning'
+    | 'dmca_notice'
+    | 'other'
   workspaceId?: string | null
   userId?: string | null
 }
@@ -64,13 +72,46 @@ export interface JobPayloads {
 }
 
 /** Retry policy per queue (pg-boss `send` options). */
-export const JOB_OPTIONS: Record<JobName, { retryLimit: number; retryDelay: number; retryBackoff: boolean; expireInSeconds: number }> = {
-  [JOBS.transcodeUpload]: { retryLimit: 3, retryDelay: 30, retryBackoff: true, expireInSeconds: 15 * 60 },
-  [JOBS.extractLink]: { retryLimit: 2, retryDelay: 60, retryBackoff: true, expireInSeconds: 15 * 60 },
-  [JOBS.purgeWorkspace]: { retryLimit: 5, retryDelay: 60, retryBackoff: true, expireInSeconds: 30 * 60 },
-  [JOBS.inactivitySweep]: { retryLimit: 1, retryDelay: 300, retryBackoff: false, expireInSeconds: 30 * 60 },
-  [JOBS.reconcileStorage]: { retryLimit: 1, retryDelay: 300, retryBackoff: false, expireInSeconds: 60 * 60 },
-  [JOBS.expireThings]: { retryLimit: 1, retryDelay: 300, retryBackoff: false, expireInSeconds: 10 * 60 },
+export const JOB_OPTIONS: Record<
+  JobName,
+  { retryLimit: number; retryDelay: number; retryBackoff: boolean; expireInSeconds: number }
+> = {
+  [JOBS.transcodeUpload]: {
+    retryLimit: 3,
+    retryDelay: 30,
+    retryBackoff: true,
+    expireInSeconds: 15 * 60,
+  },
+  [JOBS.extractLink]: {
+    retryLimit: 2,
+    retryDelay: 60,
+    retryBackoff: true,
+    expireInSeconds: 15 * 60,
+  },
+  [JOBS.purgeWorkspace]: {
+    retryLimit: 5,
+    retryDelay: 60,
+    retryBackoff: true,
+    expireInSeconds: 30 * 60,
+  },
+  [JOBS.inactivitySweep]: {
+    retryLimit: 1,
+    retryDelay: 300,
+    retryBackoff: false,
+    expireInSeconds: 30 * 60,
+  },
+  [JOBS.reconcileStorage]: {
+    retryLimit: 1,
+    retryDelay: 300,
+    retryBackoff: false,
+    expireInSeconds: 60 * 60,
+  },
+  [JOBS.expireThings]: {
+    retryLimit: 1,
+    retryDelay: 300,
+    retryBackoff: false,
+    expireInSeconds: 10 * 60,
+  },
   [JOBS.sendEmail]: { retryLimit: 5, retryDelay: 30, retryBackoff: true, expireInSeconds: 5 * 60 },
 }
 

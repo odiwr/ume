@@ -58,16 +58,26 @@ export const reload: Command = {
     // Ephemeral replies vanish; a DM copy survives.
     if (ctx.guild) {
       await ctx.user.send({ embeds: [embed] }).catch((err) => {
-        logger.info({ err: err?.code ?? err, userId: ctx.user.id }, 'could not DM token copy (DMs closed?)')
+        logger.info(
+          { err: err?.code ?? err, userId: ctx.user.id },
+          'could not DM token copy (DMs closed?)',
+        )
       })
     }
 
     if (result.disconnected && result.workspace.ownerUserId) {
-      const owner = await db.query.users.findFirst({ where: eq(users.id, result.workspace.ownerUserId) })
+      const owner = await db.query.users.findFirst({
+        where: eq(users.id, result.workspace.ownerUserId),
+      })
       if (owner) {
         const settingsUrl = `${env.appUrl}/app/${result.workspace.umeId}/settings`
+        // Best effort: the Discord DM below and the ephemeral reply still carry the token.
         try {
-          await sendEmail(tokenRotatedEmail({ to: owner.email, serverName: guild.name, settingsUrl }))
+          const sent = await sendEmail(
+            tokenRotatedEmail({ to: owner.email, serverName: guild.name, settingsUrl }),
+          )
+          if (!sent.ok)
+            logger.warn({ error: sent.error, userId: owner.id }, 'tokenRotated email not sent')
         } catch (err) {
           logger.warn({ err }, 'tokenRotated email failed')
         }

@@ -12,6 +12,7 @@ const RECORDED_KINDS = new Set<string>([
   'purged',
   'token_rotated',
   'quota_warning',
+  'dmca_notice',
 ])
 
 /**

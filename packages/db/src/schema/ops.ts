@@ -68,9 +68,14 @@ export const notificationKindEnum = pgEnum('notification_kind', [
   'token_rotated',
   'invite',
   'quota_warning',
+  'dmca_notice',
 ])
 
-export const notificationChannelEnum = pgEnum('notification_channel', ['email', 'discord_dm', 'discord_channel'])
+export const notificationChannelEnum = pgEnum('notification_channel', [
+  'email',
+  'discord_dm',
+  'discord_channel',
+])
 
 /** Outbound notifications, for the CEO console and for idempotency. */
 export const notifications = pgTable(
@@ -110,7 +115,13 @@ export const blockedHashes = pgTable('blocked_hashes', {
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
 })
 
-export const dmcaStatusEnum = pgEnum('dmca_status', ['received', 'actioned', 'counter_noticed', 'restored', 'rejected'])
+export const dmcaStatusEnum = pgEnum('dmca_status', [
+  'received',
+  'actioned',
+  'counter_noticed',
+  'restored',
+  'rejected',
+])
 
 /** 17 U.S.C. 512(c)(3) takedown notices submitted through /dmca. */
 export const dmcaNotices = pgTable(

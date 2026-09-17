@@ -4,7 +4,13 @@ import { CalendarClock, Crown, MoreVertical, UserMinus } from '@/components/ui/i
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogFooter } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import { Input, Label, Select } from '@/components/ui/input'
 import { UserAvatar } from '@/components/app/avatar'
 import { Absolute, Ago } from '@/components/app/time'
@@ -15,7 +21,15 @@ import { displayName, membershipSourceLabel } from '@/lib/app/format'
 export interface MemberRow {
   membershipId: string
   userId: string
-  user: { id: string; name: string; email: string; image: string | null; discordUsername: string | null; discordAvatar: string | null; discordUserId: string | null }
+  user: {
+    id: string
+    name: string
+    email: string
+    image: string | null
+    discordUsername: string | null
+    discordAvatar: string | null
+    discordUserId: string | null
+  }
   roleId: string
   roleName: string
   roleColor: string
@@ -35,7 +49,17 @@ export interface RoleOption {
   grantable: boolean
 }
 
-export function MemberTable({ workspaceId, rows, roles, meUserId }: { workspaceId: string; rows: MemberRow[]; roles: RoleOption[]; meUserId: string }) {
+export function MemberTable({
+  workspaceId,
+  rows,
+  roles,
+  meUserId,
+}: {
+  workspaceId: string
+  rows: MemberRow[]
+  roles: RoleOption[]
+  meUserId: string
+}) {
   const [expiry, setExpiry] = React.useState<MemberRow | null>(null)
   const [removing, setRemoving] = React.useState<MemberRow | null>(null)
   const { run, pending } = useAction()
@@ -65,9 +89,13 @@ export function MemberTable({ workspaceId, rows, roles, meUserId }: { workspaceI
                     <div className="min-w-0">
                       <p className="flex items-center gap-1.5 truncate font-medium">
                         {displayName(m.user)}
-                        {m.userId === meUserId ? <span className="text-xs font-normal text-fg-subtle">(you)</span> : null}
+                        {m.userId === meUserId ? (
+                          <span className="text-xs font-normal text-fg-subtle">(you)</span>
+                        ) : null}
                       </p>
-                      <p className="truncate text-xs text-fg-muted">{m.user.discordUsername ? `@${m.user.discordUsername}` : m.user.email}</p>
+                      <p className="truncate text-xs text-fg-muted">
+                        {m.user.discordUsername ? `@${m.user.discordUsername}` : m.user.email}
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -81,11 +109,19 @@ export function MemberTable({ workspaceId, rows, roles, meUserId }: { workspaceI
                       aria-label={`Role for ${displayName(m.user)}`}
                       value={m.roleId}
                       disabled={pending}
-                      onChange={(e) => run(() => changeMemberRole(workspaceId, m.membershipId, e.target.value), { success: 'Role updated.' })}
+                      onChange={(e) =>
+                        run(() => changeMemberRole(workspaceId, m.membershipId, e.target.value), {
+                          success: 'Role updated.',
+                        })
+                      }
                       className="h-8 w-40 rounded-lg text-xs"
                     >
                       {roles.map((r) => (
-                        <option key={r.id} value={r.id} disabled={!r.grantable && r.id !== m.roleId}>
+                        <option
+                          key={r.id}
+                          value={r.id}
+                          disabled={!r.grantable && r.id !== m.roleId}
+                        >
                           {r.name}
                           {!r.grantable && r.id !== m.roleId ? ' (beyond your permissions)' : ''}
                         </option>
@@ -93,13 +129,25 @@ export function MemberTable({ workspaceId, rows, roles, meUserId }: { workspaceI
                     </Select>
                   ) : (
                     <span className="inline-flex items-center gap-1.5">
-                      <span className="size-2 rounded-full" style={{ background: m.roleColor }} aria-hidden />
+                      <span
+                        className="size-2 rounded-full"
+                        style={{ background: m.roleColor }}
+                        aria-hidden
+                      />
                       {m.roleName}
                     </span>
                   )}
                 </td>
-                <td className="px-2 py-2 text-xs text-fg-muted">{membershipSourceLabel(m.source)}</td>
-                <td className="px-2 py-2 text-xs text-fg-muted">{m.expiresAt ? <Absolute date={m.expiresAt} withTime={false} /> : <span className="text-fg-subtle">Never</span>}</td>
+                <td className="px-2 py-2 text-xs text-fg-muted">
+                  {membershipSourceLabel(m.source)}
+                </td>
+                <td className="px-2 py-2 text-xs text-fg-muted">
+                  {m.expiresAt ? (
+                    <Absolute date={m.expiresAt} withTime={false} />
+                  ) : (
+                    <span className="text-fg-subtle">Never</span>
+                  )}
+                </td>
                 <td className="px-2 py-2 text-xs text-fg-muted">
                   <Ago date={m.createdAt} />
                 </td>
@@ -130,33 +178,61 @@ export function MemberTable({ workspaceId, rows, roles, meUserId }: { workspaceI
         </table>
       </div>
 
-      <ExpiryDialog workspaceId={workspaceId} row={expiry} onClose={() => setExpiry(null)} />
+      <ExpiryDialog
+        key={expiry?.membershipId ?? 'closed'}
+        workspaceId={workspaceId}
+        row={expiry}
+        onClose={() => setExpiry(null)}
+      />
       <RemoveDialog workspaceId={workspaceId} row={removing} onClose={() => setRemoving(null)} />
     </>
   )
 }
 
-function ExpiryDialog({ workspaceId, row, onClose }: { workspaceId: string; row: MemberRow | null; onClose: () => void }) {
-  const [value, setValue] = React.useState('')
+function ExpiryDialog({
+  workspaceId,
+  row,
+  onClose,
+}: {
+  workspaceId: string
+  row: MemberRow | null
+  onClose: () => void
+}) {
+  // Keyed by membership at the call site, so a fresh row mounts a fresh form.
+  const [value, setValue] = React.useState(row?.expiresAt ? row.expiresAt.slice(0, 10) : '')
   const { run, pending } = useAction()
-  React.useEffect(() => {
-    if (row) setValue(row.expiresAt ? row.expiresAt.slice(0, 10) : '')
-  }, [row])
   return (
     <Dialog open={!!row} onOpenChange={(o) => (!o && !pending ? onClose() : undefined)}>
       {row ? (
-        <DialogContent title={`Access expiry for ${displayName(row.user)}`} description="Handy for event DJs. Leave the date empty to make the membership permanent.">
+        <DialogContent
+          title={`Access expiry for ${displayName(row.user)}`}
+          description="Handy for event DJs. Leave the date empty to make the membership permanent."
+        >
           <form
             className="space-y-4"
             onSubmit={async (e) => {
               e.preventDefault()
-              const res = await run(() => setMemberExpiry(workspaceId, row.membershipId, value ? new Date(`${value}T23:59:59`).toISOString() : null), { success: 'Expiry updated.' })
+              const res = await run(
+                () =>
+                  setMemberExpiry(
+                    workspaceId,
+                    row.membershipId,
+                    value ? new Date(`${value}T23:59:59`).toISOString() : null,
+                  ),
+                { success: 'Expiry updated.' },
+              )
               if (res.ok) onClose()
             }}
           >
             <div>
               <Label htmlFor="member-expiry">Expires on</Label>
-              <Input id="member-expiry" type="date" value={value} onChange={(e) => setValue(e.target.value)} min={new Date().toISOString().slice(0, 10)} />
+              <Input
+                id="member-expiry"
+                type="date"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                min={new Date().toISOString().slice(0, 10)}
+              />
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>
@@ -173,12 +249,23 @@ function ExpiryDialog({ workspaceId, row, onClose }: { workspaceId: string; row:
   )
 }
 
-function RemoveDialog({ workspaceId, row, onClose }: { workspaceId: string; row: MemberRow | null; onClose: () => void }) {
+function RemoveDialog({
+  workspaceId,
+  row,
+  onClose,
+}: {
+  workspaceId: string
+  row: MemberRow | null
+  onClose: () => void
+}) {
   const { run, pending } = useAction()
   return (
     <Dialog open={!!row} onOpenChange={(o) => (!o && !pending ? onClose() : undefined)}>
       {row ? (
-        <DialogContent title={`Remove ${displayName(row.user)}?`} description="They lose web access right away. Songs they added stay. They can come back through a Discord role, a share link or an invite.">
+        <DialogContent
+          title={`Remove ${displayName(row.user)}?`}
+          description="They lose web access right away. Songs they added stay. They can come back through a Discord role, a share link or an invite."
+        >
           <DialogFooter>
             <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>
               Cancel
@@ -188,7 +275,9 @@ function RemoveDialog({ workspaceId, row, onClose }: { workspaceId: string; row:
               variant="danger"
               loading={pending}
               onClick={async () => {
-                const res = await run(() => removeMember(workspaceId, row.membershipId), { success: 'Member removed.' })
+                const res = await run(() => removeMember(workspaceId, row.membershipId), {
+                  success: 'Member removed.',
+                })
                 if (res.ok) onClose()
               }}
             >

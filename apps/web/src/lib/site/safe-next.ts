@@ -13,7 +13,6 @@ export function safeNextPath(value: string | string[] | undefined, fallback = '/
   }
   if (!decoded.startsWith('/')) return fallback
   if (decoded.startsWith('//') || decoded.startsWith('/\\')) return fallback
-  // eslint-disable-next-line no-control-regex
   if (/[\s\x00-\x1f]/.test(decoded)) return fallback
   if (decoded.includes('://')) return fallback
   // Never bounce a fresh sign-in back to an auth page.

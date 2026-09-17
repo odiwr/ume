@@ -10,6 +10,16 @@ import { appUrl } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Invites', robots: { index: false } }
 
+function countActive(rows: InviteRow[]): number {
+  const now = Date.now()
+  return rows.filter(
+    (r) =>
+      !r.revokedAt &&
+      new Date(r.expiresAt).getTime() > now &&
+      (r.maxUses === null || r.uses < r.maxUses),
+  ).length
+}
+
 export default async function InvitesPage({ params }: { params: Promise<{ ws: string }> }) {
   const { ws: umeId } = await params
   const { workspace, access } = await requireWorkspacePage(umeId, CAP.MANAGE_INVITES)
@@ -42,12 +52,7 @@ export default async function InvitesPage({ params }: { params: Promise<{ ws: st
     createdAt: inv.createdAt.toISOString(),
     createdBy: displayName(inv.createdBy),
   }))
-  const active = rows.filter(
-    (r) =>
-      !r.revokedAt &&
-      new Date(r.expiresAt).getTime() > Date.now() &&
-      (r.maxUses === null || r.uses < r.maxUses),
-  ).length
+  const active = countActive(rows)
 
   return (
     <>

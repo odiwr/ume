@@ -32,7 +32,7 @@ export default function CommandsPage() {
         </div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-border bg-surface p-5">
+          <div className="rounded-2xl bg-sage-light p-5">
             <Badge tone="sage">Server</Badge>
             <p className="mt-3 text-sm text-fg-muted">
               Runs inside your Discord server. Use the slash form;{' '}
@@ -40,7 +40,7 @@ export default function CommandsPage() {
               admin enabled the Message Content intent for the bot.
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-surface p-5">
+          <div className="rounded-2xl bg-blush p-5">
             <Badge tone="beige">DM or server</Badge>
             <p className="mt-3 text-sm text-fg-muted">
               Run setup commands privately in your server, or use the{' '}
@@ -48,7 +48,7 @@ export default function CommandsPage() {
               to choose a server when needed.
             </p>
           </div>
-          <div className="rounded-2xl border border-border bg-surface p-5">
+          <div className="rounded-2xl bg-surface-2 p-5">
             <Badge tone="default">Server or DM</Badge>
             <p className="mt-3 text-sm text-fg-muted">
               Works anywhere. <code className="font-mono text-fg">{COMMAND_PREFIX}</code> always
@@ -88,7 +88,7 @@ export default function CommandsPage() {
 
       <Section className="py-10 sm:py-14">
         <Container>
-          <div className="rounded-2xl border border-border bg-surface p-6 text-sm text-fg-muted">
+          <div className="rounded-2xl bg-blush p-6 text-sm text-fg-muted sm:p-8">
             <h2 className="font-display text-lg font-semibold text-fg">
               About the {COMMAND_PREFIX} prefix
             </h2>

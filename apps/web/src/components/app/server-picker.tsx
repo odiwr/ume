@@ -55,7 +55,10 @@ export function ServerPicker({ guilds }: { guilds: PickerGuild[] }) {
           const badge = STATE_BADGE[g.state]
           const busy = pending && busyId === g.id
           return (
-            <li key={g.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <li
+              key={g.id}
+              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div className="flex min-w-0 items-center gap-3">
                 <GuildIcon name={g.name} src={g.iconUrl} size={40} />
                 <div className="min-w-0">
@@ -63,7 +66,9 @@ export function ServerPicker({ guilds }: { guilds: PickerGuild[] }) {
                   <div className="mt-1 flex flex-wrap items-center gap-1.5">
                     <Badge tone={badge.tone}>{badge.label}</Badge>
                     {g.canClaim ? <Badge tone="pink">Admin</Badge> : null}
-                    {!g.botInGuild && g.state !== 'no_workspace' ? <Badge tone="warning">Bot not in server</Badge> : null}
+                    {!g.botInGuild && g.state !== 'no_workspace' ? (
+                      <Badge tone="warning">Bot not in server</Badge>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -74,7 +79,13 @@ export function ServerPicker({ guilds }: { guilds: PickerGuild[] }) {
                       Open <ArrowUpRight className="size-3.5" />
                     </Link>
                   ) : (
-                    <Button size="sm" variant="secondary" loading={busy} disabled={pending} onClick={() => join(g)}>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      loading={busy}
+                      disabled={pending}
+                      onClick={() => join(g)}
+                    >
                       Join
                     </Button>
                   )
@@ -85,14 +96,25 @@ export function ServerPicker({ guilds }: { guilds: PickerGuild[] }) {
                       Reconnect
                     </Button>
                   ) : (
-                    <span className="text-xs text-fg-muted">Ask the workspace Owner to reconnect it.</span>
+                    <span className="text-xs text-fg-muted">
+                      Ask the workspace Owner to reconnect it.
+                    </span>
                   )
                 ) : null}
-                {g.state === 'purging' ? <span className="text-xs text-fg-muted">Run /reload once the purge finishes.</span> : null}
+                {g.state === 'purging' ? (
+                  <span className="text-xs text-fg-muted">
+                    Run /reload once the purge finishes.
+                  </span>
+                ) : null}
                 {(g.state === 'no_workspace' || g.state === 'unclaimed') && g.canClaim ? (
                   <>
                     {!g.botInGuild ? (
-                      <a href={g.botInviteUrl} target="_blank" rel="noopener noreferrer" className={buttonClasses('outline', 'sm')}>
+                      <a
+                        href={g.botInviteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={buttonClasses('outline', 'sm')}
+                      >
                         Add Ume to this server <ExternalLink className="size-3.5" />
                       </a>
                     ) : null}
@@ -101,23 +123,29 @@ export function ServerPicker({ guilds }: { guilds: PickerGuild[] }) {
                     </Button>
                   </>
                 ) : null}
-                {g.state === 'no_workspace' && !g.canClaim ? <span className="text-xs text-fg-muted">Only an admin can set this server up.</span> : null}
+                {g.state === 'no_workspace' && !g.canClaim ? (
+                  <span className="text-xs text-fg-muted">
+                    Only an admin can set this server up.
+                  </span>
+                ) : null}
               </div>
             </li>
           )
         })}
       </ul>
-      <ClaimDialog guild={claiming} onClose={() => setClaiming(null)} />
+      <ClaimDialog
+        key={claiming?.id ?? 'closed'}
+        guild={claiming}
+        onClose={() => setClaiming(null)}
+      />
     </>
   )
 }
 
 function ClaimDialog({ guild, onClose }: { guild: PickerGuild | null; onClose: () => void }) {
+  // Keyed by guild at the call site, so the attestation resets on every open.
   const [attested, setAttested] = React.useState(false)
   const { run, pending } = useAction()
-  React.useEffect(() => {
-    if (!guild) setAttested(false)
-  }, [guild])
   const reconnect = guild?.state === 'disconnected'
   return (
     <Dialog open={!!guild} onOpenChange={(o) => (!o && !pending ? onClose() : undefined)}>
@@ -133,7 +161,8 @@ function ClaimDialog({ guild, onClose }: { guild: PickerGuild | null; onClose: (
           <div className="space-y-4">
             {!guild.botInGuild ? (
               <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning [text-wrap:pretty]">
-                Ume is not in this server yet. You can claim now and add the bot afterwards; nothing plays until it joins.
+                Ume is not in this server yet. You can claim now and add the bot afterwards; nothing
+                plays until it joins.
               </p>
             ) : null}
             <CheckboxField

@@ -155,7 +155,7 @@ export function TakedownForm() {
         />
       </Field>
 
-      <fieldset className="flex flex-col gap-3 rounded-2xl border border-border bg-surface-2/50 p-4">
+      <fieldset className="flex flex-col gap-3 rounded-2xl bg-surface-2 p-4">
         <legend className="px-1 text-xs font-semibold uppercase tracking-wide text-fg-muted">
           Statements
         </legend>

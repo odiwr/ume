@@ -255,8 +255,8 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
 
 function Cover({ src }: { src: string | null }) {
   if (src) {
-    // eslint-disable-next-line @next/next/no-img-element
     return (
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={src}
         alt=""

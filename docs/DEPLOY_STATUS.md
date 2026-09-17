@@ -1,6 +1,18 @@
-# Deployment status — September 16, 2026
+# Deployment status — September 16, 2026 (evening pass)
 
-The redesigned web app builds locally. It has **not** been deployed or connected to a production database during this pass.
+The web app, bot and worker build locally and all seven workspace type checks pass. Nothing has been deployed or connected to a production database yet.
+
+## Code changes in this pass
+
+- Added the missing `/invite/[token]` page. Share links and invite emails already pointed there; the acceptance action existed but had no route. Signed-out visitors go to `/login?next=/invite/<token>`; signed-in visitors see the server, role and expiry before accepting.
+- Email no longer reports success in production without `RESEND_API_KEY`. Invites keep `emailSentAt` empty and show a copyable link instead; the worker's send-email job fails and retries; the bot logs and continues.
+- DMCA submissions now email the designated agent (`DMCA_AGENT_EMAIL`, falling back to the first `CEO_EMAILS` entry) through the worker. This adds one migration, `0001_notification_kind_dmca` (new `notification_kind` value), which must be applied together with `0000_init`.
+- Lint works again: `apps/web` pins ESLint 9 because `eslint-plugin-react` 7.37 does not support ESLint 10. CI runs lint and the new `@ume/shared` unit tests in addition to typecheck and build.
+- Public commands, DMCA and privacy pages use the borderless tinted panels from the design review.
+
+## Toolchain note for Windows
+
+The standalone `pnpm.exe` cannot self-install pnpm 12.4.1 (no Windows binary is published for that version). Run scripts as `npx -y pnpm@12.4.1 --config.manage-package-manager-versions=false <script>`; `.claude/launch.json` already does this for the preview server. Vercel CLI (`npx vercel`) reports that a new login is required; run `vercel login` interactively before deploying.
 
 Run `pnpm deploy:check` from the repository root before deploying. This reads local configuration and reports variable names only. It does not send email, provision infrastructure, apply migrations, or prove that supplied credentials work.
 

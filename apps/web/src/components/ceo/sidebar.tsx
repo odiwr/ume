@@ -4,7 +4,6 @@ import * as React from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import {
-  Activity,
   Bell,
   DollarSign,
   Flag,
@@ -41,10 +40,12 @@ const icons: Record<CeoNavIcon, React.ComponentType<{ className?: string }>> = {
 export function CeoSidebar({ email }: { email: string }) {
   const pathname = usePathname()
   const [open, setOpen] = React.useState(false)
-
-  React.useEffect(() => {
+  // Close the drawer on navigation, adjusting state during render instead of in an effect.
+  const [lastPathname, setLastPathname] = React.useState(pathname)
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname)
     setOpen(false)
-  }, [pathname])
+  }
 
   const nav = (
     <nav className="flex flex-col gap-0.5">

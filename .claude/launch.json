@@ -3,8 +3,13 @@
   "configurations": [
     {
       "name": "web",
-      "runtimeExecutable": "pnpm",
-      "runtimeArgs": ["dev:web"],
+      "runtimeExecutable": "npx",
+      "runtimeArgs": [
+        "-y",
+        "pnpm@12.4.1",
+        "--config.manage-package-manager-versions=false",
+        "dev:web"
+      ],
       "port": 3000,
       "autoPort": true
     }

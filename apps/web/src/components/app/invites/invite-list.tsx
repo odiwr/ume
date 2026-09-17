@@ -31,8 +31,10 @@ export interface InviteRow {
 
 function stateOf(inv: InviteRow): { tone: BadgeTone; label: string; live: boolean } {
   if (inv.revokedAt) return { tone: 'default', label: 'Revoked', live: false }
-  if (new Date(inv.expiresAt).getTime() < Date.now()) return { tone: 'default', label: 'Expired', live: false }
-  if (inv.maxUses !== null && inv.uses >= inv.maxUses) return { tone: 'beige', label: inv.kind === 'email' ? 'Accepted' : 'Used up', live: false }
+  if (new Date(inv.expiresAt).getTime() < Date.now())
+    return { tone: 'default', label: 'Expired', live: false }
+  if (inv.maxUses !== null && inv.uses >= inv.maxUses)
+    return { tone: 'beige', label: inv.kind === 'email' ? 'Accepted' : 'Used up', live: false }
   return { tone: 'success', label: 'Active', live: true }
 }
 
@@ -40,7 +42,11 @@ export function InviteList({ workspaceId, rows }: { workspaceId: string; rows: I
   const [revoking, setRevoking] = React.useState<InviteRow | null>(null)
   if (!rows.length) {
     return (
-      <EmptyState icon={<Ticket className="size-6" />} title="No invites yet" description="Most servers never need one: map Discord roles under Members and people get in by signing in. Invites cover everyone else." />
+      <EmptyState
+        icon={<Ticket className="size-6" />}
+        title="No invites yet"
+        description="Most servers never need one: map Discord roles under Members and people get in by signing in. Invites cover everyone else."
+      />
     )
   }
   return (
@@ -49,10 +55,17 @@ export function InviteList({ workspaceId, rows }: { workspaceId: string; rows: I
         {rows.map((inv) => {
           const state = stateOf(inv)
           return (
-            <li key={inv.id} className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
+            <li
+              key={inv.id}
+              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+            >
               <div className="flex min-w-0 items-start gap-3">
                 <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-fg-muted">
-                  {inv.kind === 'link' ? <Link2 className="size-4" aria-hidden /> : <Mail className="size-4" aria-hidden />}
+                  {inv.kind === 'link' ? (
+                    <Link2 className="size-4" aria-hidden />
+                  ) : (
+                    <Mail className="size-4" aria-hidden />
+                  )}
                 </span>
                 <div className="min-w-0">
                   <p className="flex flex-wrap items-center gap-1.5 text-sm font-medium">
@@ -63,7 +76,11 @@ export function InviteList({ workspaceId, rows }: { workspaceId: string; rows: I
                   </p>
                   <p className="mt-0.5 text-xs text-fg-muted">
                     {inv.kind === 'link' && inv.label ? `${inv.label} · ` : ''}
-                    {inv.kind === 'link' ? `${inv.uses}${inv.maxUses !== null ? ` of ${inv.maxUses}` : ''} use${inv.uses === 1 && inv.maxUses === null ? '' : 's'} · ` : inv.emailSentAt ? 'Emailed · ' : 'Email not sent · '}
+                    {inv.kind === 'link'
+                      ? `${inv.uses}${inv.maxUses !== null ? ` of ${inv.maxUses}` : ''} use${inv.uses === 1 && inv.maxUses === null ? '' : 's'} · `
+                      : inv.emailSentAt
+                        ? 'Emailed · '
+                        : 'Email not sent · '}
                     {state.live ? (
                       <>
                         expires <Ago date={inv.expiresAt} />
@@ -96,21 +113,35 @@ export function InviteList({ workspaceId, rows }: { workspaceId: string; rows: I
           )
         })}
       </ul>
-      <RevokeDialog workspaceId={workspaceId} row={revoking} onClose={() => setRevoking(null)} />
+      <RevokeDialog
+        key={revoking?.id ?? 'closed'}
+        workspaceId={workspaceId}
+        row={revoking}
+        onClose={() => setRevoking(null)}
+      />
     </>
   )
 }
 
-function RevokeDialog({ workspaceId, row, onClose }: { workspaceId: string; row: InviteRow | null; onClose: () => void }) {
+function RevokeDialog({
+  workspaceId,
+  row,
+  onClose,
+}: {
+  workspaceId: string
+  row: InviteRow | null
+  onClose: () => void
+}) {
+  // Keyed by invite at the call site, so every open starts unchecked.
   const [removeMembers, setRemoveMembers] = React.useState(false)
   const { run, pending } = useAction()
-  React.useEffect(() => {
-    if (row) setRemoveMembers(false)
-  }, [row])
   return (
     <Dialog open={!!row} onOpenChange={(o) => (!o && !pending ? onClose() : undefined)}>
       {row ? (
-        <DialogContent title="Revoke this invite?" description="The link stops working immediately. People who already joined keep their access unless you remove them too.">
+        <DialogContent
+          title="Revoke this invite?"
+          description="The link stops working immediately. People who already joined keep their access unless you remove them too."
+        >
           {row.uses > 0 ? (
             <CheckboxField
               id="revoke-remove-members"
@@ -130,7 +161,10 @@ function RevokeDialog({ workspaceId, row, onClose }: { workspaceId: string; row:
               loading={pending}
               onClick={async () => {
                 const res = await run(() => revokeInvite(workspaceId, row.id, removeMembers), {
-                  success: (d) => (d.removed ? `Invite revoked and ${d.removed} member${d.removed === 1 ? '' : 's'} removed.` : 'Invite revoked.'),
+                  success: (d) =>
+                    d.removed
+                      ? `Invite revoked and ${d.removed} member${d.removed === 1 ? '' : 's'} removed.`
+                      : 'Invite revoked.',
                 })
                 if (res.ok) onClose()
               }}

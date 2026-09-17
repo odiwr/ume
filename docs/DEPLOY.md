@@ -184,7 +184,7 @@ Plans are defined once in `packages/shared/src/plans.ts` (Plus $4 / 10 GB, Pro $
 
 ## 6. Resend
 
-Transactional email only: invites, inactivity notices, purge confirmations, token-rotation alerts, quota warnings. Without `RESEND_API_KEY` the sender prints the message to stdout, which is what you want locally.
+Transactional email only: invites, inactivity notices, purge confirmations, token-rotation alerts, quota warnings. Without `RESEND_API_KEY` the sender prints the message to stdout, which is what you want locally. In production (`NODE_ENV=production`) a missing key makes every send fail with `email_not_configured`: invites show "Email is not configured", the worker `send-email` job retries and logs, and nothing is recorded as sent.
 
 1. [Resend](https://resend.com) → **Domains → Add domain** → `ume.app` (or a subdomain such as `mail.ume.app` to keep your root domain's reputation separate). Region: US East.
 2. Add the DNS records Resend shows, at your DNS provider (Cloudflare if the domain is there):

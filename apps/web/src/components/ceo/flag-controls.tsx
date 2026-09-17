@@ -25,10 +25,12 @@ export function FlagToggle({
   const router = useRouter()
   const [pending, startTransition] = React.useTransition()
   const [optimistic, setOptimistic] = React.useState(enabled)
-
-  React.useEffect(() => {
+  // Follow the server value after a refresh, adjusting state during render instead of in an effect.
+  const [lastEnabled, setLastEnabled] = React.useState(enabled)
+  if (enabled !== lastEnabled) {
+    setLastEnabled(enabled)
     setOptimistic(enabled)
-  }, [enabled])
+  }
 
   return (
     <div className="inline-flex items-center gap-2">

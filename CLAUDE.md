@@ -18,7 +18,7 @@ Ume is a 24/7 Discord music bot with a web app. pnpm + Turborepo monorepo, Node 
 | `packages/shared`  | `@ume/shared` constants, ids, CAP bitmasks, token helpers, Discord helpers, plans, validation, command list, job names/payloads.               |
 | `packages/db`      | `@ume/db` Drizzle schema, relations, migrations (`drizzle/`), query helpers (`getAccess`, `claimToken`, `logAudit`, …).                        |
 | `packages/storage` | `@ume/storage` S3/R2 client, presigned URLs, key layout under `ws/<workspaceId>/`.                                                             |
-| `packages/email`   | `@ume/email` Resend sender (dry-run without key) and templates.                                                                                |
+| `packages/email`   | `@ume/email` Resend sender (dry-run without key outside production; `email_not_configured` failure in production) and templates.               |
 
 ## Ownership boundaries
 

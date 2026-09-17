@@ -80,13 +80,13 @@ export function whoCanRun(c: CommandSpec): string {
 export function CommandRow({ command, compact }: { command: CommandSpec; compact?: boolean }) {
   const scope = scopeLabel(command)
   return (
-    <li className="flex flex-col gap-3 rounded-2xl border border-border bg-surface p-4 sm:p-5">
+    <li className="flex flex-col gap-3 rounded-2xl bg-surface-2 p-4 sm:p-5">
       <div className="flex flex-wrap items-center gap-2">
-        <code className="rounded-lg bg-surface-3 px-2 py-1 font-mono text-sm text-fg break-all">
+        <code className="rounded-lg bg-surface px-2 py-1 font-mono text-sm text-fg break-all">
           {slashForm(command)}
         </code>
         <span className="text-xs text-fg-subtle">or</span>
-        <code className="rounded-lg bg-surface-2 px-2 py-1 font-mono text-sm text-fg-muted">
+        <code className="rounded-lg bg-surface/70 px-2 py-1 font-mono text-sm text-fg-muted">
           {prefixForm(command)}
         </code>
         <Badge tone={scope.tone} className="ml-auto">

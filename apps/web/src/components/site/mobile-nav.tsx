@@ -18,10 +18,12 @@ export function MobileNav({
 }) {
   const [open, setOpen] = React.useState(false)
   const pathname = usePathname()
-
-  React.useEffect(() => {
+  // Close the drawer on navigation, adjusting state during render instead of in an effect.
+  const [lastPathname, setLastPathname] = React.useState(pathname)
+  if (pathname !== lastPathname) {
+    setLastPathname(pathname)
     setOpen(false)
-  }, [pathname])
+  }
 
   React.useEffect(() => {
     if (!open) return

@@ -26,7 +26,7 @@ const SECTIONS = [
 
 function RetentionRow({ what, howLong, why }: { what: string; howLong: string; why: string }) {
   return (
-    <tr className="border-t border-border align-top">
+    <tr className="border-t border-surface align-top">
       <td className="py-3 pr-4 font-medium text-fg">{what}</td>
       <td className="py-3 pr-4 whitespace-nowrap">{howLong}</td>
       <td className="py-3">{why}</td>
@@ -169,7 +169,7 @@ export default function PrivacyPage() {
           purged workspace leaves only a record that it existed (workspace ID, server ID, deletion
           time) so support can answer &quot;what happened&quot;.
         </p>
-        <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+        <div className="overflow-x-auto rounded-2xl bg-surface-2 px-2">
           <table className="w-full min-w-[540px] text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-fg-subtle">
