@@ -181,18 +181,16 @@ export function Uploader({
       <div
         {...getRootProps()}
         className={cn(
-          'flex flex-col items-center justify-center gap-2 rounded-2xl border border-dashed px-6 py-8 text-center transition-colors',
-          disabled
-            ? 'cursor-not-allowed border-border bg-surface/40 opacity-60'
-            : 'border-border-strong bg-surface/60',
-          isDragActive && !disabled ? 'border-pink bg-pink/5' : '',
+          'flex flex-col items-center justify-center gap-3 rounded-2xl px-6 py-10 text-center transition-colors motion-reduce:transition-none',
+          disabled ? 'cursor-not-allowed bg-surface-2 opacity-60' : 'bg-sage-light',
+          isDragActive && !disabled ? 'bg-blush' : '',
         )}
       >
         <input {...getInputProps()} aria-label="Choose audio files" />
         <span
           className={cn(
             'flex size-11 items-center justify-center rounded-2xl',
-            isDragActive ? 'bg-pink/15 text-pink' : 'bg-surface-2 text-fg-muted',
+            isDragActive ? 'bg-pink/15 text-pink' : 'bg-surface text-fg-muted',
           )}
         >
           <CloudUpload className="size-5" aria-hidden />
@@ -203,12 +201,12 @@ export function Uploader({
         <p className="max-w-md text-xs text-fg-muted [text-wrap:pretty]">
           {disabled && disabledReason
             ? disabledReason
-            : `${UPLOAD.acceptedExtensions.join(', ')} up to ${formatBytes(UPLOAD.maxOriginalBytes)} each. Every file is normalized to ${UPLOAD.output.bitrateKbps} kbps Opus; the original is not kept.`}
+            : `${UPLOAD.acceptedExtensions.join(', ')} up to ${formatBytes(UPLOAD.maxOriginalBytes)} each.`}
         </p>
         <Button
           type="button"
           size="sm"
-          variant="outline"
+          variant="primary"
           onClick={open}
           disabled={disabled}
           className="mt-1"
@@ -218,11 +216,11 @@ export function Uploader({
       </div>
 
       {items.length ? (
-        <ul className="space-y-1.5" aria-live="polite" aria-busy={busy}>
+        <ul className="space-y-2" aria-live="polite" aria-busy={busy}>
           {items.map((it) => (
             <li
               key={it.id}
-              className="flex items-center gap-3 rounded-xl border border-border bg-surface px-3 py-2 text-sm"
+              className="flex items-center gap-3 rounded-xl bg-surface-2 px-3 py-2.5 text-sm"
             >
               <FileMusic className="size-4 shrink-0 text-fg-muted" aria-hidden />
               <div className="min-w-0 flex-1">
@@ -256,7 +254,7 @@ export function Uploader({
                   type="button"
                   onClick={() => setItems((prev) => prev.filter((p) => p.id !== it.id))}
                   aria-label="Dismiss"
-                  className="rounded-md p-1 text-fg-subtle hover:bg-surface-2 hover:text-fg"
+                  className="inline-flex size-9 shrink-0 items-center justify-center rounded-lg text-fg-subtle hover:bg-surface-3 hover:text-fg"
                 >
                   <X className="size-3.5" />
                 </button>

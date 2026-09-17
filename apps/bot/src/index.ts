@@ -1,4 +1,4 @@
-import { Client, Events, GatewayIntentBits, Partials } from 'discord.js'
+import { ActivityType, Client, Events, GatewayIntentBits, Partials } from 'discord.js'
 import { BRAND, botInviteUrl } from '@ume/shared'
 import { closeDb, db, getWorkspaceByGuildId, setBotPresence } from './lib/db'
 import { env } from './lib/env'
@@ -6,10 +6,15 @@ import { logger } from './lib/logger'
 import { umeEmbed } from './lib/embeds'
 import { stopQueue } from './lib/queue'
 import { handleInteraction, handleMessage } from './commands/router'
-import { VoiceManager, setVoiceManager } from './voice'
+import { VoiceManager, allPlayers, setVoiceManager } from './voice'
 import { onVoiceStateUpdate as activityVoiceState, startupScan } from './activity'
 
-const intents = [GatewayIntentBits.Guilds, GatewayIntentBits.GuildVoiceStates, GatewayIntentBits.DirectMessages, GatewayIntentBits.GuildMessages]
+const intents = [
+  GatewayIntentBits.Guilds,
+  GatewayIntentBits.GuildVoiceStates,
+  GatewayIntentBits.DirectMessages,
+  GatewayIntentBits.GuildMessages,
+]
 if (env.messageContentIntent) intents.push(GatewayIntentBits.MessageContent)
 
 const client = new Client({
@@ -21,9 +26,37 @@ const client = new Client({
 
 let voice: VoiceManager | null = null
 
+/**
+ * The presence is shared by every server, so it never names a song (that lives in each
+ * server's voice channel status and now-playing card). It only counts where music is on.
+ */
+const PRESENCE_REFRESH_MS = 5 * 60 * 1000
+let presenceTimer: NodeJS.Timeout | null = null
+let lastPresence = ''
+function refreshPresence(): void {
+  if (!client.isReady()) return
+  const playing = allPlayers().filter((p) => p.isPlaying).length
+  const name =
+    playing > 0 ? `music in ${playing} server${playing === 1 ? '' : 's'} · /help` : '/help · ume'
+  if (name === lastPresence) return
+  lastPresence = name
+  client.user.setPresence({
+    activities: [{ name, type: ActivityType.Listening }],
+    status: 'online',
+  })
+}
+
 client.once(Events.ClientReady, async (ready) => {
-  logger.info({ user: ready.user.tag, guilds: ready.guilds.cache.size, prefixInGuilds: env.messageContentIntent }, `${BRAND.name} is online`)
-  ready.user.setPresence({ activities: [{ name: '/help · ume', type: 2 }], status: 'online' })
+  logger.info(
+    {
+      user: ready.user.tag,
+      guilds: ready.guilds.cache.size,
+      prefixInGuilds: env.messageContentIntent,
+    },
+    `${BRAND.name} is online`,
+  )
+  refreshPresence()
+  presenceTimer = setInterval(refreshPresence, PRESENCE_REFRESH_MS)
   try {
     voice = new VoiceManager(ready)
     setVoiceManager(voice)
@@ -45,13 +78,19 @@ client.on(Events.MessageCreate, (message) => {
 
 client.on(Events.VoiceStateUpdate, (oldState, newState) => {
   if (!voice) return
-  voice.onVoiceStateUpdate(oldState, newState).catch((err) => logger.error({ err }, 'voice state handler failed'))
-  activityVoiceState(voice, oldState, newState).catch((err) => logger.error({ err }, 'activity handler failed'))
+  voice
+    .onVoiceStateUpdate(oldState, newState)
+    .catch((err) => logger.error({ err }, 'voice state handler failed'))
+  activityVoiceState(voice, oldState, newState).catch((err) =>
+    logger.error({ err }, 'activity handler failed'),
+  )
 })
 
 client.on(Events.ChannelDelete, (channel) => {
   if (!voice || channel.isDMBased()) return
-  voice.onChannelDelete(channel.guildId, channel.id).catch((err) => logger.error({ err }, 'channelDelete handler failed'))
+  voice
+    .onChannelDelete(channel.guildId, channel.id)
+    .catch((err) => logger.error({ err }, 'channelDelete handler failed'))
 })
 
 client.on(Events.GuildCreate, async (guild) => {
@@ -61,7 +100,12 @@ client.on(Events.GuildCreate, async (guild) => {
     if (ws) {
       await setBotPresence(db, guild.id, { connected: false, inGuild: true })
       if (ws.homeVoiceChannelId && voice && ws.status !== 'purged' && ws.status !== 'purging') {
-        voice.join(guild, ws.homeVoiceChannelId, ws.id).catch((err) => logger.warn({ err, guildId: guild.id }, 'rejoin on guildCreate failed'))
+        void voice.backgroundJoin(
+          guild,
+          ws.homeVoiceChannelId,
+          ws.id,
+          'rejoin on guildCreate failed',
+        )
       }
       return
     }
@@ -112,6 +156,7 @@ async function shutdown(signal: string): Promise<void> {
   shuttingDown = true
   logger.info({ signal }, 'shutting down')
   const timer = setTimeout(() => process.exit(1), 10_000)
+  if (presenceTimer) clearInterval(presenceTimer)
   try {
     await voice?.shutdown()
     await stopQueue()
@@ -132,8 +177,12 @@ async function boot(): Promise<void> {
   await client.login(token)
 }
 boot().catch((err) => {
-  logger.fatal({ err: err instanceof Error ? err.message : err }, 'login failed — check DISCORD_BOT_TOKEN')
+  logger.fatal(
+    { err: err instanceof Error ? err.message : err },
+    'login failed — check DISCORD_BOT_TOKEN',
+  )
   process.exit(1)
 })
 
-if (process.env.DISCORD_CLIENT_ID) logger.info({ inviteUrl: botInviteUrl(process.env.DISCORD_CLIENT_ID) }, 'invite url')
+if (process.env.DISCORD_CLIENT_ID)
+  logger.info({ inviteUrl: botInviteUrl(process.env.DISCORD_CLIENT_ID) }, 'invite url')

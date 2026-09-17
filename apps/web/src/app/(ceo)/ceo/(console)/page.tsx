@@ -17,7 +17,7 @@ import { getOverview, listIdleFreeWorkspaces } from '@/lib/ceo/queries'
 import { PageHeader, Section } from '@/components/ceo/page-header'
 import { StatGrid, StatTile } from '@/components/ceo/stat-tile'
 import { StorageByPlanChart, WorkspacesPerWeekChart } from '@/components/ceo/charts'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Ago } from '@/components/ceo/time'
 import { Mono } from '@/components/ceo/data-table'
@@ -31,7 +31,7 @@ export default async function CeoOverviewPage() {
 
   return (
     <>
-      <PageHeader title="Overview" description="Current usage and service status." />
+      <PageHeader title="Overview" />
 
       <StatGrid>
         <StatTile
@@ -103,9 +103,6 @@ export default async function CeoOverviewPage() {
         <Card>
           <CardHeader>
             <CardTitle>New workspaces per week</CardTitle>
-            <CardDescription>
-              Servers that met the bot for the first time, last 12 ISO weeks.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <WorkspacesPerWeekChart data={o.weekly} />
@@ -114,9 +111,6 @@ export default async function CeoOverviewPage() {
         <Card>
           <CardHeader>
             <CardTitle>Storage by plan</CardTitle>
-            <CardDescription>
-              Bytes stored per tier. Free is the long tail; paid tiers are the bill.
-            </CardDescription>
           </CardHeader>
           <CardContent>
             <StorageByPlanChart data={o.storageByPlan} />
@@ -126,7 +120,7 @@ export default async function CeoOverviewPage() {
 
       <Section
         title="Approaching auto-purge"
-        description="Free, connected workspaces idle for 30+ days. The sweep sends the 30-day notice, then the 48-hour notice, then purges at 60."
+        description="Free, connected workspaces idle for 30+ days."
         actions={
           <Link
             href="/ceo/workspaces?status=connected"
@@ -144,11 +138,11 @@ export default async function CeoOverviewPage() {
           </Card>
         ) : (
           <Card>
-            <ul className="divide-y divide-border">
+            <ul className="space-y-1 p-2">
               {idle.map((w) => (
                 <li
                   key={w.id}
-                  className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-3 text-sm"
                 >
                   <div className="min-w-0">
                     <Link

@@ -18,7 +18,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -81,11 +80,12 @@ export function TrackTable({
   if (!rows.length) {
     return (
       <EmptyState
+        className="border-0 bg-surface-2"
         icon={<ListMusic className="size-6" />}
         title="This playlist is empty"
         description={
           perms.addTrack
-            ? 'Drop audio files above or add a song from a link. Everyone with access sees who added what.'
+            ? 'Drop audio files above or add a song from a link.'
             : 'Nobody has added a song here yet.'
         }
       />
@@ -94,11 +94,11 @@ export function TrackTable({
 
   return (
     <>
-      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+      <div className="overflow-x-auto rounded-2xl bg-surface-2 p-2">
         <table className="w-full min-w-[640px] text-sm">
           <thead className="text-left text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
-            <tr className="border-b border-border">
-              <th className="w-12 px-4 py-2.5">#</th>
+            <tr>
+              <th className="w-12 px-4 py-3">#</th>
               <th className="px-2 py-2.5">Title</th>
               <th className="px-2 py-2.5">Added by</th>
               <th className="px-2 py-2.5">Added</th>
@@ -109,12 +109,12 @@ export function TrackTable({
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {rows.map((row, i) => {
               const status = trackStatusTone(row.status)
               const canRemove = perms.deleteAny || (row.mine && perms.deleteOwn)
               return (
-                <tr key={row.entryId} className="group transition-colors hover:bg-surface-2">
+                <tr key={row.entryId} className="group transition-colors hover:bg-sage-light">
                   <td className="px-4 py-2 text-xs text-fg-subtle tabular-nums">{i + 1}</td>
                   <td className="px-2 py-2">
                     <div className="flex items-center gap-3">
@@ -207,12 +207,9 @@ export function TrackTable({
                           <RetryItem workspaceId={workspaceId} trackId={row.trackId} />
                         ) : null}
                         {canRemove ? (
-                          <>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem destructive onSelect={() => setRemoving(row)}>
-                              <Trash className="size-4" /> Remove from playlist
-                            </DropdownMenuItem>
-                          </>
+                          <DropdownMenuItem destructive onSelect={() => setRemoving(row)}>
+                            <Trash className="size-4" /> Remove from playlist
+                          </DropdownMenuItem>
                         ) : null}
                         {!perms.editMeta &&
                         !row.sourceUrl &&

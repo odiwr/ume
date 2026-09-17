@@ -9,7 +9,7 @@ export const Input = React.forwardRef<
     <input
       ref={ref}
       className={cn(
-        'h-11 w-full rounded-xl border border-border-strong bg-surface px-3 text-sm text-fg placeholder:text-fg-subtle focus:border-pink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink disabled:opacity-50',
+        'h-11 w-full rounded-xl bg-surface-2 px-3 text-sm text-fg placeholder:text-fg-subtle in-data-tinted:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink disabled:opacity-50',
         className,
       )}
       {...props}
@@ -25,7 +25,7 @@ export const Textarea = React.forwardRef<
     <textarea
       ref={ref}
       className={cn(
-        'min-h-24 w-full rounded-xl border border-border-strong bg-surface px-3 py-2 text-sm text-fg placeholder:text-fg-subtle focus:border-pink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink disabled:opacity-50',
+        'min-h-24 w-full rounded-xl bg-surface-2 px-3 py-2 text-sm text-fg placeholder:text-fg-subtle in-data-tinted:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink disabled:opacity-50',
         className,
       )}
       {...props}
@@ -53,7 +53,7 @@ export const Select = React.forwardRef<
     <select
       ref={ref}
       className={cn(
-        'h-11 w-full rounded-xl border border-border-strong bg-surface px-3 text-sm text-fg focus:border-pink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink disabled:opacity-50',
+        'h-11 w-full rounded-xl bg-surface-2 px-3 text-sm text-fg in-data-tinted:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink disabled:opacity-50',
         className,
       )}
       {...props}

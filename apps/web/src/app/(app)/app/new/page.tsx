@@ -74,14 +74,10 @@ export default async function NewWorkspacePage() {
 
   return (
     <div className="min-h-dvh">
-      <TopBar
-        user={me}
-        crumbs={[{ href: '/app', label: 'Your servers' }, { label: 'Add a server' }]}
-      />
-      <main className="mx-auto w-full max-w-4xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      <TopBar user={me} />
+      <main className="mx-auto w-full max-w-4xl space-y-10 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <PageHeader
           title="Add a server"
-          description="Claim a Discord server you own or administer."
           actions={
             <Link href="/app/claim" className={buttonClasses('outline', 'md')}>
               <KeyRound className="size-4" /> Use a token instead
@@ -99,17 +95,14 @@ export default async function NewWorkspacePage() {
 
         {guilds ? (
           <>
-            <Section
-              title="Servers you administer"
-              description="Claim a server to create its workspace, or reconnect one after a /reload."
-            >
+            <Section title="Servers you administer">
               {claimable.length ? (
                 <ServerPicker guilds={claimable} />
               ) : (
                 <EmptyState
                   icon={<Server className="size-6" />}
                   title="No servers you can claim"
-                  description="Discord only shows servers where you are the owner or hold the Administrator permission. If you expected one here, ask its owner to run /reload and send you the token instead."
+                  description="You need to own the server or hold Administrator. Otherwise ask its owner to run /reload and send you the token."
                 >
                   <Link href="/app/claim" className={buttonClasses('outline', 'sm')}>
                     Enter a token
@@ -118,10 +111,7 @@ export default async function NewWorkspacePage() {
               )}
             </Section>
             {joinable.length ? (
-              <Section
-                title="Servers you are in that use Ume"
-                description="Your access comes from the server’s Discord role mapping or its default role."
-              >
+              <Section title="Servers you are in that use Ume">
                 <ServerPicker guilds={joinable} />
               </Section>
             ) : null}

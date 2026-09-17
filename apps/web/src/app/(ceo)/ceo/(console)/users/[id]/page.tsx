@@ -139,7 +139,7 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
                 alt=""
                 width={40}
                 height={40}
-                className="size-10 rounded-full border border-border"
+                className="size-10 rounded-full bg-surface-3"
               />
             ) : (
               <span className="inline-flex size-10 items-center justify-center rounded-full bg-surface-3 font-display text-lg">
@@ -191,7 +191,7 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
       </Section>
 
       <Section title="Moderation">
-        <Card className={user.banned ? 'border-danger/30' : undefined}>
+        <Card className={user.banned ? 'bg-danger/5' : undefined}>
           <CardHeader>
             <CardTitle>{user.banned ? 'This user is banned' : 'Ban this user'}</CardTitle>
             <CardDescription>
@@ -232,7 +232,7 @@ export default async function CeoUserDetailPage({ params }: { params: Promise<{ 
         />
       </Section>
 
-      <Section title="Recent actions" description="Audit entries where this user is the actor.">
+      <Section title="Recent actions">
         <DataTable
           columns={auditColumns}
           rows={d.recentAudit}

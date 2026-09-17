@@ -22,7 +22,7 @@ export function DmcaActions({
   const trackDisabled = track?.status === 'disabled'
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-      <Card className={notice.status === 'received' ? 'border-warning/40' : undefined}>
+      <Card className={notice.status === 'received' ? 'bg-warning/10' : undefined}>
         <CardHeader>
           <CardTitle>Takedown</CardTitle>
           <CardDescription>

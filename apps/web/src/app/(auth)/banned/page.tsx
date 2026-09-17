@@ -21,7 +21,7 @@ export default async function BannedPage() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="rounded-2xl border border-danger/30 bg-surface p-6 sm:p-8">
+      <div className="rounded-2xl bg-danger/5 p-6 sm:p-8">
         <span className="flex size-12 items-center justify-center rounded-xl bg-danger/15 text-danger">
           <Ban className="size-6" aria-hidden />
         </span>
@@ -33,7 +33,7 @@ export default async function BannedPage() {
           in Discord, but the web app is closed to this account.
         </p>
         {reason ? (
-          <div className="mt-5 rounded-xl border border-border bg-surface-2 px-4 py-3 text-sm">
+          <div className="mt-5 rounded-xl bg-surface px-4 py-3 text-sm">
             <p className="text-xs font-semibold uppercase tracking-wide text-fg-subtle">Reason</p>
             <p className="mt-1 text-fg-muted">{reason}</p>
           </div>

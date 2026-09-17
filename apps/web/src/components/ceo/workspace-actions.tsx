@@ -142,15 +142,14 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
         </CardContent>
       </Card>
 
-      <Card className="border-danger/30 lg:col-span-2">
+      <Card className="bg-danger/5 lg:col-span-2">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-danger">
             <ShieldAlert className="size-4" /> Danger zone
           </CardTitle>
-          <CardDescription>Each of these is logged with your account as the actor.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface p-4">
             <div className="text-sm">
               <p className="font-medium">Disconnect</p>
               <p className="text-xs text-fg-muted">
@@ -169,7 +168,7 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
             </ActionButton>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-3">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl bg-surface p-4">
             <div className="text-sm">
               <p className="font-medium">Reset members</p>
               <p className="text-xs text-fg-muted">
@@ -188,7 +187,7 @@ export function WorkspaceActions({ ws, quotaBytes }: { ws: Workspace; quotaBytes
             </ActionButton>
           </div>
 
-          <div className="rounded-xl border border-danger/30 bg-danger/5 p-3">
+          <div className="rounded-xl bg-danger/10 p-4">
             <p className="text-sm font-medium text-danger">Purge workspace</p>
             <p className="mt-0.5 text-xs text-fg-muted">
               Queues the purge job: every track, playlist, member and invite is deleted and storage

@@ -12,16 +12,16 @@ export interface StatTileProps {
   className?: string
 }
 
-const toneRing: Record<NonNullable<StatTileProps['tone']>, string> = {
-  default: '',
-  pink: 'border-pink/40',
-  warning: 'border-warning/40',
-  danger: 'border-danger/40',
-  success: 'border-success/40',
+const toneSurface: Record<NonNullable<StatTileProps['tone']>, string> = {
+  default: 'bg-surface-2',
+  pink: 'bg-blush',
+  warning: 'bg-warning/10',
+  danger: 'bg-danger/10',
+  success: 'bg-success/10',
 }
 
 const toneIcon: Record<NonNullable<StatTileProps['tone']>, string> = {
-  default: 'bg-surface-3 text-fg-muted',
+  default: 'bg-surface text-fg-muted',
   pink: 'bg-pink/15 text-pink-soft',
   warning: 'bg-warning/15 text-warning',
   danger: 'bg-danger/15 text-danger',
@@ -40,8 +40,8 @@ export function StatTile({
   return (
     <div
       className={cn(
-        'flex items-start justify-between gap-3 rounded-2xl border border-border bg-surface p-4',
-        toneRing[tone],
+        'flex items-start justify-between gap-3 rounded-2xl p-5',
+        toneSurface[tone],
         className,
       )}
     >
@@ -74,7 +74,7 @@ export function StatGrid({
   className?: string
 }) {
   return (
-    <div className={cn('grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4', className)}>
+    <div className={cn('grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4', className)}>
       {children}
     </div>
   )

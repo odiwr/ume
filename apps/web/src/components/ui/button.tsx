@@ -6,10 +6,12 @@ export type ButtonSize = 'sm' | 'md' | 'lg' | 'icon'
 
 const variants: Record<ButtonVariant, string> = {
   primary: 'bg-fg text-bg hover:bg-sage',
-  secondary: 'border border-border-strong bg-surface text-fg hover:bg-surface-2',
+  secondary:
+    'bg-surface-2 text-fg hover:bg-surface-3 in-data-tinted:bg-surface in-data-tinted:hover:bg-surface-3',
   ghost: 'bg-transparent text-fg-muted hover:bg-surface-2 hover:text-fg',
-  danger: 'bg-danger/15 text-danger hover:bg-danger/25 border border-danger/30',
-  outline: 'border border-border-strong bg-transparent text-fg hover:bg-surface-2',
+  danger: 'bg-danger/15 text-danger hover:bg-danger/25',
+  outline:
+    'bg-surface-2 text-fg hover:bg-surface-3 in-data-tinted:bg-surface in-data-tinted:hover:bg-surface-3',
 }
 
 const sizes: Record<ButtonSize, string> = {

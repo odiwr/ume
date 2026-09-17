@@ -29,7 +29,8 @@ const TICK = { fill: 'var(--color-fg-subtle)', fontSize: 11 }
 const TOOLTIP_STYLE = {
   contentStyle: {
     background: 'var(--color-surface)',
-    border: '1px solid var(--color-border)',
+    border: 'none',
+    boxShadow: '0 8px 28px rgb(37 49 73 / 0.12)',
     borderRadius: 12,
     fontSize: 12,
     color: 'var(--color-fg)',

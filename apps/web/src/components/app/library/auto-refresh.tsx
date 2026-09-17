@@ -7,7 +7,13 @@ import { useRouter } from 'next/navigation'
  * every `intervalMs` so status pills update without a manual reload. Pauses when the
  * tab is hidden.
  */
-export function AutoRefresh({ active, intervalMs = 5_000 }: { active: boolean; intervalMs?: number }) {
+export function AutoRefresh({
+  active,
+  intervalMs = 5_000,
+}: {
+  active: boolean
+  intervalMs?: number
+}) {
   const router = useRouter()
   React.useEffect(() => {
     if (!active) return

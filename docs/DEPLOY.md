@@ -57,9 +57,11 @@ Contents
 - **Install Link**: Discord Provided Link, or leave it unset and use the URL the web app generates.
 - **Default Install Settings → Guild Install**:
   - Scopes: `bot`, `applications.commands`
-  - Permissions: **View Channels, Send Messages, Embed Links, Read Message History, Connect, Speak, Use Application Commands**
+  - Permissions: **View Channels, Send Messages, Embed Links, Read Message History, Connect, Speak, Manage Roles, Use Application Commands, Set Voice Channel Status**
 
-`botInviteUrl(clientId, guildId?)` in `@ume/shared` encodes exactly these scopes and permissions (permissions integer `2150714368`), so the "Add to Discord" buttons on the site never drift from this list. Do not grant Administrator: the bot does not need it and reviewers flag it. The optional "Now playing" voice channel status line additionally needs _Set Voice Channel Status_ in the home channel and is skipped silently without it.
+`botInviteUrl(clientId, guildId?)` in `@ume/shared` encodes exactly these scopes and permissions (permissions integer `281477395860480`, `BOT_INVITE_PERMISSIONS`), so the "Add to Discord" buttons on the site never drift from this list. Keep the Developer Portal default in sync with it. Do not grant Administrator or Manage Channels: the bot does not need them and reviewers flag them.
+
+**Manage Roles** lets Ume fix its own access in its home voice channel: when a channel or role overwrite denies it View Channel, Connect, Speak or Set Voice Channel Status, it adds a member overwrite for itself that allows only those (and only ones it already holds at server level), with the audit log reason "Ume: allow itself to play in its home channel". It never denies anything or edits other overwrites. Without Manage Roles in that channel, `/home` explains what is missing and how to fix it (re-invite with the current link, or allow Ume as a member in the channel's permissions). Servers that installed Ume with the old integer (`2150714368`) keep working but need a re-invite for this. _Set Voice Channel Status_ powers the `▶ Title — Artist` status line and is skipped silently without it.
 
 ### 1.5 Register slash commands
 
@@ -147,15 +149,18 @@ Key layout, for reference (`packages/storage/src/keys.ts`): `ws/<workspaceId>/up
 
 ## 5. Stripe
 
-Plans are defined once in `packages/shared/src/plans.ts` (Plus $4 / 10 GB, Pro $12 / 50 GB, Studio $35 / 250 GB, monthly, per workspace). Stripe only needs matching prices.
+Plans are defined once in `packages/shared/src/plans.ts` (Plus $5 / 10 GB, Pro $12 / 50 GB, Studio $35 / 250 GB per workspace, each billed monthly or yearly at ten months for twelve). Prices are explained in [`COSTS.md`](COSTS.md). Stripe only needs matching prices.
 
-1. Stripe Dashboard (start in **test mode**) → **Product catalog → Add product**, three times:
-   | Product                                                                                                                                                                                                                                    | Price      | Billing            |
-   | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------- | ------------------ |
-   | Ume Plus                                                                                                                                                                                                                                   | $4.00 USD  | Recurring, monthly |
-   | Ume Pro                                                                                                                                                                                                                                    | $12.00 USD | Recurring, monthly |
-   | Ume Studio                                                                                                                                                                                                                                 | $35.00 USD | Recurring, monthly |
-   | Copy each price id (`price_…`) → `STRIPE_PRICE_PLUS`, `STRIPE_PRICE_PRO`, `STRIPE_PRICE_STUDIO`. The webhook maps a subscription back to a plan by comparing its price id with these three variables, so they must be set on the web host. |
+1. Stripe Dashboard (start in **test mode**) → **Product catalog → Add product**, three times, each with two recurring prices:
+
+   | Product    | Monthly price | Env var               | Yearly price | Env var                      |
+   | ---------- | ------------- | --------------------- | ------------ | ---------------------------- |
+   | Ume Plus   | $5.00 USD     | `STRIPE_PRICE_PLUS`   | $50.00 USD   | `STRIPE_PRICE_PLUS_YEARLY`   |
+   | Ume Pro    | $12.00 USD    | `STRIPE_PRICE_PRO`    | $120.00 USD  | `STRIPE_PRICE_PRO_YEARLY`    |
+   | Ume Studio | $35.00 USD    | `STRIPE_PRICE_STUDIO` | $350.00 USD  | `STRIPE_PRICE_STUDIO_YEARLY` |
+
+   Copy each price id (`price_…`) into its env var on the web host. The webhook maps a subscription back to a plan and billing interval by comparing its price id with these six variables. Add all six prices to the Customer Portal's plan-switching list (step 4) so subscribers can move between plans and intervals.
+
 2. **Developers → API keys** → Secret key → `STRIPE_SECRET_KEY`.
 3. **Developers → Webhooks → Add endpoint**: URL `<APP_URL>/api/stripe/webhook`, events:
    - `checkout.session.completed`

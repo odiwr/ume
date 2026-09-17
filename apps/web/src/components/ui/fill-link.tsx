@@ -41,7 +41,7 @@ export function FillLink({
       target={external ? '_blank' : undefined}
       rel={external ? 'noopener noreferrer' : undefined}
       className={cn(
-        'fill-link relative inline-flex min-h-11 items-center justify-center overflow-hidden rounded-full border border-fg px-5 py-3 text-sm font-semibold',
+        'fill-link relative inline-flex min-h-11 items-center justify-center overflow-hidden rounded-full bg-sage-light px-5 py-3 text-sm font-semibold',
         className,
       )}
       onPointerEnter={(event) => {

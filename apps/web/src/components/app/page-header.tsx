@@ -20,7 +20,10 @@ export function PageHeader({
 }) {
   return (
     <div
-      className={cn('flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between', className)}
+      className={cn(
+        'flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between',
+        className,
+      )}
     >
       <div className="min-w-0">
         {back ? (
@@ -39,7 +42,7 @@ export function PageHeader({
           <p className="mt-1 max-w-2xl text-sm text-fg-muted [text-wrap:pretty]">{description}</p>
         ) : null}
       </div>
-      {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
   )
 }
@@ -60,7 +63,7 @@ export function Section({
   className?: string
 }) {
   return (
-    <section id={id} className={cn('scroll-mt-24 space-y-3', className)}>
+    <section id={id} className={cn('scroll-mt-24 space-y-4', className)}>
       <div className="flex flex-wrap items-end justify-between gap-2">
         <div className="min-w-0">
           <h2 className="font-display text-lg font-semibold text-fg">{title}</h2>
@@ -88,16 +91,16 @@ export function Notice({
   icon?: React.ReactNode
 }) {
   const tones = {
-    warning: 'border-warning/30 bg-warning/10 text-warning',
-    danger: 'border-danger/30 bg-danger/10 text-danger',
-    info: 'border-border bg-surface-2 text-fg-muted',
-    success: 'border-success/30 bg-success/10 text-success',
+    warning: 'bg-warning/10 text-warning',
+    danger: 'bg-danger/10 text-danger',
+    info: 'bg-surface-2 text-fg-muted',
+    success: 'bg-success/10 text-success',
   }
   return (
     <div
       role={tone === 'danger' ? 'alert' : 'status'}
       className={cn(
-        'flex items-start gap-2 rounded-xl border px-3 py-2.5 text-sm [text-wrap:pretty]',
+        'flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm [text-wrap:pretty]',
         tones[tone],
         className,
       )}

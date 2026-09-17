@@ -88,10 +88,7 @@ export default async function CeoAuditPage({
 
   return (
     <>
-      <PageHeader
-        title="Audit"
-        description="Admin actions across the app, bot, and founder console."
-      />
+      <PageHeader title="Audit" />
       <div className="flex flex-col gap-2">
         <FilterChips
           basePath="/ceo/audit"
@@ -117,7 +114,7 @@ export default async function CeoAuditPage({
           {workspaceId ? (
             <Link
               href={`/ceo/audit${params.prefix ? `?prefix=${encodeURIComponent(params.prefix)}` : ''}`}
-              className="inline-flex items-center gap-1.5 rounded-full border border-pink/40 bg-pink/15 px-3 py-1 text-xs font-medium text-pink-soft hover:bg-pink/25"
+              className="inline-flex items-center gap-1.5 min-h-11 rounded-full bg-blush px-4 py-1 text-xs font-medium text-pink-soft hover:bg-pink/15"
             >
               workspace: {scopedWorkspaceName ?? workspaceId} <X className="size-3" />
             </Link>

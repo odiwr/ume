@@ -88,7 +88,7 @@ export function WorkspaceSidebar({
             aria-current={active ? 'page' : undefined}
             className={cn(
               'flex min-h-11 items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors',
-              active ? 'bg-sage-light text-fg' : 'text-fg-muted hover:bg-surface-2 hover:text-fg',
+              active ? 'bg-sage-light text-fg' : 'text-fg-muted hover:bg-surface-3 hover:text-fg',
             )}
           >
             <Icon className="size-4 shrink-0" />
@@ -104,7 +104,7 @@ export function WorkspaceSidebar({
   return (
     <>
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border bg-surface px-3 py-2.5 lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center justify-between gap-2 bg-surface px-3 py-2.5 lg:hidden">
         <div className="flex min-w-0 items-center gap-2">
           <Logo size={26} withWordmark={false} href="/app" />
           {switcher}
@@ -120,22 +120,22 @@ export function WorkspaceSidebar({
         </button>
       </header>
       {open ? (
-        <div className="border-b border-border bg-surface p-3 lg:hidden">
+        <div className="bg-surface-2 p-3 lg:hidden">
           {links}
-          <div className="mt-3 border-t border-border pt-3">
+          <div className="mt-4">
             <UserMenu user={user} />
           </div>
         </div>
       ) : null}
 
       {/* Desktop sidebar */}
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-border bg-surface lg:sticky lg:top-0 lg:flex lg:h-dvh">
+      <aside className="hidden w-64 shrink-0 flex-col bg-surface-2 lg:sticky lg:top-0 lg:flex lg:h-dvh">
         <div className="px-4 pb-3 pt-5">
           <Logo size={28} href="/app" />
         </div>
         <div className="px-3 pb-3">{switcher}</div>
         <div className="flex-1 overflow-y-auto px-3">{links}</div>
-        <div className="border-t border-border p-3">
+        <div className="p-3">
           <UserMenu user={user} />
         </div>
       </aside>
@@ -153,7 +153,7 @@ function ServerSwitcher({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
-        className="flex w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-surface-2 px-2 py-1.5 text-left transition-colors hover:border-border-strong data-[state=open]:border-border-strong"
+        className="flex w-full min-w-0 items-center gap-2 rounded-xl bg-surface px-2 py-1.5 text-left transition-colors hover:bg-surface-3 data-[state=open]:bg-surface-3 lg:bg-surface"
         aria-label="Switch server"
       >
         <GuildIcon name={current.guildName} src={current.iconUrl} size={28} />

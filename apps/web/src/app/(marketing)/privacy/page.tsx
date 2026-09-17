@@ -26,7 +26,7 @@ const SECTIONS = [
 
 function RetentionRow({ what, howLong, why }: { what: string; howLong: string; why: string }) {
   return (
-    <tr className="border-t border-surface align-top">
+    <tr className="align-top">
       <td className="py-3 pr-4 font-medium text-fg">{what}</td>
       <td className="py-3 pr-4 whitespace-nowrap">{howLong}</td>
       <td className="py-3">{why}</td>

@@ -31,15 +31,15 @@ export default async function CeoLoginPage({
   return (
     <main className="flex min-h-dvh items-center justify-center px-4 py-12">
       <div className="w-full max-w-sm">
-        <div className="mb-6 flex flex-col items-center text-center">
+        <div className="mb-8 flex flex-col items-center text-center">
           <BrandMark size={44} />
           <h1 className="mt-4 font-display text-3xl font-medium tracking-tight">Founder console</h1>
           <p className="mt-1 text-sm text-fg-muted">Google accounts on the allow-list only.</p>
         </div>
 
-        <div className="rounded-2xl border border-border bg-surface p-5">
+        <div className="rounded-2xl bg-surface-2 p-5 sm:p-6">
           {denied ? (
-            <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-danger/30 bg-danger/10 p-3 text-sm text-danger">
+            <div className="mb-5 flex items-start gap-2.5 rounded-xl bg-danger/10 p-4 text-sm text-danger">
               <ShieldAlert className="mt-0.5 size-4 shrink-0" />
               <div>
                 <p className="font-semibold">This Google account is not on the allow-list.</p>
@@ -53,7 +53,7 @@ export default async function CeoLoginPage({
           ) : null}
           <CeoLoginForm />
           <p className="mt-4 text-center text-xs text-fg-subtle">
-            Access is logged. Server admins manage their music at{' '}
+            Server admins manage their music at{' '}
             <Link href="/app" className="text-fg-muted underline-offset-2 hover:underline">
               /app
             </Link>

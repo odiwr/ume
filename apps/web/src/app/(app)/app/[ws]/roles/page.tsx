@@ -25,10 +25,7 @@ export default async function RolesPage({ params }: { params: Promise<{ ws: stri
 
   return (
     <>
-      <PageHeader
-        title="Roles"
-        description="Set permissions for each role. Built-in roles can be renamed but not deleted."
-      />
+      <PageHeader title="Roles" />
       <RoleEditor
         workspaceId={workspace.id}
         roles={rows}

@@ -10,16 +10,6 @@ import { appUrl } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Invites', robots: { index: false } }
 
-function countActive(rows: InviteRow[]): number {
-  const now = Date.now()
-  return rows.filter(
-    (r) =>
-      !r.revokedAt &&
-      new Date(r.expiresAt).getTime() > now &&
-      (r.maxUses === null || r.uses < r.maxUses),
-  ).length
-}
-
 export default async function InvitesPage({ params }: { params: Promise<{ ws: string }> }) {
   const { ws: umeId } = await params
   const { workspace, access } = await requireWorkspacePage(umeId, CAP.MANAGE_INVITES)
@@ -52,13 +42,11 @@ export default async function InvitesPage({ params }: { params: Promise<{ ws: st
     createdAt: inv.createdAt.toISOString(),
     createdBy: displayName(inv.createdBy),
   }))
-  const active = countActive(rows)
 
   return (
     <>
       <PageHeader
         title="Invites"
-        description={`${active} active invite${active === 1 ? '' : 's'}. Share links grant contributor roles to anyone holding them; email invites are bound to one address and can grant up to Admin.`}
         actions={<CreateInviteButtons workspaceId={workspace.id} roles={roleOptions} />}
       />
       <InviteList workspaceId={workspace.id} rows={rows} />

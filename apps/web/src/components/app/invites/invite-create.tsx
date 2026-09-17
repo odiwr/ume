@@ -86,18 +86,15 @@ function CreateInviteDialog({
           title={isLink ? 'New share link' : 'New email invite'}
           description={
             isLink
-              ? 'Anyone holding the link gets the role, so links are limited to contributor roles. Requiring Discord server membership is on by default.'
-              : 'Bound to one address and verified at sign-in. This is the only way to hand out Admin-level roles.'
+              ? 'Anyone with the link gets the role, so only contributor roles are offered.'
+              : 'Only this address can accept it. Admin-level roles need an email invite.'
           }
         >
           {created ? (
             <div className="space-y-4">
               {!('sent' in created) ? (
                 <>
-                  <p className="text-sm text-fg-muted [text-wrap:pretty]">
-                    Copy it now. It is listed on this page too, so you can copy it again later.
-                  </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <Input
                       readOnly
                       value={created.url}
@@ -109,18 +106,18 @@ function CreateInviteDialog({
                   </div>
                 </>
               ) : created.sent ? (
-                <p className="rounded-xl border border-success/30 bg-success/10 px-3 py-2 text-sm text-success [text-wrap:pretty]">
+                <p className="rounded-xl bg-success/10 px-4 py-3 text-sm text-success [text-wrap:pretty]">
                   Invite sent to {created.email}. It expires in {expiresInDays} day
                   {expiresInDays === '1' ? '' : 's'}.
                 </p>
               ) : (
                 <>
-                  <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-fg [text-wrap:pretty]">
+                  <p className="rounded-xl bg-warning/10 px-4 py-3 text-sm text-fg [text-wrap:pretty]">
                     {created.sendError === 'not_configured'
                       ? `Email is not configured on this server, so nothing was sent to ${created.email}. Copy the link and send it yourself; only ${created.email} can accept it.`
                       : `The invite for ${created.email} was created, but the email could not be sent. Copy the link and send it yourself, or revoke it and try again.`}
                   </p>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                     <Input
                       readOnly
                       value={created.url}
@@ -140,7 +137,7 @@ function CreateInviteDialog({
             </div>
           ) : (
             <form
-              className="space-y-4"
+              className="space-y-5"
               onSubmit={async (e) => {
                 e.preventDefault()
                 const input = {
@@ -195,7 +192,7 @@ function CreateInviteDialog({
                   />
                 </div>
               ) : null}
-              <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-5 sm:grid-cols-2">
                 <div>
                   <Label htmlFor="invite-role">Role</Label>
                   <Select
@@ -211,7 +208,7 @@ function CreateInviteDialog({
                     ))}
                   </Select>
                   {isLink && roles.some((r) => r.grantable && !r.byLink) ? (
-                    <p className="mt-1 text-xs text-fg-muted">
+                    <p className="mt-1.5 text-xs text-fg-muted">
                       Roles that can delete or manage things need an email invite.
                     </p>
                   ) : null}
@@ -245,7 +242,7 @@ function CreateInviteDialog({
                   </div>
                 ) : null}
                 <div>
-                  <Label htmlFor="invite-membership-expiry">Access ends on</Label>
+                  <Label htmlFor="invite-membership-expiry">Access ends on (optional)</Label>
                   <Input
                     id="invite-membership-expiry"
                     type="date"
@@ -253,9 +250,6 @@ function CreateInviteDialog({
                     onChange={(e) => setMembershipExpiresAt(e.target.value)}
                     min={new Date().toISOString().slice(0, 10)}
                   />
-                  <p className="mt-1 text-xs text-fg-muted">
-                    Optional. Members who join through this invite lose access on that date.
-                  </p>
                 </div>
                 <div className="sm:col-span-2">
                   <Label htmlFor="invite-label">Label (optional)</Label>
@@ -273,7 +267,6 @@ function CreateInviteDialog({
                 checked={requireGuildMember}
                 onCheckedChange={(v) => setRequireGuildMember(v === true)}
                 label="Require membership of the Discord server"
-                description="Ume checks that the person is in the server before accepting."
               />
               <DialogFooter>
                 <Button type="button" variant="ghost" onClick={onClose} disabled={pending}>

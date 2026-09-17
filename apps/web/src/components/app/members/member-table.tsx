@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Input, Label, Select } from '@/components/ui/input'
 import { UserAvatar } from '@/components/app/avatar'
-import { Absolute, Ago } from '@/components/app/time'
+import { Absolute } from '@/components/app/time'
 import { useAction } from '@/components/app/use-action'
 import { changeMemberRole, removeMember, setMemberExpiry } from '@/lib/app/actions/members'
 import { displayName, membershipSourceLabel } from '@/lib/app/format'
@@ -66,24 +66,23 @@ export function MemberTable({
 
   return (
     <>
-      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-        <table className="w-full min-w-[640px] text-sm">
+      <div data-tinted="" className="overflow-x-auto rounded-2xl bg-surface-2 p-2">
+        <table className="w-full min-w-[560px] text-sm">
           <thead className="text-left text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
-            <tr className="border-b border-border">
-              <th className="px-4 py-2.5">Member</th>
+            <tr>
+              <th className="px-3 py-3">Member</th>
               <th className="px-2 py-2.5">Role</th>
               <th className="px-2 py-2.5">Access via</th>
               <th className="px-2 py-2.5">Expires</th>
-              <th className="px-2 py-2.5">Joined</th>
               <th className="w-12 px-2 py-2.5">
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody>
             {rows.map((m) => (
-              <tr key={m.membershipId} className="transition-colors hover:bg-surface-2">
-                <td className="px-4 py-2">
+              <tr key={m.membershipId} className="transition-colors hover:bg-surface-3/60">
+                <td className="px-3 py-3">
                   <div className="flex items-center gap-3">
                     <UserAvatar user={m.user} size={30} />
                     <div className="min-w-0">
@@ -99,7 +98,7 @@ export function MemberTable({
                     </div>
                   </div>
                 </td>
-                <td className="px-2 py-2">
+                <td className="px-2 py-3">
                   {m.isOwner ? (
                     <Badge tone="pink">
                       <Crown className="size-3" aria-hidden /> Owner
@@ -138,20 +137,17 @@ export function MemberTable({
                     </span>
                   )}
                 </td>
-                <td className="px-2 py-2 text-xs text-fg-muted">
+                <td className="px-2 py-3 text-xs text-fg-muted">
                   {membershipSourceLabel(m.source)}
                 </td>
-                <td className="px-2 py-2 text-xs text-fg-muted">
+                <td className="px-2 py-3 text-xs text-fg-muted">
                   {m.expiresAt ? (
                     <Absolute date={m.expiresAt} withTime={false} />
                   ) : (
                     <span className="text-fg-subtle">Never</span>
                   )}
                 </td>
-                <td className="px-2 py-2 text-xs text-fg-muted">
-                  <Ago date={m.createdAt} />
-                </td>
-                <td className="px-2 py-2">
+                <td className="px-2 py-3">
                   {m.editable ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger

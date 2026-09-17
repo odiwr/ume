@@ -87,13 +87,10 @@ export default async function CeoFlagsPage() {
 
   return (
     <>
-      <PageHeader
-        title="Flags"
-        description="Controls for all servers. Changes apply on the next request or job."
-      />
+      <PageHeader title="Flags" />
 
       {linkExtract ? (
-        <Card className={linkExtract.enabled ? 'border-pink/40' : 'border-warning/40'}>
+        <Card className={linkExtract.enabled ? 'bg-blush' : 'bg-warning/10'}>
           <CardHeader>
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -119,7 +116,7 @@ export default async function CeoFlagsPage() {
             </div>
           </CardHeader>
           <CardContent className="grid grid-cols-1 gap-4 text-sm md:grid-cols-3">
-            <div className="rounded-xl border border-warning/30 bg-warning/5 p-3">
+            <div className="rounded-xl bg-warning/10 p-4">
               <p className="flex items-center gap-1.5 font-semibold text-warning">
                 <ShieldAlert className="size-4" /> The risk
               </p>
@@ -130,7 +127,7 @@ export default async function CeoFlagsPage() {
                 (WORKER_QUEUES=extract-link).
               </p>
             </div>
-            <div className="rounded-xl border border-border p-3">
+            <div className="rounded-xl bg-surface p-4">
               <p className="font-semibold">The guardrails</p>
               <ul className="mt-1 list-disc space-y-0.5 pl-4 text-xs text-fg-muted">
                 <li>Owners accept a rights attestation before the first extraction.</li>
@@ -145,7 +142,7 @@ export default async function CeoFlagsPage() {
                 </li>
               </ul>
             </div>
-            <div className="rounded-xl border border-border p-3">
+            <div className="rounded-xl bg-surface p-4">
               <p className="font-semibold">What OFF does</p>
               <p className="mt-1 text-xs text-fg-muted [text-wrap:pretty]">
                 Links can still be added, but they become metadata-only entries: title, artist and
@@ -162,10 +159,7 @@ export default async function CeoFlagsPage() {
         <DataTable columns={columns} rows={flags} rowKey={(f) => f.key} />
       </Section>
 
-      <Section
-        title="Maintenance banner"
-        description="Shown at the top of the web app while the maintenance_banner flag is on. Keep it to one sentence."
-      >
+      <Section title="Maintenance banner">
         <Card>
           <CardContent>
             <ActionForm

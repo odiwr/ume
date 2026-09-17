@@ -33,8 +33,8 @@ export function DangerZone({
   }
 
   return (
-    <div className="divide-y divide-danger/20 rounded-2xl border border-danger/30 bg-danger/5">
-      <div className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+    <div className="space-y-3">
+      <div className="flex flex-col gap-4 rounded-2xl bg-danger/5 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="font-medium">Reset the workspace</p>
           <p className="mt-1 text-xs text-fg-muted [text-wrap:pretty]">
@@ -53,7 +53,7 @@ export function DangerZone({
           <UserMinus className="size-3.5" /> Reset
         </Button>
       </div>
-      <div className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 rounded-2xl bg-danger/5 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
           <p className="font-medium">Purge everything</p>
           <p className="mt-1 text-xs text-fg-muted [text-wrap:pretty]">

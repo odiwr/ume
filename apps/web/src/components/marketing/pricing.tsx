@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { ArrowRight, Check } from '@/components/ui/icons'
-import { PLANS, formatBytes, type Plan } from '@ume/shared'
+import { PLANS, formatBytes, yearlyMonthsFree, type Plan } from '@ume/shared'
 import { Container, Section, SectionLead, SectionTitle } from '@/components/site/container'
 import { buttonClasses } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -26,6 +26,11 @@ export function PlanCard({ plan, cta }: { plan: Plan; cta?: { href: string; labe
         </span>
         <span className="text-sm text-fg-subtle">/ month</span>
       </p>
+      {plan.priceUsdYearly > 0 ? (
+        <p className="mt-1 text-sm text-fg-muted">
+          or ${plan.priceUsdYearly} / year, {yearlyMonthsFree(plan)} months free
+        </p>
+      ) : null}
       <p className="mt-2 text-sm text-fg-muted">
         {formatBytes(plan.storageBytes)} · about {plan.hoursOfMusic.toLocaleString('en-US')} hours
         of music
@@ -41,7 +46,11 @@ export function PlanCard({ plan, cta }: { plan: Plan; cta?: { href: string; labe
       <div className="mt-auto pt-6">
         <Link
           href={cta?.href ?? '/login'}
-          className={buttonClasses(recommended ? 'primary' : 'secondary', 'md', 'w-full border-0')}
+          className={buttonClasses(
+            recommended ? 'primary' : 'secondary',
+            'md',
+            recommended ? 'w-full' : 'w-full bg-surface hover:bg-surface-3',
+          )}
         >
           {cta?.label ?? (plan.priceUsdMonthly === 0 ? 'Start free' : `Get ${plan.name}`)}
         </Link>

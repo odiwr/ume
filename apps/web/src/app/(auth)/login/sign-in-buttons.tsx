@@ -40,7 +40,7 @@ export function SignInButtons({ next }: { next: string }) {
         onClick={() => start('discord')}
         loading={busy === 'discord'}
         disabled={busy !== null}
-        className="w-full border border-fg"
+        className="w-full"
       >
         {busy !== 'discord' ? <DiscordMark className="size-5" /> : null}
         Sign in with Discord

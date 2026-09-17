@@ -20,10 +20,9 @@ export default async function AppHomePage() {
   return (
     <div className="min-h-dvh">
       <TopBar user={me} />
-      <main className="mx-auto w-full max-w-6xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto w-full max-w-6xl space-y-10 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
         <PageHeader
           title="Your servers"
-          description="Choose a server to manage its music."
           actions={
             <>
               <Link href="/app/claim" className={buttonClasses('outline', 'md')}>
@@ -55,11 +54,8 @@ export default async function AppHomePage() {
             title="No servers yet"
             description={
               <>
-                Two ways in. <strong className="text-fg">Add a server</strong> lists the Discord
-                servers you own or administer and claims one in a click.{' '}
-                <strong className="text-fg">Enter a token</strong> uses the single-use token Ume
-                sends when you run <code className="font-mono">/reload</code> in Discord. Members of
-                a claimed server get in automatically through Discord roles or an invite link.
+                Add a server you own or administer, or enter the token Ume sends when you run{' '}
+                <code className="font-mono">/reload</code> in Discord.
               </>
             }
           >

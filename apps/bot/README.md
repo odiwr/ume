@@ -41,11 +41,26 @@ Gateway intents: `Guilds`, `GuildVoiceStates`, `GuildMessages`, `DirectMessages`
 `MessageContent` only when `DISCORD_MESSAGE_CONTENT_INTENT=true`. `Partials.Channel` is
 enabled so DM messages arrive (DM channels are not cached).
 
-Install with the URL from `botInviteUrl()` in `@ume/shared` (scopes `bot applications.commands`).
-The bot needs **View Channels, Send Messages, Embed Links, Read Message History, Connect,
-Speak** and Use Application Commands. It does not need Administrator. The optional voice
-channel status line ("Now playing: …") additionally needs _Set Voice Channel Status_ (or
-Manage Channels) in the home channel and is skipped silently without it.
+Install with the URL from `botInviteUrl()` in `@ume/shared` (scopes `bot applications.commands`,
+permissions integer `281477395860480`, exported as `BOT_INVITE_PERMISSIONS`). The bot asks for
+**View Channels, Send Messages, Embed Links, Read Message History, Connect, Speak, Manage
+Roles, Use Application Commands** and **Set Voice Channel Status**. It never asks for
+Administrator or Manage Channels.
+
+- **Manage Roles** exists for one thing: when the home voice channel (or a role Ume holds)
+  denies it View Channel, Connect, Speak or Set Voice Channel Status, Ume merges a _member_
+  permission overwrite for its own user in that channel that allows the missing ones (audit
+  log reason "Ume: allow itself to play in its home channel"). It only allows permissions it
+  already holds at server level, never denies anything, and never edits role or other
+  members' overwrites. This runs before every join: `/home`, a home change saved on the web,
+  startup and reconnects, and being dragged to another channel. Each grant is logged and
+  audit-logged as `bot.voice_permissions_granted`.
+- If Ume still lacks View Channel, Connect or Speak (no Manage Roles there, or Discord refused),
+  joining fails with a "Missing voice permissions" card that names what is missing and gives
+  admins two fixes: re-invite with the updated link (`botInviteUrl(clientId, guildId)`), or add
+  Ume as a member in the channel's permissions with Connect and Speak allowed. `/home` and
+  `/play` reply with it; background joins post it in the notice channel at most every 6 hours.
+- Without Set Voice Channel Status the status line is skipped silently; playback still works.
 
 ## Commands
 
@@ -58,7 +73,7 @@ marketing site, the registrar and the router never drift.
 | `/reload [server]`                    | server (ephemeral) or DM | server owner / Administrator                                  | Issues a fresh single-use Ume token, disconnects the current workspace, emails + DMs the previous Owner. A DM copy is sent when run in a server.                                                                                                                                                                                                                                  |
 | `/reset [server]`, `/purge [server]`  | server or DM             | server owner or workspace Owner                               | Explains the consequences and mints a 6-character code (5 minutes).                                                                                                                                                                                                                                                                                                               |
 | `/confirm <code>`                     | server or DM             | whoever requested it, the server owner or the workspace Owner | Consumes the code. Reset removes every member except the Owner, revokes invites and tokens and disconnects. Purge stops playback, marks the workspace `purging` and enqueues `purge-workspace`.                                                                                                                                                                                   |
-| `/home [channel]`                     | server                   | Manage settings (or server admin)                             | Sets the 24/7 voice channel (defaults to yours), checks Connect + Speak, joins.                                                                                                                                                                                                                                                                                                   |
+| `/home [channel]`                     | server                   | Manage settings (or server admin)                             | Sets the 24/7 voice channel (defaults to yours), allows itself View/Connect/Speak there if needed, joins.                                                                                                                                                                                                                                                                         |
 | `/add <playlist> <url>`               | server                   | Add music                                                     | Adds a song from a link (YouTube, SoundCloud, Bandcamp, Audius, Mixcloud, Vimeo, Internet Archive, direct file). Same song in two playlists is one track. Queues the worker's `extract-link` job when the global `link_extract` flag, the server switch and the Owner's rights attestation all allow it; otherwise the entry is link-only and the reply says who can change that. |
 | `/playlists`                          | server                   | View library                                                  | Playlists with track counts and durations.                                                                                                                                                                                                                                                                                                                                        |
 | `/play <query>`                       | server                   | Control playback                                              | Playlist name (shuffled, looping; link-only entries skipped with a note) or a track-title search.                                                                                                                                                                                                                                                                                 |
@@ -79,7 +94,9 @@ the web — with a select menu when several match. `guild.ownerId` is re-read at
 ## How voice works
 
 - On ready the bot joins every workspace with `bot_in_guild` and a home channel, 250 ms
-  apart, self-deafened. A heartbeat writes `bot_last_seen_at` every `BOT_HEARTBEAT_MS`.
+  apart, self-deafened. A heartbeat writes `bot_last_seen_at` every `BOT_HEARTBEAT_MS` and
+  picks up a home channel changed in web Settings (a DB row only wins when it is newer than
+  the bot's own last home change). Homes that failed to join are retried every 10 minutes.
 - Disconnects race `entersState(Signalling|Connecting, 5 s)` (a channel move or voice
   server switch recovers by itself); otherwise it rejoins with exponential backoff
   2 s -> 60 s for 10 attempts, then waits for a human to join the home channel.
@@ -92,6 +109,19 @@ the web — with a select menu when several match. `guild.ownerId` is re-read at
 - Playback streams `getObjectStream(storageKey)` as `StreamType.OggOpus` with no inline
   volume: no decoding, no ffmpeg. A playlist reshuffles and loops forever. Errors skip the
   track. Plays bump `play_count` and touch activity at most every 5 minutes.
+- Now playing, per server (the voice tile always shows the bot avatar: bots cannot stream
+  video, and per-song avatar changes are rate limited):
+  - the voice channel status reads `▶ Title — Artist` (500 chars max), `⏸ Title — Artist`
+    while paused, and is cleared on `/stop` or when the queue ends;
+  - one now-playing card (title, artist, album, cover art, playlist, added by, length, up
+    next, and "started … · ends …" as live Discord timestamps) goes to the home voice
+    channel's text chat, or the notice channel when Ume cannot post there. It is edited in
+    place while it is the latest message, otherwise re-posted and the old one deleted. `/stop`
+    marks it stopped. Writes are coalesced to at most one every 5 s per server; there are no
+    progress edits. Covers use `tracks.cover_url`, else a public or 7-day presigned URL for
+    `cover_storage_key`. Missing permissions are skipped silently.
+  - The global presence is shared by every server, so it never names a song: "Listening to
+    music in N servers · /help" (or "/help · ume"), refreshed every 5 minutes.
 - Joining a server flips `bot_in_guild` if a workspace exists, otherwise posts a welcome
   in the system channel; never creates a row. Leaving clears presence and destroys the
   voice connection.

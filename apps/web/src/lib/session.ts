@@ -8,7 +8,15 @@ import { auth } from './auth'
 import { db } from './db'
 
 export const getSession = cache(async () => {
-  return auth.api.getSession({ headers: await headers() })
+  const h = await headers()
+  const session = await auth.api.getSession({ headers: h })
+  // The Discord fields are written by an account hook after the session cookie (and its
+  // 5-minute cookie cache) was issued, so a just-linked user would still look unlinked.
+  // Only users without a Discord id pay for this database read.
+  if (session && !session.user.discordUserId) {
+    return auth.api.getSession({ headers: h, query: { disableCookieCache: true } })
+  }
+  return session
 })
 
 /** Signed-in user or redirect to /login (preserving the destination). */

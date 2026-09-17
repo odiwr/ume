@@ -75,7 +75,7 @@ export function Features() {
               </p>
             </div>
             <div className="mx-7 mb-7 mt-auto flex flex-col gap-3 sm:mx-10 sm:mb-10">
-              <div className="flex items-center gap-4 rounded-2xl border border-dashed border-border-strong bg-surface/70 p-5">
+              <div className="flex items-center gap-4 rounded-2xl bg-surface/70 p-5">
                 <Upload className="size-5 shrink-0 text-sage" aria-hidden />
                 <div>
                   <p className="text-sm font-medium">Bring your own music</p>

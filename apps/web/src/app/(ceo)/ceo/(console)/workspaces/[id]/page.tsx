@@ -203,7 +203,7 @@ export default async function CeoWorkspaceDetailPage({
                 alt=""
                 width={40}
                 height={40}
-                className="size-10 rounded-xl border border-border"
+                className="size-10 rounded-xl bg-surface-3"
               />
             ) : (
               <span className="inline-flex size-10 items-center justify-center rounded-xl bg-surface-3 font-display text-lg">
@@ -368,7 +368,7 @@ export default async function CeoWorkspaceDetailPage({
         </Card>
       </Section>
 
-      <Section title="Admin actions" description="All changes are recorded in the audit log.">
+      <Section title="Admin actions">
         <WorkspaceActions ws={ws} quotaBytes={d.quotaBytes} />
       </Section>
 
@@ -410,11 +410,11 @@ export default async function CeoWorkspaceDetailPage({
       {d.dmca.length ? (
         <Section title="DMCA notices">
           <Card>
-            <ul className="divide-y divide-border">
+            <ul className="space-y-1 p-2">
               {d.dmca.map((nte) => (
                 <li
                   key={nte.id}
-                  className="flex flex-wrap items-center justify-between gap-2 px-5 py-3 text-sm"
+                  className="flex flex-wrap items-center justify-between gap-2 rounded-xl px-3 py-3 text-sm"
                 >
                   <Link href={`/ceo/dmca/${nte.id}`} className="hover:text-pink-soft">
                     {nte.claimantName} — {nte.workDescription.slice(0, 80)}
@@ -450,7 +450,7 @@ export default async function CeoWorkspaceDetailPage({
             dense
           />
         </Section>
-        <Section title="Recent activity" description="Feeds the inactivity clock.">
+        <Section title="Recent activity">
           <DataTable
             columns={activityColumns}
             rows={d.activity}

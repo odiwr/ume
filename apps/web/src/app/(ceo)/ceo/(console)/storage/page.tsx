@@ -87,10 +87,7 @@ export default async function CeoStoragePage() {
 
   return (
     <>
-      <PageHeader
-        title="Storage"
-        description="Storage usage is reconciled daily. 1 GB holds roughly 17 hours of music."
-      />
+      <PageHeader title="Storage" />
 
       <StatGrid>
         <StatTile
@@ -137,10 +134,7 @@ export default async function CeoStoragePage() {
         <DataTable columns={planColumns} rows={r.byPlan} rowKey={(p) => p.plan} dense />
       </Section>
 
-      <Section
-        title="Tracks by status"
-        description="pending and processing are in the worker queue; failed rows still count toward the workspace track count until reconciled."
-      >
+      <Section title="Tracks by status">
         {r.byStatus.length === 0 ? (
           <Card className="px-5 py-4 text-sm text-fg-muted">
             No tracks have been added anywhere yet.

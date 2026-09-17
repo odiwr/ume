@@ -1,7 +1,7 @@
 import 'server-only'
 import Stripe from 'stripe'
 import { type Workspace } from '@ume/db'
-import { PLANS, getPlan, type PlanId } from '@ume/shared'
+import { PLANS, getPlan, planPriceEnv, type BillingInterval, type PlanId } from '@ume/shared'
 
 /**
  * Stripe helpers for storage plans. One subscription per workspace; the workspace
@@ -22,28 +22,43 @@ export function isStripeConfigured(): boolean {
   return !!process.env.STRIPE_SECRET_KEY
 }
 
-export function priceIdForPlan(planId: PlanId): string | null {
-  const plan = getPlan(planId)
-  if (!plan.stripePriceEnv) return null
-  return process.env[plan.stripePriceEnv] || null
+export function priceIdForPlan(planId: PlanId, interval: BillingInterval = 'month'): string | null {
+  const env = planPriceEnv(getPlan(planId), interval)
+  if (!env) return null
+  return process.env[env] || null
 }
 
-/** price id -> plan id, built from the STRIPE_PRICE_* env vars. */
-export function planFromPriceId(priceId: string | null | undefined): PlanId | null {
+/** price id -> plan id and interval, built from the monthly and yearly STRIPE_PRICE_* env vars. */
+export function planFromPriceId(
+  priceId: string | null | undefined,
+): { planId: PlanId; interval: BillingInterval } | null {
   if (!priceId) return null
   for (const plan of PLANS) {
-    if (plan.stripePriceEnv && process.env[plan.stripePriceEnv] === priceId) return plan.id
+    if (plan.stripePriceEnv && process.env[plan.stripePriceEnv] === priceId) {
+      return { planId: plan.id, interval: 'month' }
+    }
+    if (plan.stripePriceEnvYearly && process.env[plan.stripePriceEnvYearly] === priceId) {
+      return { planId: plan.id, interval: 'year' }
+    }
   }
   return null
 }
 
 export type BillableWorkspace = Pick<
   Workspace,
-  'id' | 'umeId' | 'guildName' | 'stripeCustomerId' | 'stripeSubscriptionId' | 'stripeSubscriptionStatus'
+  | 'id'
+  | 'umeId'
+  | 'guildName'
+  | 'stripeCustomerId'
+  | 'stripeSubscriptionId'
+  | 'stripeSubscriptionStatus'
 >
 
 /** Reuse the workspace's Stripe customer or create one and remember it. */
-async function ensureCustomer(ws: BillableWorkspace, email: string | null | undefined): Promise<string> {
+async function ensureCustomer(
+  ws: BillableWorkspace,
+  email: string | null | undefined,
+): Promise<string> {
   if (ws.stripeCustomerId) return ws.stripeCustomerId
   const stripe = getStripe()
   const customer = await stripe.customers.create({
@@ -57,21 +72,26 @@ async function ensureCustomer(ws: BillableWorkspace, email: string | null | unde
 export async function createCheckoutSession(input: {
   workspace: BillableWorkspace
   planId: PlanId
+  interval: BillingInterval
   customerEmail: string | null | undefined
   successUrl: string
   cancelUrl: string
 }): Promise<{ url: string; customerId: string }> {
   const stripe = getStripe()
-  const price = priceIdForPlan(input.planId)
-  if (!price) throw new Error(`No Stripe price configured for plan "${input.planId}".`)
+  const price = priceIdForPlan(input.planId, input.interval)
+  if (!price) {
+    throw new Error(`No Stripe price configured for plan "${input.planId}" (${input.interval}).`)
+  }
   const customerId = await ensureCustomer(input.workspace, input.customerEmail)
   const session = await stripe.checkout.sessions.create({
     mode: 'subscription',
     customer: customerId,
     line_items: [{ price, quantity: 1 }],
     client_reference_id: input.workspace.id,
-    metadata: { workspaceId: input.workspace.id, planId: input.planId },
-    subscription_data: { metadata: { workspaceId: input.workspace.id, planId: input.planId } },
+    metadata: { workspaceId: input.workspace.id, planId: input.planId, interval: input.interval },
+    subscription_data: {
+      metadata: { workspaceId: input.workspace.id, planId: input.planId, interval: input.interval },
+    },
     success_url: input.successUrl,
     cancel_url: input.cancelUrl,
     allow_promotion_codes: true,
@@ -85,15 +105,17 @@ export async function createPortalSession(input: {
   workspace: BillableWorkspace
   returnUrl: string
   switchToPlanId?: PlanId
+  switchToInterval?: BillingInterval
 }): Promise<{ url: string }> {
   const stripe = getStripe()
-  if (!input.workspace.stripeCustomerId) throw new Error('This workspace has no billing account yet.')
+  if (!input.workspace.stripeCustomerId)
+    throw new Error('This workspace has no billing account yet.')
   const params: Stripe.BillingPortal.SessionCreateParams = {
     customer: input.workspace.stripeCustomerId,
     return_url: input.returnUrl,
   }
   if (input.switchToPlanId && input.workspace.stripeSubscriptionId) {
-    const price = priceIdForPlan(input.switchToPlanId)
+    const price = priceIdForPlan(input.switchToPlanId, input.switchToInterval ?? 'month')
     if (price) {
       const sub = await stripe.subscriptions.retrieve(input.workspace.stripeSubscriptionId)
       const item = sub.items.data[0]

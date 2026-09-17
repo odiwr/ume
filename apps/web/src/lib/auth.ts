@@ -4,6 +4,7 @@ import { nextCookies } from 'better-auth/next-js'
 import { drizzleAdapter } from '@better-auth/drizzle-adapter'
 import { accounts, sessions, users, verifications } from '@ume/db'
 import { db } from './db'
+import { syncDiscordIdentity } from './discord-identity'
 
 /**
  * Better Auth. Two social providers:
@@ -36,11 +37,8 @@ export const auth = betterAuth({
       clientId: process.env.DISCORD_CLIENT_ID ?? '',
       clientSecret: process.env.DISCORD_CLIENT_SECRET ?? '',
       scope: ['identify', 'email', 'guilds'],
-      mapProfileToUser: (profile) => ({
-        discordUserId: profile.id,
-        discordUsername: profile.username,
-        discordAvatar: profile.avatar ?? null,
-      }),
+      // No mapProfileToUser for the discord* fields: Better Auth discards `input: false`
+      // fields from a provider profile. They are written by databaseHooks below.
     },
     google: {
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
@@ -51,6 +49,15 @@ export const auth = betterAuth({
     accountLinking: {
       enabled: true,
       trustedProviders: ['google', 'discord'],
+    },
+  },
+  // Discord identity on users (discordUserId/Username/Avatar). Account rows are created when
+  // Discord signs up or is linked, and updated on each Discord sign-in and token refresh.
+  // After-hooks run once the auth transaction commits. See lib/discord-identity.ts.
+  databaseHooks: {
+    account: {
+      create: { after: (account) => syncDiscordIdentity(account) },
+      update: { after: (account) => (account ? syncDiscordIdentity(account) : Promise.resolve()) },
     },
   },
   session: {

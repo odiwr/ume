@@ -8,14 +8,21 @@ import { isBotOnline } from '@/lib/app/workspace'
  * Persistent banners at the top of every workspace page: disconnected (needs a new
  * token), purging, and bot offline (no heartbeat for 90 s).
  */
-export function WorkspaceBanners({ workspace, canManageSettings }: { workspace: Workspace; canManageSettings: boolean }) {
+export function WorkspaceBanners({
+  workspace,
+  canManageSettings,
+}: {
+  workspace: Workspace
+  canManageSettings: boolean
+}) {
   const items: React.ReactNode[] = []
 
   if (workspace.status === 'disconnected') {
     items.push(
       <Banner key="disconnected" tone="warning" icon={<KeyRound className="size-4" />}>
-        <span>
-          <strong className="font-semibold">Disconnected.</strong> Someone ran <code className="font-mono">/reload</code> in Discord
+        <span className="min-w-0 flex-1">
+          <strong className="font-semibold">Disconnected.</strong> Someone ran{' '}
+          <code className="font-mono">/reload</code> in Discord
           {workspace.disconnectedAt ? (
             <>
               {' '}
@@ -25,7 +32,10 @@ export function WorkspaceBanners({ workspace, canManageSettings }: { workspace: 
           . The workspace is read-only until the new token is entered.
         </span>
         {canManageSettings ? (
-          <Link href={`/app/${workspace.umeId}/settings#connection`} className="ml-auto shrink-0 font-semibold underline underline-offset-4">
+          <Link
+            href={`/app/${workspace.umeId}/settings#connection`}
+            className="shrink-0 font-semibold underline underline-offset-4"
+          >
             Enter the new token
           </Link>
         ) : null}
@@ -40,8 +50,9 @@ export function WorkspaceBanners({ workspace, canManageSettings }: { workspace: 
   } else if (workspace.status === 'purging') {
     items.push(
       <Banner key="purging" tone="danger" icon={<Trash2 className="size-4" />}>
-        <span>
-          <strong className="font-semibold">Purge in progress.</strong> Playlists, music and members are being deleted. This cannot be undone.
+        <span className="min-w-0 flex-1">
+          <strong className="font-semibold">Purge in progress.</strong> Playlists, music and members
+          are being deleted. This cannot be undone.
         </span>
       </Banner>,
     )
@@ -50,14 +61,22 @@ export function WorkspaceBanners({ workspace, canManageSettings }: { workspace: 
   if (workspace.status === 'connected' && !isBotOnline(workspace)) {
     items.push(
       <Banner key="bot" tone="info" icon={<RadioTower className="size-4" />}>
-        <span>
+        <span className="min-w-0 flex-1">
           <strong className="font-semibold text-fg">Bot offline.</strong>{' '}
-          {workspace.botInGuild
-            ? <>Last heartbeat <Ago date={workspace.botLastSeenAt} />. Playback commands will not respond until it reconnects.</>
-            : 'Ume is not in this Discord server. Invite the bot from the server picker to start playing.'}
+          {workspace.botInGuild ? (
+            <>
+              Last heartbeat <Ago date={workspace.botLastSeenAt} />. Playback commands will not
+              respond until it reconnects.
+            </>
+          ) : (
+            'Ume is not in this Discord server. Invite the bot from the server picker to start playing.'
+          )}
         </span>
         {!workspace.botInGuild ? (
-          <Link href="/app/new" className="ml-auto shrink-0 font-semibold text-fg underline underline-offset-4">
+          <Link
+            href="/app/new"
+            className="shrink-0 font-semibold text-fg underline underline-offset-4"
+          >
             Server picker
           </Link>
         ) : null}
@@ -69,14 +88,25 @@ export function WorkspaceBanners({ workspace, canManageSettings }: { workspace: 
   return <div className="space-y-2 px-4 pt-4 sm:px-6 lg:px-8">{items}</div>
 }
 
-function Banner({ tone, icon, children }: { tone: 'warning' | 'danger' | 'info'; icon: React.ReactNode; children: React.ReactNode }) {
+function Banner({
+  tone,
+  icon,
+  children,
+}: {
+  tone: 'warning' | 'danger' | 'info'
+  icon: React.ReactNode
+  children: React.ReactNode
+}) {
   const tones = {
-    warning: 'border-warning/30 bg-warning/10 text-warning',
-    danger: 'border-danger/30 bg-danger/10 text-danger',
-    info: 'border-border bg-surface-2 text-fg-muted',
+    warning: 'bg-warning/10 text-warning',
+    danger: 'bg-danger/10 text-danger',
+    info: 'bg-surface-2 text-fg-muted',
   }
   return (
-    <div role="status" className={`flex flex-wrap items-center gap-2 rounded-xl border px-3 py-2.5 text-sm [text-wrap:pretty] ${tones[tone]}`}>
+    <div
+      role="status"
+      className={`flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl px-4 py-3 text-sm [text-wrap:pretty] ${tones[tone]}`}
+    >
       <span className="shrink-0">{icon}</span>
       {children}
     </div>

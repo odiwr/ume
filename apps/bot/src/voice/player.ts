@@ -13,7 +13,7 @@ import { getStorage } from '@ume/storage'
 import type { Client } from 'discord.js'
 import { db, tracks, touchActivity, type Track } from '../lib/db'
 import { logger } from '../lib/logger'
-import { truncate } from '../lib/embeds'
+import { NowPlaying } from './now-playing'
 
 /** A queued item carries the track plus the "who added it" line for /np. */
 export interface QueueItem {
@@ -50,32 +50,39 @@ export class GuildPlayer {
   startedAt: Date | null = null
   private resource: AudioResource<QueueItem> | null = null
   private lastActivityTouch = 0
-  private voiceChannelId: string | null = null
   private stopping = false
+  /** Voice channel status line + the now-playing card in chat. */
+  private readonly nowPlaying: NowPlaying
 
   constructor(client: Client<true>, guildId: string, workspaceId: string) {
     this.client = client
     this.guildId = guildId
     this.workspaceId = workspaceId
-    this.player = createAudioPlayer({ behaviors: { noSubscriber: NoSubscriberBehavior.Pause, maxMissedFrames: 250 } })
+    this.nowPlaying = new NowPlaying(client, guildId, workspaceId)
+    this.player = createAudioPlayer({
+      behaviors: { noSubscriber: NoSubscriberBehavior.Pause, maxMissedFrames: 250 },
+    })
     this.player.on(AudioPlayerStatus.Idle, (old) => {
       if (old.status === AudioPlayerStatus.Idle) return
       if (this.stopping) return
       void this.next()
     })
     this.player.on('error', (err) => {
-      logger.warn({ err, guildId: this.guildId, track: this.current?.track.id }, 'audio player error, skipping')
+      logger.warn(
+        { err, guildId: this.guildId, track: this.current?.track.id },
+        'audio player error, skipping',
+      )
       void this.next()
     })
   }
 
   attach(connection: VoiceConnection, voiceChannelId: string | null): void {
     connection.subscribe(this.player)
-    this.voiceChannelId = voiceChannelId
+    this.nowPlaying.setVoiceChannel(voiceChannelId)
   }
 
   setVoiceChannel(id: string | null): void {
-    this.voiceChannelId = id
+    this.nowPlaying.setVoiceChannel(id)
   }
 
   get status(): AudioPlayerStatus {
@@ -119,11 +126,35 @@ export class GuildPlayer {
   }
 
   pause(): boolean {
-    return this.player.pause(true)
+    const ok = this.player.pause(true)
+    if (ok) this.publishNowPlaying()
+    return ok
   }
 
   unpause(): boolean {
-    return this.player.unpause()
+    const ok = this.player.unpause()
+    if (ok) this.publishNowPlaying()
+    return ok
+  }
+
+  /** Push the current state to the status line and the now-playing card (rate limited there). */
+  private publishNowPlaying(): void {
+    const item = this.current
+    if (!item) {
+      this.nowPlaying.update({ kind: 'stopped' })
+      return
+    }
+    const next = this.queue[0] ?? null
+    if (this.isPaused) {
+      this.nowPlaying.update({ kind: 'paused', item, elapsedMs: this.elapsedMs, next })
+    } else {
+      this.nowPlaying.update({
+        kind: 'playing',
+        item,
+        startedAtMs: Date.now() - this.elapsedMs,
+        next,
+      })
+    }
   }
 
   skip(): void {
@@ -139,11 +170,12 @@ export class GuildPlayer {
     this.resource = null
     this.startedAt = null
     this.player.stop(true)
-    void this.setChannelStatus(null)
+    this.nowPlaying.update({ kind: 'stopped' })
   }
 
   destroy(): void {
     this.stop()
+    this.nowPlaying.dispose()
     this.player.removeAllListeners()
   }
 
@@ -155,24 +187,38 @@ export class GuildPlayer {
       this.current = null
       this.resource = null
       this.startedAt = null
-      void this.setChannelStatus(null)
+      this.nowPlaying.update({ kind: 'stopped' })
       return
     }
     if (!item.track.storageKey) return this.next()
     try {
       const { stream } = await getStorage().getObjectStream(item.track.storageKey)
-      const resource = createAudioResource(stream, { inputType: StreamType.OggOpus, inlineVolume: false, metadata: item })
+      const resource = createAudioResource(stream, {
+        inputType: StreamType.OggOpus,
+        inlineVolume: false,
+        metadata: item,
+      })
       this.current = item
       this.resource = resource
       this.startedAt = new Date()
       this.player.play(resource)
+      this.nowPlaying.update({
+        kind: 'playing',
+        item,
+        startedAtMs: Date.now(),
+        next: this.queue[0] ?? null,
+      })
       void this.afterStart(item)
     } catch (err) {
-      logger.warn({ err, guildId: this.guildId, track: item.track.id }, 'could not open track stream, skipping')
+      logger.warn(
+        { err, guildId: this.guildId, track: item.track.id },
+        'could not open track stream, skipping',
+      )
       // Avoid a hot loop over a broken playlist: only continue if something else is queued.
       if (this.queue.length) return this.next()
       this.current = null
       this.resource = null
+      this.nowPlaying.update({ kind: 'stopped' })
     }
   }
 
@@ -193,18 +239,6 @@ export class GuildPlayer {
     } catch (err) {
       logger.warn({ err, guildId: this.guildId }, 'failed to record play')
     }
-    const label = item.track.artist ? `${item.track.artist} — ${item.track.title}` : item.track.title
-    void this.setChannelStatus(`Now playing: ${truncate(label, 480)}`)
-  }
-
-  /** Voice channel status line ("Now playing: …"). Best effort; needs Manage Channels or Set Voice Channel Status. */
-  private async setChannelStatus(status: string | null): Promise<void> {
-    if (!this.voiceChannelId) return
-    try {
-      await this.client.rest.put(`/channels/${this.voiceChannelId}/voice-status`, { body: { status: status ?? '' } })
-    } catch {
-      // Missing permission or unsupported channel type — silently ignore.
-    }
   }
 }
 
@@ -214,7 +248,11 @@ export function getPlayer(guildId: string): GuildPlayer | undefined {
   return players.get(guildId)
 }
 
-export function ensurePlayer(client: Client<true>, guildId: string, workspaceId: string): GuildPlayer {
+export function ensurePlayer(
+  client: Client<true>,
+  guildId: string,
+  workspaceId: string,
+): GuildPlayer {
   let p = players.get(guildId)
   if (!p) {
     p = new GuildPlayer(client, guildId, workspaceId)

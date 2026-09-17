@@ -39,16 +39,16 @@ export function LinkDiscordCard({
   }
 
   return (
-    <Card className="border-pink/30 bg-pink/5">
-      <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <Card className="bg-blush">
+      <CardContent className="flex flex-col gap-5 p-5 sm:flex-row sm:items-center sm:justify-between sm:p-6">
         <div className="min-w-0">
           <h2 className="font-display text-lg font-semibold">
             {mode === 'link' ? 'Connect your Discord account' : 'Sign in with Discord again'}
           </h2>
           <p className="mt-1 text-sm text-fg-muted [text-wrap:pretty]">
             {mode === 'link'
-              ? 'Claiming a server, joining through a Discord role and share links that require membership all need a verified Discord identity. Ume asks for your identity and server list only, and never posts on your behalf.'
-              : 'Your Discord session expired, so Ume cannot read your server list right now. Signing in again refreshes it.'}
+              ? 'Needed to claim a server or join through Discord roles. Ume never posts on your behalf.'
+              : 'Your Discord session expired, so Ume cannot read your server list.'}
           </p>
           {error ? (
             <p className="mt-2 text-sm text-danger" role="alert">

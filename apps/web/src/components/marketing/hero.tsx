@@ -31,11 +31,7 @@ export function Hero({ inviteHref }: { inviteHref: string }) {
             </a>
             <Link
               href="/#how-it-works"
-              className={buttonClasses(
-                'secondary',
-                'lg',
-                'border-0 bg-surface/80 hover:bg-surface',
-              )}
+              className={buttonClasses('secondary', 'lg', 'bg-surface/80 hover:bg-surface')}
             >
               See how it works <ArrowDown className="size-4" aria-hidden />
             </Link>

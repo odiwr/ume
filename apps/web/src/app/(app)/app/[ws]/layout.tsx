@@ -28,18 +28,12 @@ export default async function WorkspaceLayout({
   if (!ctx.access || !ctx.isMember) {
     return (
       <div className="min-h-dvh">
-        <TopBar
-          user={ctx.user}
-          crumbs={[{ href: '/app', label: 'Your servers' }, { label: ctx.workspace.guildName }]}
-        />
+        <TopBar user={ctx.user} />
         <main className="mx-auto flex w-full max-w-lg flex-col items-center px-4 py-20 text-center sm:px-6">
           <span className="flex size-14 items-center justify-center rounded-2xl bg-surface-2 text-fg-muted">
             <Lock className="size-6" aria-hidden />
           </span>
-          <p className="mt-6 text-xs font-semibold uppercase tracking-[0.18em] text-pink">
-            No access
-          </p>
-          <h1 className="font-display mt-2 text-2xl font-bold tracking-tight sm:text-3xl [text-wrap:pretty]">
+          <h1 className="font-display mt-6 text-2xl font-bold tracking-tight sm:text-3xl [text-wrap:pretty]">
             You are not a member of {ctx.workspace.guildName} on Ume.
           </h1>
           <p className="mt-3 text-sm text-fg-muted [text-wrap:pretty]">

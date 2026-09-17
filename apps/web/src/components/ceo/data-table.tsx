@@ -33,15 +33,15 @@ export function DataTable<T>({
   dense,
 }: DataTableProps<T>) {
   return (
-    <div className={cn('overflow-x-auto rounded-2xl border border-border bg-surface', className)}>
-      <table className="w-full min-w-max border-collapse text-sm">
+    <div className={cn('overflow-x-auto rounded-2xl bg-surface-2 p-2', className)}>
+      <table className="w-full min-w-max text-sm">
         <thead>
-          <tr className="border-b border-border bg-surface-2/60 text-left text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
+          <tr className="text-left text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
             {columns.map((c) => (
               <th
                 key={c.key}
                 className={cn(
-                  'px-3 py-2.5 whitespace-nowrap',
+                  'px-3 py-3 whitespace-nowrap',
                   c.align === 'right' && 'text-right',
                   c.headerClassName,
                 )}
@@ -62,14 +62,14 @@ export function DataTable<T>({
             rows.map((row) => (
               <tr
                 key={rowKey(row)}
-                className="border-b border-border last:border-b-0 hover:bg-surface-2/50"
+                className="transition-colors even:bg-surface/60 hover:bg-surface-3/60"
               >
                 {columns.map((c) => (
                   <td
                     key={c.key}
                     className={cn(
                       'px-3 align-middle',
-                      dense ? 'py-1.5' : 'py-2.5',
+                      dense ? 'py-2' : 'py-3',
                       c.align === 'right' && 'text-right tabular-nums',
                       c.className,
                     )}
@@ -93,7 +93,7 @@ export function Mono({ children, className }: { children: React.ReactNode; class
   return (
     <code
       className={cn(
-        'rounded bg-surface-3 px-1.5 py-0.5 font-mono text-[12px] text-fg-muted',
+        'rounded bg-surface px-1.5 py-0.5 font-mono text-[12px] text-fg-muted',
         className,
       )}
     >

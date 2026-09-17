@@ -43,7 +43,11 @@ export default async function CeoRevenuePage() {
       x.ws.stripeSubscriptionStatus === 'past_due' || x.ws.stripeSubscriptionStatus === 'unpaid',
   )
   const compedPaid = r.rows.filter((x) => x.ws.plan !== 'free' && !x.ws.stripeSubscriptionId)
-  const priceEnvMissing = PLANS.filter((p) => p.stripePriceEnv && !process.env[p.stripePriceEnv])
+  const priceEnvMissing = PLANS.flatMap((p) =>
+    [p.stripePriceEnv, p.stripePriceEnvYearly].filter(
+      (env): env is string => !!env && !process.env[env],
+    ),
+  )
 
   const columns: Column<Row>[] = [
     {
@@ -156,7 +160,7 @@ export default async function CeoRevenuePage() {
       </StatGrid>
 
       {!stripeConfigured() || priceEnvMissing.length ? (
-        <Card className="border-warning/40">
+        <Card className="bg-warning/10">
           <CardHeader>
             <CardTitle className="text-warning">Stripe is not fully configured</CardTitle>
             <CardDescription>
@@ -164,7 +168,7 @@ export default async function CeoRevenuePage() {
                 ? 'STRIPE_SECRET_KEY is not set, so Checkout and the Customer Portal are disabled in the app. '
                 : ''}
               {priceEnvMissing.length
-                ? `Missing price ids: ${priceEnvMissing.map((p) => p.stripePriceEnv).join(', ')}. Those plans cannot be bought until the env vars are set.`
+                ? `Missing price ids: ${priceEnvMissing.join(', ')}. Those plans cannot be bought until the env vars are set.`
                 : ''}
             </CardDescription>
           </CardHeader>
@@ -184,17 +188,11 @@ export default async function CeoRevenuePage() {
         <Card className="xl:col-span-2">
           <CardHeader>
             <CardTitle>Price list</CardTitle>
-            <CardDescription>
-              From @ume/shared PLANS. Change prices in code and in Stripe together.
-            </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul className="divide-y divide-border text-sm">
+            <ul className="space-y-3 text-sm">
               {PLANS.map((p) => (
-                <li
-                  key={p.id}
-                  className="flex items-center justify-between py-2 first:pt-0 last:pb-0"
-                >
+                <li key={p.id} className="flex flex-wrap items-center justify-between gap-2">
                   <span className="inline-flex items-center gap-2">
                     <PlanBadge plan={p.id} />
                     <span className="text-fg-muted">{p.highlights[0]}</span>
@@ -209,10 +207,7 @@ export default async function CeoRevenuePage() {
         </Card>
       </div>
 
-      <Section
-        title={`Billing records (${n(r.rows.length)})`}
-        description="Every workspace on a paid plan or with a Stripe customer, newest renewal first. Capped at 200."
-      >
+      <Section title={`Billing records (${n(r.rows.length)})`}>
         <DataTable
           columns={columns}
           rows={r.rows}

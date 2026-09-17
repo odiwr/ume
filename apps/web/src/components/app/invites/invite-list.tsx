@@ -45,22 +45,23 @@ export function InviteList({ workspaceId, rows }: { workspaceId: string; rows: I
       <EmptyState
         icon={<Ticket className="size-6" />}
         title="No invites yet"
-        description="Most servers never need one: map Discord roles under Members and people get in by signing in. Invites cover everyone else."
+        description="Map Discord roles under Members, or create a share link or email invite."
       />
     )
   }
   return (
     <>
-      <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+      <ul className="space-y-3">
         {rows.map((inv) => {
           const state = stateOf(inv)
           return (
             <li
               key={inv.id}
-              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+              data-tinted=""
+              className="flex flex-col gap-4 rounded-2xl bg-surface-2 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
             >
               <div className="flex min-w-0 items-start gap-3">
-                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-fg-muted">
+                <span className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface text-fg-muted">
                   {inv.kind === 'link' ? (
                     <Link2 className="size-4" aria-hidden />
                   ) : (
@@ -68,40 +69,34 @@ export function InviteList({ workspaceId, rows }: { workspaceId: string; rows: I
                   )}
                 </span>
                 <div className="min-w-0">
-                  <p className="flex flex-wrap items-center gap-1.5 text-sm font-medium">
+                  <p className="flex flex-wrap items-center gap-2 text-sm font-medium">
                     {inv.kind === 'email' ? inv.email : inv.label || 'Share link'}
                     <Badge tone={state.tone}>{state.label}</Badge>
                     <Badge>{inv.roleName}</Badge>
                     {inv.requireGuildMember ? <Badge tone="sage">Server members only</Badge> : null}
                   </p>
-                  <p className="mt-0.5 text-xs text-fg-muted">
-                    {inv.kind === 'link' && inv.label ? `${inv.label} · ` : ''}
+                  <p className="mt-1 text-xs text-fg-muted">
                     {inv.kind === 'link'
-                      ? `${inv.uses}${inv.maxUses !== null ? ` of ${inv.maxUses}` : ''} use${inv.uses === 1 && inv.maxUses === null ? '' : 's'} · `
+                      ? `${inv.uses}${inv.maxUses !== null ? ` of ${inv.maxUses}` : ''} use${inv.uses === 1 && inv.maxUses === null ? '' : 's'}`
                       : inv.emailSentAt
-                        ? 'Emailed · '
-                        : 'Email not sent · '}
+                        ? 'Emailed'
+                        : 'Email not sent'}
                     {state.live ? (
                       <>
-                        expires <Ago date={inv.expiresAt} />
+                        {' '}
+                        · expires <Ago date={inv.expiresAt} />
                       </>
-                    ) : (
-                      <>
-                        created <Ago date={inv.createdAt} />
-                      </>
-                    )}
+                    ) : null}
                     {inv.membershipExpiresAt ? (
                       <>
                         {' '}
                         · access ends <Absolute date={inv.membershipExpiresAt} withTime={false} />
                       </>
                     ) : null}
-                    {' · by '}
-                    {inv.createdBy}
                   </p>
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-2 sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 {state.live ? <CopyButton value={inv.url} label="Copy link" /> : null}
                 {!inv.revokedAt ? (
                   <Button variant="ghost" size="sm" onClick={() => setRevoking(inv)}>

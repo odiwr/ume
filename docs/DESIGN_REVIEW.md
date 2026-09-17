@@ -97,3 +97,13 @@ Production builds for all three apps and all seven workspace type checks pass. T
 - The new `/invite/[token]` acceptance page follows the sign-in layout (see the route map in `apps/web/README.md`).
 
 Checked in the browser at 1440 px and 320 px: no horizontal overflow, no console or server errors on `/`, `/login`, `/pricing`, `/commands` and `/dmca`.
+
+## No borders, no breadcrumbs, less text (16 September 2026)
+
+Founder decision, superseding the earlier rule that reserved outlines for fill buttons, provider sign-in buttons and the dashed upload illustration:
+
+- **No border lines anywhere** in apps/web. Cards, tables, list rows, inputs, selects, buttons, badges, menus, dialogs, tooltips, toasts and the upload illustration are separated by spacing and soft fills from `globals.css` (`bg-surface-2`, `bg-surface-3`, `bg-sage-light`, `bg-blush`, tone tints like `bg-danger/5`). Lists use gaps between filled rows instead of `divide-*`; wide tables scroll inside their own tinted container with alternating row fills.
+- **Controls stay identifiable without outlines.** Inputs, selects and secondary buttons are filled (`bg-surface-2` on white); tinted containers set `data-tinted` so controls inside switch to white (`in-data-tinted:bg-surface`). Unchecked checkboxes and switches use the `bg-border` fill. The 2px violet focus-visible outline stays everywhere.
+- **Breadcrumbs removed.** The account header is the logo (home to `/app`) and the user menu; workspace pages keep the sidebar.
+- **Less text.** Dashboard and console pages drop descriptions that restate the heading, decorative meta lines and timestamps nobody acts on (for example “Last activity”, “Claimed”, “Joined”). Legal and rights text, billing terms, error states, destructive-action warnings and actionable empty states stay. Console tables keep operational columns such as last activity.
+- **Overview bot card** reads “Live” or “Dead” over a blue-to-lilac gradient with a decorative squiggle and a vinyl record that spins only while Live and never under reduced motion.

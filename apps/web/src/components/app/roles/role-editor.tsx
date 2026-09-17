@@ -1,6 +1,6 @@
 'use client'
 import * as React from 'react'
-import { Crown, Lock, Plus, Trash } from '@/components/ui/icons'
+import { Check, Crown, Lock, Plus, Trash } from '@/components/ui/icons'
 import { CAP, CAP_LABELS, OWNER_ONLY_CAPS, hasCap, type CapabilityName } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -51,7 +51,7 @@ export function RoleEditor({
   const [creating, setCreating] = React.useState(false)
   const canGrant = (cap: number) => viewerIsOwner || hasCap(viewerCaps, cap)
   return (
-    <div className="space-y-4">
+    <div className="space-y-5">
       {roles.map((role) => (
         <RoleCard
           key={role.id}
@@ -90,7 +90,7 @@ function CapabilityGrid({
 }) {
   const prefix = React.useId()
   return (
-    <div className="grid gap-2 sm:grid-cols-2">
+    <div className="grid gap-2.5 sm:grid-cols-2">
       {CAP_ORDER.map((key) => {
         const cap = CAP[key]
         const ownerOnly = (cap & OWNER_ONLY_CAPS) !== 0
@@ -101,9 +101,9 @@ function CapabilityGrid({
           <label
             htmlFor={id}
             className={cn(
-              'flex items-start gap-2.5 rounded-xl border px-3 py-2 transition-colors',
-              checked ? 'border-pink/30 bg-pink/5' : 'border-border',
-              disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-surface-2',
+              'flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors',
+              checked ? 'bg-blush' : 'bg-surface-2 in-data-tinted:bg-surface',
+              disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-surface-3',
             )}
           >
             <Checkbox
@@ -186,7 +186,8 @@ function RoleCard({
 
   return (
     <form
-      className="rounded-2xl border border-border bg-surface"
+      data-tinted=""
+      className="rounded-2xl bg-surface-2"
       onSubmit={(e) => {
         e.preventDefault()
         if (locked) return
@@ -195,7 +196,7 @@ function RoleCard({
         })
       }}
     >
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-3">
+      <div className="flex flex-wrap items-center gap-3 px-5 pt-5">
         <span className="size-3 rounded-full" style={{ background: color }} aria-hidden />
         {locked ? (
           <h3 className="font-display text-base font-semibold">{role.name}</h3>
@@ -221,7 +222,7 @@ function RoleCard({
           {role.memberCount} {role.memberCount === 1 ? 'member' : 'members'}
         </span>
       </div>
-      <div className="space-y-4 p-5">
+      <div className="space-y-5 p-5">
         {role.description ? (
           <p className="text-sm text-fg-muted [text-wrap:pretty]">{role.description}</p>
         ) : null}
@@ -239,7 +240,11 @@ function RoleCard({
         <CapabilityGrid value={caps} onChange={setCaps} canGrant={canGrant} locked={locked} />
         {!locked ? (
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-1.5" role="radiogroup" aria-label="Role color">
+            <div
+              className="flex flex-wrap items-center gap-2"
+              role="radiogroup"
+              aria-label="Role color"
+            >
               {COLORS.map((c) => (
                 <button
                   key={c}
@@ -248,15 +253,14 @@ function RoleCard({
                   aria-checked={color === c}
                   aria-label={c}
                   onClick={() => setColor(c)}
-                  className={cn(
-                    'size-5 rounded-full border-2 transition-transform hover:scale-110',
-                    color === c ? 'border-fg' : 'border-transparent',
-                  )}
+                  className="flex size-7 items-center justify-center rounded-full text-fg transition-transform hover:scale-110"
                   style={{ background: c }}
-                />
+                >
+                  {color === c ? <Check className="size-3.5" strokeWidth={3} aria-hidden /> : null}
+                </button>
               ))}
             </div>
-            <div className="ml-auto flex items-center gap-2">
+            <div className="ml-auto flex flex-wrap items-center gap-2">
               {!role.systemKey ? (
                 <Button
                   type="button"
@@ -333,11 +337,7 @@ function CreateRoleDialog({
   const { run, pending } = useAction()
   return (
     <Dialog open={open} onOpenChange={(o) => (!o && !pending ? onClose() : undefined)}>
-      <DialogContent
-        title="New custom role"
-        description="Start from the capabilities a Listener has and add what this role needs."
-        className="max-w-2xl"
-      >
+      <DialogContent title="New custom role" className="max-w-2xl">
         <form
           className="space-y-4"
           onSubmit={async (e) => {
@@ -367,7 +367,7 @@ function CreateRoleDialog({
               />
             </div>
             <div
-              className="flex items-center gap-1.5 pb-2"
+              className="flex flex-wrap items-center gap-2 pb-2"
               role="radiogroup"
               aria-label="Role color"
             >
@@ -379,12 +379,11 @@ function CreateRoleDialog({
                   aria-checked={color === c}
                   aria-label={c}
                   onClick={() => setColor(c)}
-                  className={cn(
-                    'size-5 rounded-full border-2 transition-transform hover:scale-110',
-                    color === c ? 'border-fg' : 'border-transparent',
-                  )}
+                  className="flex size-7 items-center justify-center rounded-full text-fg transition-transform hover:scale-110"
                   style={{ background: c }}
-                />
+                >
+                  {color === c ? <Check className="size-3.5" strokeWidth={3} aria-hidden /> : null}
+                </button>
               ))}
             </div>
           </div>

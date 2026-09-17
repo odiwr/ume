@@ -49,7 +49,7 @@ export default async function CeoDmcaDetailPage({ params }: { params: Promise<{ 
         }
       />
 
-      <Section title="Decision" description="All actions are recorded in the audit log.">
+      <Section title="Decision">
         <DmcaActions notice={notice} track={track} hashBlocked={d.hashBlocked} />
       </Section>
 
@@ -103,7 +103,7 @@ export default async function CeoDmcaDetailPage({ params }: { params: Promise<{ 
                   { label: 'Last updated', value: <Absolute date={notice.updatedAt} /> },
                 ]}
               />
-              <div className="mt-4 border-t border-border pt-4">
+              <div className="mt-6">
                 <p className="text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
                   Work described
                 </p>

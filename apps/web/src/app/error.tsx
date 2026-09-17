@@ -23,7 +23,7 @@ export default function GlobalError({
         <Logo size={30} />
       </header>
       <main className="relative flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
-        <div className="w-full max-w-md rounded-2xl border border-border bg-surface p-6 text-center sm:p-8">
+        <div className="w-full max-w-md rounded-2xl bg-surface-2 p-6 text-center sm:p-8">
           <span className="mx-auto flex size-16 items-center justify-center rounded-2xl bg-warning/10 text-warning">
             <AlertTriangle className="size-8" aria-hidden />
           </span>

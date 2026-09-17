@@ -70,7 +70,6 @@ export default async function MembersPage({ params }: { params: Promise<{ ws: st
     <>
       <PageHeader
         title="Members"
-        description={`${rows.length} ${rows.length === 1 ? 'person has' : 'people have'} web access. Roles decide what each of them can do with the library.`}
         actions={
           can(access, CAP.MANAGE_INVITES) ? (
             <Link href={`/app/${umeId}/invites`} className={buttonClasses('primary', 'md')}>
@@ -82,11 +81,7 @@ export default async function MembersPage({ params }: { params: Promise<{ ws: st
       <MemberTable workspaceId={workspace.id} rows={rows} roles={roleOptions} meUserId={user.id} />
 
       {canMap ? (
-        <Section
-          id="discord-roles"
-          title="Discord role mapping"
-          description="Assign Ume access through existing Discord roles."
-        >
+        <Section id="discord-roles" title="Discord role mapping">
           <RoleMapEditor
             workspaceId={workspace.id}
             discordRoles={discordRoles}

@@ -78,10 +78,7 @@ export default async function CeoWorkspacesPage({
 
   return (
     <>
-      <PageHeader
-        title="Workspaces"
-        description="Every Discord server that has run /reload. Search by server name, Ume ID, guild ID or owner email."
-      />
+      <PageHeader title="Workspaces" />
       <div className="flex flex-col gap-3">
         <SearchForm
           basePath="/ceo/workspaces"

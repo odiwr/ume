@@ -12,7 +12,6 @@ import {
   MusicSettings,
   type ChannelOption,
 } from '@/components/app/settings/settings-forms'
-import { Ago } from '@/components/app/time'
 import { db } from '@/lib/db'
 import { getGuildChannels } from '@/lib/discord-api'
 import { displayName, workspaceStatusTone } from '@/lib/app/format'
@@ -58,23 +57,23 @@ export default async function SettingsPage({ params }: { params: Promise<{ ws: s
 
   return (
     <>
-      <PageHeader title="Settings" description="Manage your server and bot settings." />
+      <PageHeader title="Settings" />
 
       <Section id="general" title="General">
-        <div className="grid gap-4 rounded-2xl border border-border bg-surface p-5 sm:grid-cols-2">
+        <div
+          data-tinted=""
+          className="grid gap-5 rounded-2xl bg-surface-2 p-5 sm:grid-cols-2 lg:grid-cols-3"
+        >
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
               Ume ID
             </p>
             <div className="mt-1 flex items-center gap-2">
-              <code className="min-w-0 truncate rounded-lg bg-surface-3 px-2 py-1 font-mono text-xs">
+              <code className="min-w-0 truncate rounded-lg bg-surface px-2 py-1 font-mono text-xs">
                 {workspace.umeId}
               </code>
               <CopyButton value={workspace.umeId} label="Copy Ume ID" />
             </div>
-            <p className="mt-1 text-xs text-fg-muted">
-              Public identifier for this workspace. Quote it in support requests.
-            </p>
           </div>
           <div className="min-w-0">
             <p className="text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
@@ -91,32 +90,18 @@ export default async function SettingsPage({ params }: { params: Promise<{ ws: s
               <Badge tone={status.tone}>{status.label}</Badge>
             </p>
           </div>
-          <div>
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
-              Claimed
-            </p>
-            <p className="mt-1 text-sm">
-              <Ago date={workspace.claimedAt} />
-            </p>
-          </div>
         </div>
       </Section>
 
-      <Section
-        id="connection"
-        title="Connection"
-        description="A /reload in Discord rotates the token and disconnects this workspace. Enter the new token here to reconnect."
-      >
-        <div className="rounded-2xl border border-border bg-surface p-5">
+      <Section id="connection" title="Connection">
+        <div data-tinted="" className="rounded-2xl bg-surface-2 p-5">
           {workspace.status === 'disconnected' ? (
-            <Notice tone="warning" className="mb-4" icon={<KeyRound className="size-4" />}>
-              Disconnected <Ago date={workspace.disconnectedAt} />. Members can browse but nothing
-              can change until a new token is entered.
+            <Notice tone="warning" className="mb-5" icon={<KeyRound className="size-4" />}>
+              Disconnected. Nothing can change until a new token is entered.
             </Notice>
           ) : (
-            <p className="mb-4 text-sm text-fg-muted [text-wrap:pretty]">
-              Connected. You only need a token after running /reload; entering one now is harmless
-              but unnecessary.
+            <p className="mb-5 text-sm text-fg-muted [text-wrap:pretty]">
+              Only needed after someone runs /reload in Discord.
             </p>
           )}
           <ClaimTokenForm
@@ -127,8 +112,8 @@ export default async function SettingsPage({ params }: { params: Promise<{ ws: s
         </div>
       </Section>
 
-      <Section id="bot" title="Bot" description="Voice and text channels.">
-        <div className="rounded-2xl border border-border bg-surface p-5">
+      <Section id="bot" title="Bot">
+        <div data-tinted="" className="rounded-2xl bg-surface-2 p-5">
           <BotChannelsForm
             workspaceId={workspace.id}
             voice={voice}
@@ -140,11 +125,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ ws: s
         </div>
       </Section>
 
-      <Section
-        id="music"
-        title="Music"
-        description="How songs added from links are handled in this server."
-      >
+      <Section id="music" title="Music">
         <MusicSettings
           workspaceId={workspace.id}
           enabled={workspace.linkExtractEnabled}
@@ -158,11 +139,7 @@ export default async function SettingsPage({ params }: { params: Promise<{ ws: s
       </Section>
 
       {access.isOwner ? (
-        <Section
-          id="danger"
-          title="Danger zone"
-          description="Owner only. Both actions ask you to type the server name."
-        >
+        <Section id="danger" title="Danger zone">
           <DangerZone
             workspaceId={workspace.id}
             guildName={workspace.guildName}

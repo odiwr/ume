@@ -87,7 +87,7 @@ export default async function CeoUsersPage({
 
   return (
     <>
-      <PageHeader title="Users" description="Accounts and server memberships." />
+      <PageHeader title="Users" />
       <div className="flex flex-col gap-3">
         <SearchForm
           basePath="/ceo/users"

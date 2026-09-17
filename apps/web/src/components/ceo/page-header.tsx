@@ -18,7 +18,10 @@ export function PageHeader({
 }) {
   return (
     <div
-      className={cn('flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between', className)}
+      className={cn(
+        'flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-end sm:justify-between',
+        className,
+      )}
     >
       <div className="min-w-0">
         {back ? (
@@ -34,7 +37,7 @@ export function PageHeader({
         </h1>
         {description ? <p className="mt-1 max-w-2xl text-sm text-fg-muted">{description}</p> : null}
       </div>
-      {actions ? <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
   )
 }
@@ -53,9 +56,9 @@ export function Section({
   className?: string
 }) {
   return (
-    <section className={cn('space-y-3', className)}>
+    <section className={cn('space-y-4', className)}>
       <div className="flex flex-wrap items-end justify-between gap-2">
-        <div>
+        <div className="min-w-0">
           <h2 className="font-display text-lg font-semibold text-fg">{title}</h2>
           {description ? <p className="text-sm text-fg-muted">{description}</p> : null}
         </div>
@@ -75,7 +78,7 @@ export function KeyValue({
   className?: string
 }) {
   return (
-    <dl className={cn('grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2', className)}>
+    <dl className={cn('grid grid-cols-1 gap-x-8 gap-y-4 sm:grid-cols-2', className)}>
       {items.map((it) => (
         <div key={it.label} className="min-w-0">
           <dt className="text-[11px] font-semibold uppercase tracking-wide text-fg-subtle">
@@ -105,7 +108,7 @@ export function FilterChips({
   extra?: Record<string, string | undefined>
 }) {
   return (
-    <div className="flex flex-wrap gap-1.5">
+    <div className="flex flex-wrap gap-2">
       {options.map((o) => {
         const sp = new URLSearchParams()
         for (const [k, v] of Object.entries(extra ?? {})) if (v) sp.set(k, v)
@@ -117,10 +120,10 @@ export function FilterChips({
             key={o.label}
             href={qs ? `${basePath}?${qs}` : basePath}
             className={cn(
-              'inline-flex min-h-11 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors',
+              'inline-flex min-h-11 items-center gap-1.5 rounded-full px-4 py-1 text-xs font-medium transition-colors',
               active
-                ? 'border-pink/40 bg-pink/15 text-pink-soft'
-                : 'border-border bg-surface text-fg-muted hover:bg-surface-2 hover:text-fg',
+                ? 'bg-blush text-pink-soft'
+                : 'bg-surface-2 text-fg-muted hover:bg-surface-3 hover:text-fg',
             )}
           >
             {o.label}

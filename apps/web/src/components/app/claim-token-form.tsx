@@ -12,11 +12,24 @@ export const ATTESTATION_LABEL = 'I’ll only add music I have the right to play
  * Token entry. The token is never logged and only ever posted to the server action;
  * `?token=` prefill exists so the bot's DM can deep-link here.
  */
-export function ClaimTokenForm({ initialToken = '', returnTo, submitLabel = 'Claim server', compact }: { initialToken?: string; returnTo?: string; submitLabel?: string; compact?: boolean }) {
-  const [state, action, pending] = React.useActionState<ClaimTokenState, FormData>(submitClaimToken, {})
+export function ClaimTokenForm({
+  initialToken = '',
+  returnTo,
+  submitLabel = 'Claim server',
+  compact,
+}: {
+  initialToken?: string
+  returnTo?: string
+  submitLabel?: string
+  compact?: boolean
+}) {
+  const [state, action, pending] = React.useActionState<ClaimTokenState, FormData>(
+    submitClaimToken,
+    {},
+  )
   const [attested, setAttested] = React.useState(false)
   return (
-    <form action={action} className="space-y-4">
+    <form action={action} className="space-y-5">
       {returnTo ? <input type="hidden" name="returnTo" value={returnTo} /> : null}
       <div>
         <Label htmlFor="token">Ume token</Label>
@@ -37,8 +50,10 @@ export function ClaimTokenForm({ initialToken = '', returnTo, submitLabel = 'Cla
         />
         {!compact ? (
           <p id="token-help" className="mt-1.5 text-xs text-fg-muted">
-            Run <code className="rounded bg-surface-3 px-1 py-0.5 font-mono text-fg">/reload</code> in your Discord server (or{' '}
-            <code className="rounded bg-surface-3 px-1 py-0.5 font-mono text-fg">~reload</code> in a DM to Ume). The token works once and expires after 24 hours.
+            Run <code className="rounded bg-surface-3 px-1 py-0.5 font-mono text-fg">/reload</code>{' '}
+            in your Discord server (or{' '}
+            <code className="rounded bg-surface-3 px-1 py-0.5 font-mono text-fg">~reload</code> in a
+            DM to Ume). The token works once and expires after 24 hours.
           </p>
         ) : null}
       </div>
@@ -51,11 +66,16 @@ export function ClaimTokenForm({ initialToken = '', returnTo, submitLabel = 'Cla
         description="Required before Ume stores audio from links. Takedowns disable the track and block its content everywhere."
       />
       {state.error ? (
-        <p className="rounded-xl border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
+        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
           {state.error}
         </p>
       ) : null}
-      <Button type="submit" loading={pending} disabled={!attested} className={compact ? '' : 'w-full sm:w-auto'}>
+      <Button
+        type="submit"
+        loading={pending}
+        disabled={!attested}
+        className={compact ? '' : 'w-full sm:w-auto'}
+      >
         {!pending ? <KeyRound className="size-4" /> : null}
         {submitLabel}
       </Button>

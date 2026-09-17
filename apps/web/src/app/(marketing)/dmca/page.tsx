@@ -39,7 +39,7 @@ export default function DmcaPage() {
 
       <Container className="grid gap-8 py-8 lg:grid-cols-[1fr_1.5fr]">
         <div className="flex flex-col gap-6">
-          <Card className="border-0 bg-surface-2">
+          <Card className="bg-surface-2">
             <CardContent className="flex flex-col gap-4">
               <h2 className="font-display text-lg font-semibold">Designated agent</h2>
               {agent.registered ? (
@@ -106,7 +106,7 @@ export default function DmcaPage() {
             </CardContent>
           </Card>
 
-          <Card className="border-0 bg-blush">
+          <Card className="bg-blush">
             <CardContent className="flex flex-col gap-3 text-sm text-fg-muted">
               <h2 className="font-display text-lg font-semibold text-fg">What happens next</h2>
               <ol className="list-decimal space-y-2 pl-5">
@@ -146,7 +146,7 @@ export default function DmcaPage() {
           </Card>
         </div>
 
-        <Card className="border-0 bg-surface-2">
+        <Card className="bg-surface-2">
           <CardContent className="relative">
             <div className="mb-6 flex items-start gap-3">
               <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-pink/10 text-pink">

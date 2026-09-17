@@ -6,18 +6,45 @@ import {
   type VoiceConnection,
 } from '@discordjs/voice'
 import { and, eq, inArray, isNotNull, not } from '../lib/orm'
-import { ChannelType, PermissionFlagsBits, type Client, type Guild, type VoiceBasedChannel, type VoiceState } from 'discord.js'
+import {
+  ChannelType,
+  type Client,
+  type Guild,
+  type VoiceBasedChannel,
+  type VoiceState,
+} from 'discord.js'
 import { BOT_HEARTBEAT_MS } from '@ume/shared'
-import { db, getWorkspaceByGuildId, logAudit, setBotPresence, touchActivity, workspaces } from '../lib/db'
+import {
+  db,
+  getWorkspaceByGuildId,
+  logAudit,
+  setBotPresence,
+  touchActivity,
+  workspaces,
+} from '../lib/db'
 import { logger } from '../lib/logger'
 import { umeEmbed } from '../lib/embeds'
 import { destroyPlayer, ensurePlayer, getPlayer } from './player'
+import {
+  VoicePermissionError,
+  assertVoicePermissions,
+  auditSelfGrant,
+  ensureVoicePermissions,
+  resolveMe,
+  voicePermissionEmbed,
+} from './permissions'
 
 const EMPTY_GRACE_MS = 30_000
 const BACKOFF_MIN_MS = 2_000
 const BACKOFF_MAX_MS = 60_000
 const MAX_REJOIN_ATTEMPTS = 10
 const STAGGER_MS = 250
+/** A home channel we could not join is retried by the heartbeat at most this often. */
+const FAILED_JOIN_RETRY_MS = 10 * 60 * 1000
+/** Ignore the DB home for a guild we just left on purpose (purge writes the status right after). */
+const LEFT_GRACE_MS = 2 * 60 * 1000
+/** One "missing permissions" notice per guild and channel in this window. */
+const PERMISSION_NOTICE_MS = 6 * 60 * 60 * 1000
 
 interface GuildVoiceState {
   homeChannelId: string
@@ -30,6 +57,8 @@ interface GuildVoiceState {
   waitingForHuman: boolean
   /** True while we are leaving on purpose (purge, /home to a new channel, guild leave). */
   leaving: boolean
+  /** When the bot last set the home channel itself (join, move). Older DB rows are not newer intent. */
+  homeSetAt: number
 }
 
 /**
@@ -40,6 +69,11 @@ export class VoiceManager {
   private readonly client: Client<true>
   private readonly guilds = new Map<string, GuildVoiceState>()
   private heartbeat: NodeJS.Timeout | null = null
+  /** Guilds with a join scheduled or in flight from startup or the heartbeat. */
+  private readonly pendingJoins = new Set<string>()
+  private readonly failedJoins = new Map<string, { channelId: string; at: number }>()
+  private readonly leftAt = new Map<string, number>()
+  private readonly permissionNotices = new Map<string, number>()
 
   constructor(client: Client<true>) {
     this.client = client
@@ -61,8 +95,9 @@ export class VoiceManager {
       const guild = this.client.guilds.cache.get(ws.guildId)
       if (!guild || !ws.homeVoiceChannelId) continue
       const channelId = ws.homeVoiceChannelId
+      this.pendingJoins.add(guild.id)
       setTimeout(() => {
-        this.join(guild, channelId, ws.id).catch((err) => logger.warn({ err, guildId: guild.id }, 'startup join failed'))
+        void this.backgroundJoin(guild, channelId, ws.id, 'startup join failed')
       }, delay)
       delay += STAGGER_MS
     }
@@ -97,12 +132,93 @@ export class VoiceManager {
     for (const guild of this.client.guilds.cache.values()) {
       const st = this.guilds.get(guild.id)
       const connected = st?.connection?.state.status === VoiceConnectionStatus.Ready
-      const channelId = guild.members.me?.voice.channelId ?? (connected ? st?.homeChannelId : null) ?? null
+      const channelId =
+        guild.members.me?.voice.channelId ?? (connected ? st?.homeChannelId : null) ?? null
       try {
         await setBotPresence(db, guild.id, { connected, voiceChannelId: channelId, inGuild: true })
       } catch (err) {
         logger.warn({ err, guildId: guild.id }, 'heartbeat failed')
       }
+    }
+    try {
+      await this.syncHomesFromDb()
+    } catch (err) {
+      logger.warn({ err }, 'home channel sync failed')
+    }
+  }
+
+  /**
+   * Picks up home channel changes made on the web (Settings) and homes we could not join yet.
+   * A DB row only wins when it was updated after the bot last set the home itself, so a
+   * heartbeat racing a `/home` or a move never drags Ume back.
+   */
+  private async syncHomesFromDb(): Promise<void> {
+    const rows = await db.query.workspaces.findMany({
+      where: and(
+        eq(workspaces.botInGuild, true),
+        isNotNull(workspaces.homeVoiceChannelId),
+        not(inArray(workspaces.status, ['purged', 'purging'])),
+      ),
+      columns: { id: true, guildId: true, homeVoiceChannelId: true, updatedAt: true },
+    })
+    const now = Date.now()
+    for (const ws of rows) {
+      const guild = this.client.guilds.cache.get(ws.guildId)
+      const home = ws.homeVoiceChannelId
+      if (!guild || !home || this.pendingJoins.has(guild.id)) continue
+      if (now - (this.leftAt.get(guild.id) ?? 0) < LEFT_GRACE_MS) continue
+      const st = this.guilds.get(guild.id)
+      if (st) {
+        if (st.leaving || st.homeChannelId === home || ws.updatedAt.getTime() <= st.homeSetAt)
+          continue
+        logger.info(
+          { guildId: guild.id, from: st.homeChannelId, to: home },
+          'home channel changed on the web',
+        )
+      } else {
+        const failed = this.failedJoins.get(guild.id)
+        if (failed && failed.channelId === home && now - failed.at < FAILED_JOIN_RETRY_MS) continue
+      }
+      this.pendingJoins.add(guild.id)
+      void this.backgroundJoin(guild, home, ws.id, 'heartbeat join failed')
+    }
+  }
+
+  /** Join without a command to reply to: log, remember the failure, tell the server once. */
+  async backgroundJoin(
+    guild: Guild,
+    channelId: string,
+    workspaceId: string,
+    what: string,
+  ): Promise<void> {
+    this.pendingJoins.add(guild.id)
+    try {
+      await this.join(guild, channelId, workspaceId)
+      this.failedJoins.delete(guild.id)
+    } catch (err) {
+      this.failedJoins.set(guild.id, { channelId, at: Date.now() })
+      logger.warn({ err, guildId: guild.id, channelId }, what)
+      if (err instanceof VoicePermissionError) await this.notifyPermissionProblem(guild, err)
+    } finally {
+      this.pendingJoins.delete(guild.id)
+    }
+  }
+
+  /** Post the actionable "missing voice permissions" card in the notice channel, at most every 6 h. */
+  private async notifyPermissionProblem(guild: Guild, err: VoicePermissionError): Promise<void> {
+    const key = `${guild.id}:${err.channelId}`
+    const last = this.permissionNotices.get(key)
+    if (last !== undefined && Date.now() - last < PERMISSION_NOTICE_MS) return
+    this.permissionNotices.set(key, Date.now())
+    try {
+      const ws = await getWorkspaceByGuildId(db, guild.id)
+      const noticeId = ws?.noticeTextChannelId ?? guild.systemChannelId ?? null
+      const ch = noticeId ? guild.channels.cache.get(noticeId) : null
+      if (!ch?.isTextBased() || !ch.isSendable()) return
+      const clientId = this.client.application?.id ?? this.client.user.id
+      await ch.send({ embeds: [voicePermissionEmbed(err, clientId)] })
+    } catch (e) {
+      logger.warn({ err: e, guildId: guild.id }, 'could not post missing permissions notice')
     }
   }
 
@@ -122,12 +238,13 @@ export class VoiceManager {
 
   /** Join (or move to) a voice channel and remember it as home. */
   async join(guild: Guild, channelId: string, workspaceId: string): Promise<VoiceConnection> {
-    const channel = guild.channels.cache.get(channelId) ?? (await guild.channels.fetch(channelId).catch(() => null))
+    const channel =
+      guild.channels.cache.get(channelId) ??
+      (await guild.channels.fetch(channelId).catch(() => null))
     if (!channel || !channel.isVoiceBased()) throw new Error('Home channel is not a voice channel')
-    const me = guild.members.me
-    if (me && !channel.permissionsFor(me).has([PermissionFlagsBits.Connect, PermissionFlagsBits.Speak])) {
-      throw new Error('Ume needs Connect and Speak in that channel')
-    }
+    // Allows itself View/Connect/Speak/Set Voice Channel Status when it can; throws VoicePermissionError otherwise.
+    const perms = await assertVoicePermissions(channel)
+    if (perms?.granted.length) await auditSelfGrant(workspaceId, channel.id, perms.granted)
 
     let st = this.guilds.get(guild.id)
     if (!st) {
@@ -140,10 +257,12 @@ export class VoiceManager {
         emptyTimer: null,
         waitingForHuman: false,
         leaving: false,
+        homeSetAt: Date.now(),
       }
       this.guilds.set(guild.id, st)
     }
     st.homeChannelId = channelId
+    st.homeSetAt = Date.now()
     st.workspaceId = workspaceId
     st.leaving = false
     st.waitingForHuman = false
@@ -177,7 +296,11 @@ export class VoiceManager {
     try {
       await entersState(st.connection, VoiceConnectionStatus.Ready, 20_000)
       st.attempts = 0
-      await setBotPresence(db, guild.id, { connected: true, voiceChannelId: channelId, inGuild: true }).catch(() => {})
+      await setBotPresence(db, guild.id, {
+        connected: true,
+        voiceChannelId: channelId,
+        inGuild: true,
+      }).catch(() => {})
       logger.info({ guildId: guild.id, channelId }, 'joined voice')
     } catch (err) {
       logger.warn({ err, guildId: guild.id, channelId }, 'voice connection did not become ready')
@@ -189,6 +312,8 @@ export class VoiceManager {
 
   /** Leave on purpose (purge / guild left). Does not clear the home channel in the DB. */
   leave(guildId: string): void {
+    this.leftAt.set(guildId, Date.now())
+    this.failedJoins.delete(guildId)
     const st = this.guilds.get(guildId)
     if (st) {
       st.leaving = true
@@ -254,6 +379,7 @@ export class VoiceManager {
         await this.join(guild, st.homeChannelId, st.workspaceId)
       } catch (err) {
         logger.warn({ err, guildId, attempt: st.attempts }, 'rejoin failed')
+        if (err instanceof VoicePermissionError) await this.notifyPermissionProblem(guild, err)
         this.scheduleRejoin(guildId)
       }
     }, delay)
@@ -273,15 +399,24 @@ export class VoiceManager {
     }
     if (!st) return
     // A human joined the home channel while we had given up: try again.
-    if (st.waitingForHuman && newState.channelId === st.homeChannelId && !newState.member?.user.bot) {
+    if (
+      st.waitingForHuman &&
+      newState.channelId === st.homeChannelId &&
+      !newState.member?.user.bot
+    ) {
       st.waitingForHuman = false
       st.attempts = 0
-      this.join(guild, st.homeChannelId, st.workspaceId).catch((err) => logger.warn({ err, guildId: guild.id }, 'rejoin on human failed'))
+      void this.backgroundJoin(guild, st.homeChannelId, st.workspaceId, 'rejoin on human failed')
     }
-    if (oldState.channelId === st.homeChannelId || newState.channelId === st.homeChannelId) this.evaluateOccupancy(guild.id)
+    if (oldState.channelId === st.homeChannelId || newState.channelId === st.homeChannelId)
+      this.evaluateOccupancy(guild.id)
   }
 
-  private async onSelfVoiceState(oldState: VoiceState, newState: VoiceState, st: GuildVoiceState | undefined): Promise<void> {
+  private async onSelfVoiceState(
+    oldState: VoiceState,
+    newState: VoiceState,
+    st: GuildVoiceState | undefined,
+  ): Promise<void> {
     const guild = newState.guild
     if (!st || st.leaving) return
     if (oldState.channelId === newState.channelId) return
@@ -289,7 +424,8 @@ export class VoiceManager {
     if (!newState.channelId) {
       // Kicked / disconnected by a moderator. The Disconnected handler on the connection
       // does the retry; this is just belt and braces for the case where it never fires.
-      if (!st.connection || st.connection.state.status === VoiceConnectionStatus.Destroyed) this.scheduleRejoin(guild.id)
+      if (!st.connection || st.connection.state.status === VoiceConnectionStatus.Destroyed)
+        this.scheduleRejoin(guild.id)
       return
     }
 
@@ -297,7 +433,22 @@ export class VoiceManager {
       // Moved by an admin: the new channel becomes home.
       const previous = st.homeChannelId
       st.homeChannelId = newState.channelId
+      st.homeSetAt = Date.now()
       getPlayer(guild.id)?.setVoiceChannel(newState.channelId)
+      // Dragged into a channel where Ume may not be allowed to speak: fix it, or say how.
+      const moved = newState.channel
+      const me = moved ? await resolveMe(guild) : null
+      if (moved && me) {
+        const res = await ensureVoicePermissions(moved, me).catch(() => null)
+        if (res?.granted.length) await auditSelfGrant(st.workspaceId, moved.id, res.granted)
+        if (res && !res.ok) {
+          const canManageRoles = moved.permissionsFor(me).has('ManageRoles')
+          await this.notifyPermissionProblem(
+            guild,
+            new VoicePermissionError(guild.id, moved.id, res.missing, canManageRoles),
+          )
+        }
+      }
       try {
         await db
           .update(workspaces)
@@ -310,13 +461,21 @@ export class VoiceManager {
           targetId: newState.channelId,
           metadata: { from: previous, to: newState.channelId },
         })
-        await touchActivity(db, st.workspaceId, { kind: 'bot_moved', metadata: { from: previous, to: newState.channelId } })
+        await touchActivity(db, st.workspaceId, {
+          kind: 'bot_moved',
+          metadata: { from: previous, to: newState.channelId },
+        })
         const ws = await getWorkspaceByGuildId(db, guild.id)
         if (ws?.noticeTextChannelId) {
           const ch = guild.channels.cache.get(ws.noticeTextChannelId)
           if (ch?.isTextBased() && ch.isSendable()) {
             await ch.send({
-              embeds: [umeEmbed({ description: `Moved to <#${newState.channelId}> — that is my home now.`, thumbnail: null })],
+              embeds: [
+                umeEmbed({
+                  description: `Moved to <#${newState.channelId}> — that is my home now.`,
+                  thumbnail: null,
+                }),
+              ],
             })
           }
         }
@@ -344,9 +503,19 @@ export class VoiceManager {
     try {
       await db
         .update(workspaces)
-        .set({ homeVoiceChannelId: null, botVoiceChannelId: null, botConnected: false, updatedAt: new Date() })
+        .set({
+          homeVoiceChannelId: null,
+          botVoiceChannelId: null,
+          botConnected: false,
+          updatedAt: new Date(),
+        })
         .where(eq(workspaces.guildId, guildId))
-      await logAudit(db, { workspaceId: st.workspaceId, action: 'bot.home_deleted', targetType: 'channel', targetId: channelId })
+      await logAudit(db, {
+        workspaceId: st.workspaceId,
+        action: 'bot.home_deleted',
+        targetType: 'channel',
+        targetId: channelId,
+      })
       const ws = await getWorkspaceByGuildId(db, guildId)
       const guild = this.client.guilds.cache.get(guildId)
       const noticeId = ws?.noticeTextChannelId ?? guild?.systemChannelId ?? null
@@ -356,7 +525,8 @@ export class VoiceManager {
           embeds: [
             umeEmbed({
               title: 'My home channel was deleted',
-              description: 'Run `/home` in a voice channel (or `/home #channel`) to give me a new one.',
+              description:
+                'Run `/home` in a voice channel (or `/home #channel`) to give me a new one.',
               thumbnail: null,
             }),
           ],
@@ -375,7 +545,8 @@ export class VoiceManager {
     if (!st) return 0
     const guild = this.client.guilds.cache.get(guildId)
     const ch = guild?.channels.cache.get(st.homeChannelId) as VoiceBasedChannel | undefined
-    if (!ch || (ch.type !== ChannelType.GuildVoice && ch.type !== ChannelType.GuildStageVoice)) return 0
+    if (!ch || (ch.type !== ChannelType.GuildVoice && ch.type !== ChannelType.GuildStageVoice))
+      return 0
     return ch.members.filter((m) => !m.user.bot).size
   }
 

@@ -1,7 +1,17 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { UPLOAD } from './constants'
-import { OPUS_BYTES_PER_HOUR, PLANS, formatBytes, getPlan, isPaidPlan } from './plans'
+import {
+  OPUS_BYTES_PER_HOUR,
+  PLANS,
+  formatBytes,
+  getPlan,
+  isPaidPlan,
+  monthlyEquivalentUsd,
+  planPrice,
+  planPriceEnv,
+  yearlyMonthsFree,
+} from './plans'
 
 const GB = 1024 ** 3
 
@@ -16,10 +26,10 @@ test('four plans in ascending order', () => {
   )
 })
 
-test('prices and storage match PLAN_REVIEW.md (Free 1 GB, Plus $4/10 GB, Pro $12/50 GB, Studio $35/250 GB)', () => {
+test('prices and storage match PLAN_REVIEW.md (Free 1 GB, Plus $5/10 GB, Pro $12/50 GB, Studio $35/250 GB)', () => {
   const expected: Record<string, [price: number, gb: number]> = {
     free: [0, 1],
-    plus: [4, 10],
+    plus: [5, 10],
     pro: [12, 50],
     studio: [35, 250],
   }
@@ -51,10 +61,25 @@ test('free plan is 1 GB, unpaid and has no Stripe price; paid plans name their e
   assert.equal(free.storageBytes, 1 * GB)
   assert.equal(free.priceUsdMonthly, 0)
   assert.equal(free.stripePriceEnv, null)
+  assert.equal(free.stripePriceEnvYearly, null)
+  assert.equal(free.priceUsdYearly, 0)
   assert.equal(isPaidPlan('free'), false)
   for (const p of PLANS.slice(1)) {
     assert.equal(p.stripePriceEnv, `STRIPE_PRICE_${p.id.toUpperCase()}`)
+    assert.equal(p.stripePriceEnvYearly, `STRIPE_PRICE_${p.id.toUpperCase()}_YEARLY`)
     assert.equal(isPaidPlan(p.id), true)
+  }
+})
+
+test('yearly plans cost ten months and resolve to the right price env', () => {
+  for (const p of PLANS.slice(1)) {
+    assert.equal(p.priceUsdYearly, p.priceUsdMonthly * 10, p.id)
+    assert.equal(yearlyMonthsFree(p), 2, p.id)
+    assert.equal(planPrice(p, 'year'), p.priceUsdYearly)
+    assert.equal(planPrice(p, 'month'), p.priceUsdMonthly)
+    assert.equal(planPriceEnv(p, 'year'), p.stripePriceEnvYearly)
+    assert.equal(planPriceEnv(p, 'month'), p.stripePriceEnv)
+    assert.ok(Math.abs(monthlyEquivalentUsd(p, 'year') - p.priceUsdYearly / 12) < 1e-9)
   }
 })
 

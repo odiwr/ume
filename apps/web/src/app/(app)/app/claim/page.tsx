@@ -23,28 +23,22 @@ export default async function ClaimPage({
 
   return (
     <div className="min-h-dvh">
-      <TopBar
-        user={session.user}
-        crumbs={[{ href: '/app', label: 'Your servers' }, { label: 'Enter a token' }]}
-      />
+      <TopBar user={session.user} />
       <main className="mx-auto w-full max-w-2xl space-y-8 px-4 py-8 sm:px-6 lg:px-8">
-        <PageHeader
-          title="Enter an Ume token"
-          description="Paste the single-use token from Ume’s Discord message."
-        />
+        <PageHeader title="Enter an Ume token" />
         <Card>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 p-5 sm:p-6">
             <ClaimTokenForm initialToken={initialToken} />
           </CardContent>
         </Card>
-        <div className="flex items-start gap-2 rounded-xl bg-surface-2 px-3 py-2.5 text-xs text-fg-muted [text-wrap:pretty]">
-          <Info className="mt-0.5 size-3.5 shrink-0 text-pink" aria-hidden />
+        <div className="flex items-start gap-2.5 px-1 text-sm text-fg-muted [text-wrap:pretty]">
+          <Info className="mt-1 size-4 shrink-0 text-pink" aria-hidden />
           <p>
             Own or administer the server on Discord? You can skip the token and{' '}
             <Link href="/app/new" className="text-fg underline underline-offset-4">
               claim it from the server picker
             </Link>
-            . Tokens are stored hashed and never shown again.
+            .
           </p>
         </div>
       </main>

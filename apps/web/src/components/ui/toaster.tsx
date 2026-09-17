@@ -8,7 +8,7 @@ export function Toaster() {
       position="bottom-right"
       toastOptions={{
         classNames: {
-          toast: '!rounded-xl !border !border-border !bg-surface-2 !text-fg !shadow-xl',
+          toast: '!rounded-xl !border-0 !bg-surface !text-fg !shadow-xl',
           description: '!text-fg-muted',
           success: '[&_svg]:!text-success',
           error: '[&_svg]:!text-danger',

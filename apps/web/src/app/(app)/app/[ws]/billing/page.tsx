@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import { Check, CreditCard, ExternalLink, Sparkles } from '@/components/ui/icons'
 import { effectiveQuotaBytes } from '@ume/db'
-import { CAP, PLANS, formatBytes, getPlan, isPaidPlan } from '@ume/shared'
+import { CAP, PLANS, formatBytes, getPlan, isPaidPlan, yearlyMonthsFree } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Notice, PageHeader, Section } from '@/components/app/page-header'
@@ -49,10 +49,7 @@ export default async function BillingPage({
 
   return (
     <>
-      <PageHeader
-        title="Billing"
-        description="Monthly storage plans for this server. Your existing music is kept when you change plans."
-      />
+      <PageHeader title="Billing" />
 
       {checkout === 'success' ? (
         <Notice tone="success" icon={<Check className="size-4" />}>
@@ -79,12 +76,15 @@ export default async function BillingPage({
       ) : null}
 
       <Section title="Current plan">
-        <div className="grid gap-4 rounded-2xl border border-border bg-surface p-5 sm:grid-cols-[1fr_auto] sm:items-start">
+        <div
+          data-tinted=""
+          className="grid gap-5 rounded-2xl bg-surface-2 p-5 sm:grid-cols-[1fr_auto] sm:items-start"
+        >
           <div className="min-w-0 space-y-3">
             <div className="flex flex-wrap items-center gap-2">
               <span className="font-display text-xl font-semibold">{current.name}</span>
               <Badge tone={isPaidPlan(current.id) ? 'pink' : 'default'}>
-                {current.priceUsdMonthly === 0 ? 'Free' : `$${current.priceUsdMonthly} / month`}
+                {current.priceUsdMonthly === 0 ? 'Free' : 'Paid'}
               </Badge>
               {subscriptionStatus ? (
                 <Badge tone={pastDue ? 'warning' : 'success'}>
@@ -118,10 +118,7 @@ export default async function BillingPage({
         </div>
       </Section>
 
-      <Section
-        title="Plans"
-        description="Every plan includes the 24/7 bot, unlimited playlists and members, and songs added from links. Paid servers are never removed for inactivity."
-      >
+      <Section title="Plans" description="Paid servers are never removed for inactivity.">
         {!stripeReady ? (
           <Notice tone="info" icon={<Sparkles className="size-4" />}>
             Paid plans are not available on this instance yet. You can keep using the free tier.
@@ -130,14 +127,18 @@ export default async function BillingPage({
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {PLANS.map((plan) => {
             const isCurrent = plan.id === current.id
-            const purchasable = stripeReady && isPaidPlan(plan.id) && !!priceIdForPlan(plan.id)
+            const monthlyReady = stripeReady && isPaidPlan(plan.id) && !!priceIdForPlan(plan.id)
+            const yearlyReady =
+              stripeReady && isPaidPlan(plan.id) && !!priceIdForPlan(plan.id, 'year')
+            const purchasable = monthlyReady || yearlyReady
             const isUpgrade = plan.storageBytes > current.storageBytes
             return (
               <div
                 key={plan.id}
+                data-tinted=""
                 className={cn(
-                  'flex flex-col rounded-2xl border bg-surface p-5',
-                  isCurrent ? 'border-pink shadow-glow' : 'border-border',
+                  'flex flex-col rounded-2xl p-5',
+                  isCurrent ? 'bg-blush' : 'bg-surface-2',
                 )}
               >
                 <div className="flex items-center justify-between gap-2">
@@ -150,6 +151,11 @@ export default async function BillingPage({
                     <span className="text-sm font-normal text-fg-muted"> / month</span>
                   ) : null}
                 </p>
+                {plan.priceUsdYearly > 0 ? (
+                  <p className="text-sm text-fg-muted tabular-nums">
+                    or ${plan.priceUsdYearly} / year, {yearlyMonthsFree(plan)} months free
+                  </p>
+                ) : null}
                 <p className="mt-1 text-sm text-fg-muted">
                   {formatBytes(plan.storageBytes)} · about{' '}
                   {plan.hoursOfMusic.toLocaleString('en-US')} hours of music
@@ -173,17 +179,37 @@ export default async function BillingPage({
                       Music over the free limit stays but uploads pause.
                     </p>
                   ) : purchasable ? (
-                    <form method="post" action="/api/stripe/checkout">
+                    <form
+                      method="post"
+                      action="/api/stripe/checkout"
+                      className="flex flex-col gap-2"
+                    >
                       <input type="hidden" name="ws" value={workspace.umeId} />
                       <input type="hidden" name="plan" value={plan.id} />
-                      <Button
-                        type="submit"
-                        variant={isUpgrade ? 'primary' : 'outline'}
-                        className="w-full"
-                      >
-                        {isUpgrade ? 'Upgrade' : 'Switch'} to {plan.name}
-                        <ExternalLink className="size-3.5" />
-                      </Button>
+                      {monthlyReady ? (
+                        <Button
+                          type="submit"
+                          name="interval"
+                          value="month"
+                          variant={isUpgrade ? 'primary' : 'outline'}
+                          className="w-full"
+                        >
+                          {isUpgrade ? 'Upgrade' : 'Switch'} monthly
+                          <ExternalLink className="size-3.5" />
+                        </Button>
+                      ) : null}
+                      {yearlyReady ? (
+                        <Button
+                          type="submit"
+                          name="interval"
+                          value="year"
+                          variant="outline"
+                          className="w-full"
+                        >
+                          Pay yearly
+                          <ExternalLink className="size-3.5" />
+                        </Button>
+                      ) : null}
                     </form>
                   ) : (
                     <Button variant="secondary" disabled className="w-full">
@@ -198,7 +224,7 @@ export default async function BillingPage({
       </Section>
 
       <Section title="How billing works">
-        <div className="grid gap-3 text-sm text-fg-muted sm:grid-cols-2">
+        <div className="grid gap-x-8 gap-y-4 text-sm text-fg-muted sm:grid-cols-2">
           <p className="[text-wrap:pretty]">
             <strong className="text-fg">Upgrades apply immediately.</strong> Stripe charges the
             difference for the rest of the month; the new limit lands as soon as the payment

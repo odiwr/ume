@@ -5,13 +5,12 @@ import {
   Clock,
   HardDrive,
   ListMusic,
-  RadioTower,
   Settings,
   Ticket,
   Users,
 } from '@/components/ui/icons'
 import { can, effectiveQuotaBytes } from '@ume/db'
-import { CAP, INACTIVITY, formatBytes, getPlan, isPaidPlan, linkSiteLabel } from '@ume/shared'
+import { CAP, INACTIVITY, botInviteUrl, getPlan, isPaidPlan, linkSiteLabel } from '@ume/shared'
 import { Badge } from '@/components/ui/badge'
 import { buttonClasses } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -19,17 +18,16 @@ import { EmptyState } from '@/components/ui/empty-state'
 import { UserAvatar } from '@/components/app/avatar'
 import { PageHeader, Section } from '@/components/app/page-header'
 import { StorageBar } from '@/components/app/storage-bar'
-import { Ago } from '@/components/app/time'
 import { displayName, percent, relativeDays, trackStatusTone } from '@/lib/app/format'
 import { listRecentAdditions } from '@/lib/app/queries'
 import { isBotOnline, requireWorkspacePage } from '@/lib/app/workspace'
-import { formatDuration } from '@/lib/utils'
+import { cn, formatDuration } from '@/lib/utils'
 
 export const metadata: Metadata = { title: 'Overview', robots: { index: false } }
 
 export default async function OverviewPage({ params }: { params: Promise<{ ws: string }> }) {
   const { ws: umeId } = await params
-  const { workspace, access, user } = await requireWorkspacePage(umeId)
+  const { workspace, access } = await requireWorkspacePage(umeId)
   const recent = await listRecentAdditions(workspace.id, 8)
 
   const online = isBotOnline(workspace)
@@ -44,7 +42,6 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
       : daysLeft <= INACTIVITY.purgeAfterDays - INACTIVITY.firstNoticeAtDays
         ? 'text-warning'
         : 'text-fg'
-  const firstName = (user.name || user.discordUsername || 'there').split(' ')[0]
 
   const quick = [
     {
@@ -75,53 +72,18 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
 
   return (
     <>
-      <PageHeader
-        title={workspace.guildName}
-        eyebrow={`Hi ${firstName}`}
-        description={
-          workspace.status === 'connected'
-            ? 'A quick read on the bot, the storage and what people added lately.'
-            : 'This workspace is read-only until it is reconnected.'
-        }
-      />
+      <PageHeader title={workspace.guildName} />
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <Card>
-          <CardContent className="flex flex-col gap-3">
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2 text-sm font-medium text-fg-muted">
-                <RadioTower className="size-4" aria-hidden /> Bot
-              </span>
-              <Badge tone={online ? 'success' : workspace.botInGuild ? 'warning' : 'danger'}>
-                <span
-                  className={
-                    online
-                      ? 'size-1.5 rounded-full bg-success'
-                      : 'size-1.5 rounded-full bg-current opacity-60'
-                  }
-                  aria-hidden
-                />
-                {online ? 'Online' : workspace.botInGuild ? 'Offline' : 'Not in server'}
-              </Badge>
-            </div>
-            <p className="font-display text-2xl font-semibold">
-              {online ? (workspace.botVoiceChannelId ? 'In the room' : 'Standing by') : 'Quiet'}
-            </p>
-            <p className="text-xs text-fg-muted">
-              {online ? (
-                <>
-                  Heartbeat <Ago date={workspace.botLastSeenAt} />
-                </>
-              ) : workspace.botLastSeenAt ? (
-                <>
-                  Last seen <Ago date={workspace.botLastSeenAt} />
-                </>
-              ) : (
-                'Never connected yet.'
-              )}
-            </p>
-          </CardContent>
-        </Card>
+        <BotStatusCard
+          online={online}
+          botInGuild={workspace.botInGuild}
+          inviteUrl={
+            can(access, CAP.MANAGE_SETTINGS)
+              ? botInviteUrl(process.env.NEXT_PUBLIC_DISCORD_CLIENT_ID ?? '', workspace.guildId)
+              : null
+          }
+        />
 
         <Card>
           <CardContent className="flex flex-col gap-3">
@@ -159,18 +121,17 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
                   : `${idleDays}d idle`
                 : `${daysLeft} day${daysLeft === 1 ? '' : 's'} left`}
             </p>
-            <p className="text-xs text-fg-muted [text-wrap:pretty]">
-              Last activity <Ago date={workspace.lastActivityAt} />.{' '}
-              {paid
-                ? 'Paid workspaces are never purged for inactivity.'
-                : `Free workspaces are removed after ${INACTIVITY.purgeAfterDays} idle days. Any command, playback or web edit resets the clock.`}
-            </p>
+            {paid ? null : (
+              <p className="text-xs text-fg-muted [text-wrap:pretty]">
+                Free workspaces are removed after {INACTIVITY.purgeAfterDays} idle days.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
 
       {quick.length ? (
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-3">
           {quick.map((q) => (
             <Link key={q.href} href={q.href} className={buttonClasses('outline', 'sm')}>
               <q.icon className="size-3.5" /> {q.label}
@@ -181,7 +142,6 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
 
       <Section
         title="Recent additions"
-        description="Latest tracks across all playlists."
         actions={
           <Link
             href={`/app/${umeId}/library`}
@@ -192,11 +152,14 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
         }
       >
         {recent.length ? (
-          <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+          <ul className="space-y-2">
             {recent.map((e) => {
               const status = trackStatusTone(e.track.status)
               return (
-                <li key={e.id} className="flex items-center gap-3 px-4 py-3">
+                <li
+                  key={e.id}
+                  className="flex items-center gap-3 rounded-xl bg-surface-2 px-4 py-3"
+                >
                   <Cover src={e.track.coverUrl} />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">{e.track.title}</p>
@@ -225,9 +188,6 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
                   {e.track.status !== 'ready' ? (
                     <Badge tone={status.tone}>{status.label}</Badge>
                   ) : null}
-                  <span className="text-xs text-fg-subtle">
-                    <Ago date={e.addedAt} />
-                  </span>
                 </li>
               )
             })}
@@ -244,12 +204,88 @@ export default async function OverviewPage({ params }: { params: Promise<{ ws: s
           </EmptyState>
         )}
       </Section>
-
-      <p className="text-xs text-fg-subtle">
-        {formatBytes(workspace.storageUsedBytes)} of {formatBytes(quota)} used across{' '}
-        {workspace.trackCount.toLocaleString('en-US')} tracks.
-      </p>
     </>
+  )
+}
+
+/**
+ * Bot status: "Live" while the heartbeat is fresh, "Dead" otherwise. The squiggle and the
+ * record are decoration (aria-hidden); the record spins only while Live and never under
+ * reduced motion.
+ */
+function BotStatusCard({
+  online,
+  botInGuild,
+  inviteUrl,
+}: {
+  online: boolean
+  botInGuild: boolean
+  inviteUrl: string | null
+}) {
+  return (
+    <Card className="relative isolate min-h-44 overflow-hidden bg-linear-135 from-sage-light to-blush">
+      <svg
+        aria-hidden
+        className="pointer-events-none absolute inset-0 -z-10 size-full"
+        viewBox="0 0 300 176"
+        preserveAspectRatio="none"
+        fill="none"
+      >
+        <path
+          d="M-10 134C40 152 80 120 130 136S190 150 222 100 272 22 310 14"
+          className="stroke-pink/45"
+          strokeWidth={10}
+          strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
+      <svg
+        aria-hidden
+        viewBox="0 0 100 100"
+        className={cn(
+          'pointer-events-none absolute -right-10 -bottom-10 -z-10 size-36 origin-center',
+          online && 'animate-[spin_5s_linear_infinite] motion-reduce:animate-none',
+        )}
+      >
+        <circle cx="50" cy="50" r="49" className="fill-sage" />
+        {[42, 36, 30, 24].map((r) => (
+          <circle
+            key={r}
+            cx="50"
+            cy="50"
+            r={r}
+            fill="none"
+            className="stroke-sage-light/40"
+            strokeWidth={1.2}
+            strokeDasharray={`${r * 2.4} ${r * 0.8}`}
+          />
+        ))}
+        <circle cx="50" cy="50" r="13" className="fill-blush" />
+        <circle cx="55" cy="45" r="2.5" className="fill-pink/60" />
+        <circle cx="50" cy="50" r="2" className="fill-sage" />
+      </svg>
+      <CardContent className="flex flex-col gap-3">
+        <p className="font-display text-5xl leading-none font-semibold tracking-tight text-fg">
+          <span className="sr-only">Bot status: </span>
+          {online ? 'Live' : 'Dead'}
+        </p>
+        {!botInGuild ? (
+          <p className="max-w-40 text-sm text-fg-muted [text-wrap:pretty]">
+            Ume is not in this server.{' '}
+            {inviteUrl ? (
+              <a
+                href={inviteUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-fg underline underline-offset-4"
+              >
+                Add the bot
+              </a>
+            ) : null}
+          </p>
+        ) : null}
+      </CardContent>
+    </Card>
   )
 }
 

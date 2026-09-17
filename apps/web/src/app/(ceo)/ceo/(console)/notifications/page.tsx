@@ -68,7 +68,7 @@ export default async function CeoNotificationsPage({
 
   return (
     <>
-      <PageHeader title="Notifications" description="Email and Discord delivery history." />
+      <PageHeader title="Notifications" />
       <div className="flex flex-col gap-2">
         <FilterChips
           basePath="/ceo/notifications"

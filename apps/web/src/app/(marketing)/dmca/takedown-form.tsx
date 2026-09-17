@@ -48,7 +48,7 @@ export function TakedownForm() {
 
   if (state.ok) {
     return (
-      <div className="rounded-2xl border border-success/30 bg-success/10 p-6">
+      <div className="rounded-2xl bg-success/10 p-6">
         <div className="flex items-start gap-3">
           <CheckCircle2 className="mt-0.5 size-5 shrink-0 text-success" aria-hidden />
           <div>
@@ -209,10 +209,7 @@ export function TakedownForm() {
       </Field>
 
       {state.message ? (
-        <p
-          className="rounded-xl border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger"
-          role="alert"
-        >
+        <p className="rounded-xl bg-danger/10 px-4 py-3 text-sm text-danger" role="alert">
           {state.message}
         </p>
       ) : null}

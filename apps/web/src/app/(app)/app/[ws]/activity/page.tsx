@@ -56,27 +56,22 @@ export default async function ActivityPage({ params }: { params: Promise<{ ws: s
 
   return (
     <>
-      <PageHeader
-        title="Activity"
-        description="Channel activity, commands, playback, and library changes."
-      />
+      <PageHeader title="Activity" />
 
-      <Section
-        title="Recent activity"
-        description={
-          `Last activity ${workspace.lastActivityAt ? '' : 'unknown'}`.trim() || undefined
-        }
-      >
+      <Section title="Recent activity">
         {events.length ? (
-          <ol className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+          <ol className="space-y-2">
             {events.map((e) => {
               const kind = KIND[e.kind] ?? { label: e.kind, icon: Activity }
               const Icon = kind.icon
               const who = e.userId ? users.get(e.userId) : null
               const detail = describeMeta(e.metadata)
               return (
-                <li key={e.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-fg-muted">
+                <li
+                  key={e.id}
+                  className="flex items-center gap-3 rounded-xl bg-surface-2 px-4 py-3 text-sm"
+                >
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface text-fg-muted">
                     <Icon className="size-4" aria-hidden />
                   </span>
                   <div className="min-w-0 flex-1">
@@ -109,12 +104,15 @@ export default async function ActivityPage({ params }: { params: Promise<{ ws: s
       </Section>
 
       {showAudit ? (
-        <Section title="Audit log" description="Admin actions, visible to Admins and the Owner.">
+        <Section title="Audit log">
           {audit.length ? (
-            <ol className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+            <ol className="space-y-2">
               {audit.map((a) => (
-                <li key={a.id} className="flex items-center gap-3 px-4 py-2.5 text-sm">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-fg-muted">
+                <li
+                  key={a.id}
+                  className="flex items-center gap-3 rounded-xl bg-surface-2 px-4 py-3 text-sm"
+                >
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface text-fg-muted">
                     <ScrollText className="size-4" aria-hidden />
                   </span>
                   <div className="min-w-0 flex-1">

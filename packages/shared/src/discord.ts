@@ -46,19 +46,30 @@ export function userAvatarUrl(userId: string, avatar: string | null, size = 128)
   return `https://cdn.discordapp.com/avatars/${userId}/${avatar}.${ext}?size=${size}`
 }
 
-/** Bot install URL with the permissions Ume needs. */
+/**
+ * Permissions requested by the install link: View Channels (1<<10), Send Messages (1<<11),
+ * Embed Links (1<<14), Read Message History (1<<16), Connect (1<<20), Speak (1<<21),
+ * Manage Roles (1<<28), Use Application Commands (1<<31), Set Voice Channel Status (1<<48).
+ *
+ * Manage Roles lets Ume add a member overwrite for itself in its home voice channel when a
+ * channel or role overwrite denies it Connect/Speak. Discord only lets a bot allow permissions it
+ * already holds at server level, so the overwrite can never exceed this list. Ume never requests
+ * Administrator or Manage Channels.
+ */
+export const BOT_INVITE_PERMISSIONS: bigint =
+  (1n << 10n) |
+  (1n << 11n) |
+  (1n << 14n) |
+  (1n << 16n) |
+  (1n << 20n) |
+  (1n << 21n) |
+  (1n << 28n) |
+  (1n << 31n) |
+  (1n << 48n)
+
+/** Bot install URL with the permissions Ume needs ({@link BOT_INVITE_PERMISSIONS}). */
 export function botInviteUrl(clientId: string, guildId?: string): string {
-  // View Channels (1<<10), Send Messages (1<<11), Embed Links (1<<14), Read History (1<<16),
-  // Connect (1<<20), Speak (1<<21), Use Slash Commands (1<<31), Set Voice Channel Status (1<<48)
-  const perms =
-    (1n << 10n) |
-    (1n << 11n) |
-    (1n << 14n) |
-    (1n << 16n) |
-    (1n << 20n) |
-    (1n << 21n) |
-    (1n << 31n) |
-    (1n << 48n)
+  const perms = BOT_INVITE_PERMISSIONS
   const url = new URL('https://discord.com/oauth2/authorize')
   url.searchParams.set('client_id', clientId)
   url.searchParams.set('scope', 'bot applications.commands')

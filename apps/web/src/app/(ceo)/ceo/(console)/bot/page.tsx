@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Radio, TriangleAlert, Unplug, WifiOff } from '@/components/ui/icons'
-import { BOT_HEARTBEAT_MS } from '@ume/shared'
 import { BOT_ONLINE_WINDOW_MS, getBotHealth, str, type BotHealth } from '@/lib/ceo/queries'
 import { PageHeader, FilterChips, Section } from '@/components/ceo/page-header'
 import { StatGrid, StatTile } from '@/components/ceo/stat-tile'
@@ -104,10 +103,7 @@ export default async function CeoBotHealthPage({
 
   return (
     <>
-      <PageHeader
-        title="Bot health"
-        description={`The bot writes a heartbeat every ${BOT_HEARTBEAT_MS / 1000} seconds per server. Purged workspaces are excluded; the list is capped at 500.`}
-      />
+      <PageHeader title="Bot health" />
 
       <StatGrid>
         <StatTile

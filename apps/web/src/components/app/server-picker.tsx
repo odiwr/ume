@@ -50,14 +50,15 @@ export function ServerPicker({ guilds }: { guilds: PickerGuild[] }) {
 
   return (
     <>
-      <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface">
+      <ul className="space-y-3">
         {guilds.map((g) => {
           const badge = STATE_BADGE[g.state]
           const busy = pending && busyId === g.id
           return (
             <li
               key={g.id}
-              className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between"
+              data-tinted=""
+              className="flex flex-col gap-4 rounded-2xl bg-surface-2 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5"
             >
               <div className="flex min-w-0 items-center gap-3">
                 <GuildIcon name={g.name} src={g.iconUrl} size={40} />
@@ -72,7 +73,7 @@ export function ServerPicker({ guilds }: { guilds: PickerGuild[] }) {
                   </div>
                 </div>
               </div>
-              <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
+              <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                 {g.state === 'connected' && g.umeId ? (
                   g.isMember ? (
                     <Link href={`/app/${g.umeId}`} className={buttonClasses('secondary', 'sm')}>
@@ -160,7 +161,7 @@ function ClaimDialog({ guild, onClose }: { guild: PickerGuild | null; onClose: (
         >
           <div className="space-y-4">
             {!guild.botInGuild ? (
-              <p className="rounded-xl border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning [text-wrap:pretty]">
+              <p className="rounded-xl bg-warning/10 px-4 py-3 text-sm text-warning [text-wrap:pretty]">
                 Ume is not in this server yet. You can claim now and add the bot afterwards; nothing
                 plays until it joins.
               </p>
