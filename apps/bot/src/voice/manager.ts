@@ -237,7 +237,11 @@ export class VoiceManager {
   }
 
   /** Join (or move to) a voice channel and remember it as home. */
-  async join(guild: Guild, channelId: string, workspaceId: string): Promise<VoiceConnection> {
+  async join(
+    guild: Guild,
+    channelId: string,
+    workspaceId: string,
+  ): Promise<VoiceConnection | null> {
     const channel =
       guild.channels.cache.get(channelId) ??
       (await guild.channels.fetch(channelId).catch(() => null))
@@ -303,8 +307,21 @@ export class VoiceManager {
       }).catch(() => {})
       logger.info({ guildId: guild.id, channelId }, 'joined voice')
     } catch (err) {
-      logger.warn({ err, guildId: guild.id, channelId }, 'voice connection did not become ready')
+      logger.warn(
+        { err, guildId: guild.id, channelId, status: st.connection?.state.status },
+        'voice connection did not become ready',
+      )
+      // Start the next attempt from a fresh connection: a connection stuck in Signalling or
+      // Connecting would otherwise be reused by every retry and never recover.
+      const stuck = st.connection
+      st.connection = null
+      try {
+        stuck?.destroy()
+      } catch {
+        /* already destroyed */
+      }
       this.scheduleRejoin(guild.id)
+      return null
     }
     this.evaluateOccupancy(guild.id)
     return st.connection
@@ -333,6 +350,14 @@ export class VoiceManager {
   }
 
   private wire(guildId: string, connection: VoiceConnection): void {
+    // Voice handshake visibility: state transitions at debug, library debug lines at trace.
+    connection.on('stateChange', (oldState, newState) => {
+      if (oldState.status !== newState.status) {
+        logger.debug({ guildId, from: oldState.status, to: newState.status }, 'voice state change')
+      }
+    })
+    connection.on('debug', (message) => logger.trace({ guildId, message }, 'voice debug'))
+    connection.on('error', (err) => logger.warn({ err, guildId }, 'voice connection error'))
     connection.on(VoiceConnectionStatus.Disconnected, async () => {
       const st = this.guilds.get(guildId)
       if (!st || st.leaving) return
