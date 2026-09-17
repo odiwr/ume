@@ -8,7 +8,10 @@ The web app, bot and worker build locally and all seven workspace type checks pa
 - Neon (Postgres 18, us-east-2) has both migrations applied. R2 bucket `ume` allows uploads from ume.odiwr.dev, ume-ivory.vercel.app and localhost.
 - Discord app `1549931718041927760`: Terms/Privacy URLs and redirects for localhost, ume.odiwr.dev and ume-ivory.vercel.app are saved. The bot is in Sokko and slash commands are registered there (guild-scoped).
 - Google OAuth needs `https://ume-ivory.vercel.app/api/auth/callback/google` (and later the ume.odiwr.dev one) in the client's redirect URIs.
-- Not yet configured: Stripe, Resend, DMCA agent details, bot and worker hosting, the home extraction worker.
+- Railway project `ume` (US East, one replica each, restart on failure up to 10 times) runs the `bot` and `worker` services from `main` with their Dockerfiles. The cloud worker consumes every queue except `extract-link`.
+- The extraction worker runs in Docker Desktop on the founder's Windows PC as container `ume-extractor` (`WORKER_QUEUES=extract-link`, restart unless stopped). Its env file lives outside the repo at `%USERPROFILE%\.ume\worker.env`. Rebuild the image monthly so yt-dlp stays current.
+- Slash commands are registered globally (they work in DMs).
+- Not yet configured: Stripe, Resend, DMCA agent details.
 
 ## Code changes in this pass
 
