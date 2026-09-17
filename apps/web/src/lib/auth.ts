@@ -59,7 +59,9 @@ export const auth = betterAuth({
     cookieCache: { enabled: true, maxAge: 5 * 60 },
   },
   advanced: {
-    database: { generateId: 'uuid' },
+    // Generate UUIDs in the app. The string 'uuid' makes Better Auth leave ids to Postgres,
+    // but the auth tables use text ids with no column default, so every insert failed.
+    database: { generateId: () => crypto.randomUUID() },
   },
   plugins: [nextCookies()], // must be last
 })
